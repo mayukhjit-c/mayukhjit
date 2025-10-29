@@ -1120,6 +1120,58 @@
         75% { filter: hue-rotate(270deg); }
       }
 
+      /* About section layout and speech bubble */
+      .about-card {
+        display: grid;
+        grid-template-columns: 100px 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      .about-media {
+        width: 100px; height: 100px;
+      }
+      .about-media img {
+        display: block; width: 100%; height: 100%; object-fit: cover;
+        border-radius: 999px; border: 1px solid var(--line);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+      }
+      .speech-bubble {
+        position: relative;
+        padding: 10px 12px;
+        color: #fff;
+        background: rgba(16,16,18,0.68);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        backdrop-filter: blur(10px) saturate(140%);
+        -webkit-backdrop-filter: blur(10px) saturate(140%);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+        max-width: min(560px, 100%);
+        word-wrap: break-word;
+        margin-bottom: 10px;
+      }
+      .speech-bubble::before {
+        content: '';
+        position: absolute;
+        left: -6px; top: 20px;
+        width: 10px; height: 10px;
+        background: rgba(16,16,18,0.68);
+        border-left: 1px solid var(--line);
+        border-top: 1px solid var(--line);
+        transform: rotate(45deg);
+      }
+      @media (max-width: 640px) {
+        .about-card { grid-template-columns: 1fr; gap: 14px; }
+        .about-media { width: 84px; height: 84px; }
+        .about-media { justify-self: center; }
+        .speech-bubble { margin-top: 2px; }
+        .speech-bubble::before {
+          left: 22px; top: -6px;
+          border-left: 0; border-top: 0;
+          border-right: 1px solid var(--line);
+          border-bottom: 1px solid var(--line);
+        }
+      }
+
       /* Reduce motion */
       @media (prefers-reduced-motion: reduce) {
         html { scroll-behavior: auto; }
@@ -1130,6 +1182,37 @@
         .caret { display: none; }
         .sparkles { display: none; }
         .typer-shimmer .typer-text { animation: none; color: #ffffff; -webkit-background-clip: initial; background-clip: initial; }
+      }
+
+      /* Unified tooltip layer */
+      #tooltip {
+        position: fixed;
+        top: 0; left: 0;
+        transform: translate(-9999px, -9999px);
+        z-index: 1000;
+        pointer-events: none;
+        background: rgba(20,20,20,0.92);
+        border: 1px solid var(--line);
+        color: var(--fg);
+        padding: 6px 8px;
+        font-size: 12px;
+        border-radius: 8px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+        max-width: min(52ch, 60vw);
+        white-space: nowrap;
+        opacity: 0;
+        transition: opacity 120ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      #tooltip.show { opacity: 1; }
+      /* High-contrast accent edge for brand fit */
+      #tooltip::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 8px;
+        pointer-events: none;
+        box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 35%, transparent);
+        opacity: 0.6;
       }
     </style>
   </head>
@@ -1182,6 +1265,12 @@
         <symbol id="icon-x" viewBox="0 0 24 24">
           <path fill="currentColor" d="M18 2H6a4 4 0 0 0-4 4v12a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4Zm-1.6 16.2-3.4-4-3.5 4H7.2l4.4-5-4-4.9h2.4l3.1 3.7 3.2-3.7h2.2l-4 4.8 4.4 5.1h-2.5Z"/>
         </symbol>
+        <symbol id="icon-youtube" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M23.5 6.2a3.3 3.3 0 0 0-2.3-2.3C19.3 3.3 12 3.3 12 3.3s-7.3 0-9.2.6A3.3 3.3 0 0 0 .5 6.2 34 34 0 0 0 0 12a34 34 0 0 0 .5 5.8 3.3 3.3 0 0 0 2.3 2.3c1.9.6 9.2.6 9.2.6s7.3 0 9.2-.6a3.3 3.3 0 0 0 2.3-2.3A34 34 0 0 0 24 12a34 34 0 0 0-.5-5.8ZM9.6 15.3V8.7L15.8 12l-6.2 3.3Z"/>
+        </symbol>
+        <symbol id="icon-spotify" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 1.5A10.5 10.5 0 1 0 22.5 12 10.5 10.5 0 0 0 12 1.5Zm4.8 15.2a.9.9 0 0 1-1.2.3c-3.2-2-7.2-2.5-11.9-1.5a.9.9 0 1 1-.4-1.8c5.1-1.1 9.7-.5 13.3 1.7a.9.9 0 0 1 .2 1.3Zm1.6-3.2a1.1 1.1 0 0 1-1.5.4c-3.6-2.2-9-2.9-13.2-1.6a1.1 1.1 0 1 1-.6-2.1c4.9-1.4 10.9-.6 14.9 1.9a1.1 1.1 0 0 1 .4 1.4Zm.2-3.4c-4.1-2.4-11-2.6-15-1.5a1.3 1.3 0 1 1-.7-2.4c4.5-1.3 12.1-1.1 16.9 1.7a1.3 1.3 0 1 1-1.3 2.2Z"/>
+        </symbol>
         <symbol id="icon-globe" viewBox="0 0 24 24">
           <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.7 0 3.3.6 4.6 1.6-.7.2-1.5.5-2.2.9-.9.5-1.9.7-2.9.7-1.3 0-2.4.9-2.7 2.2-.2.7-.6 1.3-1.2 1.8-.6.6-1 1.3-1.2 2.2A8 8 0 0 1 12 4Zm0 16a8 8 0 0 1-6.1-3c.3-.5.7-1 1.2-1.4.7-.6 1.1-1.4 1.3-2.3.2-.9.8-1.6 1.6-2 .7-.3 1.4-.7 2.1-1.1.7-.4 1.5-.6 2.3-.6.8 0 1.6-.2 2.3-.6.3-.1.5-.2.8-.3A8 8 0 0 1 12 20Z"/>
         </symbol>
@@ -1195,6 +1284,7 @@
     <canvas id="bg-grid" aria-hidden="true"></canvas>
     <div id="toast" aria-live="polite" aria-atomic="true"></div>
     <div id="errorOverlay" role="alert" aria-live="assertive"></div>
+    <div id="tooltip" role="tooltip" aria-hidden="true"></div>
     <div id="cmdk" aria-modal="true" role="dialog" aria-label="Command palette">
       <div class="cmdk-panel">
         <div class="cmdk-head">
@@ -1217,7 +1307,7 @@
     </div>
     <header>
       <div class="container nav" aria-label="Primary">
-        <a class="brand" href="https://mayukhjitchakraborty.tech/" target="_blank" rel="noopener" aria-label="Open live site in a new tab">
+        <a class="brand" href="https://mayukhjitchakraborty.tech/" target="_blank" rel="noopener" aria-label="Open live site in a new tab" data-tooltip="Open live site (new tab)">
           <span class="dot" aria-hidden="true"></span>
           <span>Mayukhjit&nbsp;Chakraborty</span>
         </a>
@@ -1233,7 +1323,7 @@
         </nav>
         <div class="lang-select">
           <label for="langSelect" class="visually-hidden">Language</label>
-          <select id="langSelect" aria-label="Language selector">
+          <select id="langSelect" aria-label="Language selector" data-tooltip="Change language">
             <option value="en">English</option>
             <option value="ar">العربية</option>
             <option value="es">Español</option>
@@ -1256,21 +1346,59 @@
           <div class="kicker"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> <span data-i18n="kicker.role">Full‑stack Web Developer & Designer</span> · <svg class="icon" aria-hidden="true"><use href="#icon-location"/></svg> <span data-i18n="kicker.loc">Based in London, UK</span> · <svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg> <span data-i18n="kicker.age">Age</span> <span id="age">—</span> · <span data-i18n="kicker.status">Currently seeking experience</span></div>
           <h1 class="title" data-i18n="hero.title">I design and build <span id="typer" class="typer" data-tooltip="Watch the colors flow"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.</h1>
           <p class="subtitle" data-i18n="hero.subtitle">I focus on clarity, performance, and maintainability. I enjoy shipping polished user experiences and robust backend systems with a pragmatic, modern stack.</p>
+          
           <div class="availability">
             <span class="badge"><span class="dot" aria-hidden="true"></span> <span data-i18n="hero.availability">Open to internships / part‑time</span></span>
           </div>
           <div class="cta">
             <a class="btn primary" href="#projects" data-tooltip="See featured work" data-i18n="cta.projects">View Projects <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
             <button class="btn ghost" id="copyEmail" aria-label="Copy email to clipboard" data-tooltip="Copy my email" data-i18n="cta.copy">Copy Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg></button>
-            <a class="btn ghost" href="resume.pdf" target="_blank" rel="noopener" data-tooltip="Open resume PDF" data-i18n="cta.resume">Resume</a>
+            <a class="btn ghost" href="#resume" rel="noopener" data-tooltip="Open résumé" data-i18n="cta.resume">Résumé</a>
           </div>
         </div>
+      </section>
+
+      <section id="about" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-star"/></svg> About me</h2>
+          <p class="section-desc">A little more context — the music side of me.</p>
+        </div>
+        <article class="card reveal about-card">
+          <div class="about-media">
+            <img src="https://raw.githubusercontent.com/mayukhjit-c/mayukhjit/refs/heads/main/mayuheadshot.jpg" alt="Portrait of Mayukhjit Chakraborty" width="100" height="100" loading="lazy" decoding="async" />
+          </div>
+          <div>
+            <div class="speech-bubble" aria-label="Intro bubble">Hey! I build software and make music. Welcome in.</div>
+            <p class="subtitle" style="margin:0 0 6px 0;">Hi — I’m Mayukhjit. I’m a developer who also makes music. I love building clean, fast, human‑centered software and I love writing, producing, and releasing tracks.</p>
+            <p style="margin:0 0 10px 0; color:var(--muted);">I run a YouTube channel where I post music and experiments, and I’m lucky to have a growing audience. My dream is to blend music and software development more deeply — building tools that help artists create, perform, and publish with less friction.</p>
+            <div class="badges" style="display:flex; flex-wrap:wrap; gap:8px;">
+              <a class="badge" href="https://youtube.com/mayukhjitchakraborty" target="_blank" rel="noopener" data-tooltip="Open my YouTube channel" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <svg class="icon" aria-hidden="true" style="width:16px;height:16px;"><use href="#icon-youtube"/></svg>
+                YouTube · 3000+ subs
+              </a>
+              <a class="badge" href="https://open.spotify.com/artist/5gHo7gyNZmVQm1TCkWZOW6" target="_blank" rel="noopener" data-tooltip="Open my Spotify artist page" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                <svg class="icon" aria-hidden="true" style="width:16px;height:16px;"><use href="#icon-spotify"/></svg>
+                Spotify · 6k+ monthly listeners
+              </a>
+              <span class="badge"><span class="dot" aria-hidden="true"></span> Producer · Composer · Developer</span>
+            </div>
+            <div class="cta" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+              <a class="btn primary" href="https://youtube.com/mayukhjitchakraborty" target="_blank" rel="noopener" data-tooltip="Visit my YouTube" aria-label="Open my YouTube channel">
+                <svg class="icon" aria-hidden="true"><use href="#icon-youtube"/></svg> YouTube
+              </a>
+              <a class="btn ghost" href="https://open.spotify.com/artist/5gHo7gyNZmVQm1TCkWZOW6" target="_blank" rel="noopener" data-tooltip="Open my Spotify" aria-label="Open my Spotify artist page">
+                <svg class="icon" aria-hidden="true"><use href="#icon-spotify"/></svg> Spotify
+              </a>
+              <a class="btn ghost link-underline" href="#vision" data-tooltip="See how I think about music + software">Read the vision</a>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section id="projects" class="container">
         <div class="section-head">
           <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> Projects</h2>
-          <p class="section-desc">Selected work demonstrating product thinking, clean code, and refined details.</p>
+          <p class="section-desc">Selected work I shipped — product thinking, clean code, and refined details.</p>
         </div>
         <div class="grid">
           <article class="card reveal" data-project="gcsemate">
@@ -1280,7 +1408,7 @@
               </div>
             </a>
             <h3><a class="link-underline" href="https://gcsemate.com" target="_blank" rel="noopener">GCSEMate <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></h3>
-            <p>GCSE revision companion offering structured subjects, notes, and past papers for focused study.</p>
+            <p>I built a GCSE revision companion with structured subjects, notes, and past papers for focused study.</p>
             <div class="tags">
               <span class="tag">Education</span>
               <span class="tag">Web App</span>
@@ -1297,7 +1425,7 @@
               </div>
             </a>
             <h3>CodeBuilder AI</h3>
-            <p>Autonomous web app that generates startup ideas, analyzes profitability, considers marketing & branding, then fully implements working webapps using Gemini 2.5 Pro.</p>
+            <p>I built an autonomous web app that generates startup ideas, analyzes profitability, considers marketing & branding, then implements working web apps using Gemini 2.5 Pro.</p>
             <div class="tags">
               <span class="tag">AI</span>
               <span class="tag">Autonomous</span>
@@ -1316,7 +1444,7 @@
               </svg>
             </div></a>
             <h3><a class="link-underline" href="https://github.com/mayukhjit-c/subscriberlytics" target="_blank" rel="noopener">Subscriberlytics <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></h3>
-            <p>Track and analyze all your subscriptions with advanced analytics, real‑time currency conversion, export/import, and full PWA offline support.</p>
+            <p>I built a privacy‑first subscription tracker with advanced analytics, real‑time currency conversion, export/import, and full PWA offline support.</p>
             <div class="tags">
               <span class="tag">Analytics</span>
               <span class="tag">PWA</span>
@@ -1508,6 +1636,79 @@
         </div>
       </section>
 
+      <section id="resume" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg> Résumé</h2>
+          <p class="section-desc">Concise, skimmable, and up to date — right in the page.</p>
+        </div>
+        <article class="card reveal">
+          <h3>Summary</h3>
+          <p class="subtitle">Full‑stack web developer and designer focused on clarity, performance, and maintainability. I ship polished user experiences and robust backends with pragmatic, modern tooling.</p>
+          <div class="badges" style="margin-top: 12px;">
+            <span class="badge-tech">Frontend</span>
+            <span class="badge-tech">Backend</span>
+            <span class="badge-tech">UX</span>
+            <span class="badge-tech">Performance</span>
+          </div>
+
+          <h3 style="margin-top:20px;">Experience</h3>
+          <div class="timeline" style="display:grid; gap:14px; margin-top:10px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <strong>Independent Developer</strong>
+                <span style="color:var(--muted)">2022 — Present · London, UK</span>
+              </div>
+              <ul style="margin-top:6px;">
+                <li>Built and shipped interactive, high‑performance web experiences with semantic HTML, modern CSS, and vanilla JS.</li>
+                <li>Designed and implemented backend APIs and data models with a focus on simplicity and reliability.</li>
+                <li>Optimized for accessibility, responsiveness, and smooth animations (reduced‑motion aware).</li>
+              </ul>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <strong>Highlighted Projects</strong>
+                <span style="color:var(--muted)">See Projects section</span>
+              </div>
+              <ul style="margin-top:6px;">
+                <li><strong>GCSEMate</strong> — GCSE revision companion with structured content and past papers.</li>
+                <li><strong>CodeBuilder AI</strong> — Autonomous system that ideates and ships full web apps using LLMs.</li>
+                <li><strong>Subscriberlytics</strong> — Privacy‑first subscription tracker with offline PWA and currency FX.</li>
+              </ul>
+            </div>
+          </div>
+
+          <h3 style="margin-top:20px;">Education</h3>
+          <ul>
+            <li><strong>Student</strong> — London, UK · Active in programming, mathematics, and music.</li>
+          </ul>
+
+          <h3 style="margin-top:20px;">Technical Skills</h3>
+          <div class="chips" style="margin-top:10px;">
+            <span class="chip">JavaScript / TypeScript</span>
+            <span class="chip">React / Next.js</span>
+            <span class="chip">Python</span>
+            <span class="chip">Node.js</span>
+            <span class="chip">Laravel</span>
+            <span class="chip">Postgres</span>
+            <span class="chip">Testing</span>
+            <span class="chip">Accessibility</span>
+            <span class="chip">Performance</span>
+            <span class="chip">Design systems</span>
+          </div>
+
+          <h3 style="margin-top:20px;">Awards & Interests</h3>
+          <ul>
+            <li>Hackathon and school coding club participation; frequent side projects.</li>
+            <li>Music and creative tools; interest in AI for creativity with ethical guardrails.</li>
+          </ul>
+
+          <div class="cta" style="margin-top:20px;">
+            <a class="btn primary" href="#contact" data-tooltip="Email me">Contact</a>
+            <a class="btn ghost link-underline" href="#projects" data-tooltip="See detailed projects">Projects</a>
+          </div>
+        </article>
+      </section>
+
       <section id="help" class="container">
         <div class="section-head">
           <h2 class="section-title">Help</h2>
@@ -1536,7 +1737,7 @@
         <div>
           <strong>Let's build something clear and fast.</strong>
           <div>Contact: <a class="link-underline fire-highlight" id="emailLink" href="mailto:mayukhjit.chakraborty@gmail.com">mayukhjit.chakraborty@gmail.com <svg class="icon" aria-hidden="true"><use href="#icon-mail"/></svg></a></div>
-          <div class="handmade">Designed and coded by hand — no AI used in the build. Live site: <a class="link-underline" href="https://mayukhjitchakraborty.tech/" target="_blank" rel="noopener">mayukhjitchakraborty.tech</a></div>
+          <div class="handmade">I designed, coded, and wrote this site by hand — every word is mine. Live site: <a class="link-underline" href="https://mayukhjitchakraborty.tech/" target="_blank" rel="noopener">mayukhjitchakraborty.tech</a></div>
         </div>
         <div class="cta">
           <button class="btn ghost" id="copyEmailFooter" aria-label="Copy email to clipboard">Copy Email</button>
@@ -1605,20 +1806,28 @@
 
         // Custom smooth anchor scrolling with ease
         function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
-        function smoothScrollTo(targetY, duration = 700) {
+        let __scrollAnimId = 0;
+        function smoothScrollTo(targetY, duration = 640) {
+          // Cancel any in-flight animation to avoid hesitation
+          __scrollAnimId++;
+          const myId = __scrollAnimId;
           const startY = window.scrollY;
           const delta = targetY - startY; // can be negative for upward scroll
           const start = performance.now();
           // Signal canvases to reduce work during scroll to avoid jank
           window.__isSmoothScrolling = true;
-          const doneTimer = setTimeout(() => { window.__isSmoothScrolling = false; }, duration + 120);
-          function step(now) {
+          const step = (now) => {
+            if (myId !== __scrollAnimId) return; // canceled by a newer scroll
             const p = Math.min(1, (now - start) / duration);
             const eased = easeOutCubic(p);
             window.scrollTo(0, startY + delta * eased);
-            if (p < 1) requestAnimationFrame(step); else { clearTimeout(doneTimer); window.__isSmoothScrolling = false; }
-          }
+            if (p < 1) requestAnimationFrame(step); else { window.__isSmoothScrolling = false; }
+          };
           requestAnimationFrame(step);
+          // If user interacts, cancel animation immediately (hands off)
+          const cancel = () => { __scrollAnimId++; window.__isSmoothScrolling = false; window.removeEventListener('wheel', cancel, { passive: true }); window.removeEventListener('touchstart', cancel, { passive: true }); };
+          window.addEventListener('wheel', cancel, { passive: true, once: true });
+          window.addEventListener('touchstart', cancel, { passive: true, once: true });
         }
         document.querySelectorAll('a[href^="#"]').forEach(a => {
           // Skip buttons that have custom fire highlight handlers
@@ -2165,6 +2374,113 @@
         window.showToast = showToast; // Global for other functions
       })();
 
+      // Unified tooltip manager — prevents overlap and fits design language
+      (function(){
+        const layer = document.getElementById('tooltip');
+        if (!layer) return;
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let activeEl = null;
+        let rafId = 0;
+        const margin = 10; // gap from element
+
+        function placeTooltip(target, text, mouseX, mouseY){
+          if (!text) return hide();
+          layer.textContent = text;
+          layer.setAttribute('aria-hidden', 'false');
+          layer.classList.add('show');
+          const rect = target.getBoundingClientRect();
+          const tt = layer.getBoundingClientRect();
+
+          // Preferred: above center
+          let x = Math.round(rect.left + rect.width/2 - tt.width/2);
+          let y = Math.round(rect.top - tt.height - margin);
+
+          // If above overflows, try below
+          if (y < 8) y = Math.round(rect.bottom + margin);
+
+          // Clamp horizontally to viewport
+          const vw = Math.max(0, window.innerWidth);
+          const vh = Math.max(0, window.innerHeight);
+          x = Math.min(vw - tt.width - 8, Math.max(8, x));
+
+          // If still overlapping with target, nudge sideways based on pointer
+          if (!(rect.bottom + margin <= y || y + tt.height + margin <= rect.top)) {
+            if (mouseX !== undefined) {
+              const preferLeft = mouseX > rect.left + rect.width/2;
+              x = preferLeft ? Math.max(8, rect.left - tt.width - margin)
+                             : Math.min(vw - tt.width - 8, rect.right + margin);
+              // Align vertically with mouse position if available
+              const ty = Math.round((mouseY ?? (rect.top + rect.height/2)) - tt.height/2);
+              y = Math.min(vh - tt.height - 8, Math.max(8, ty));
+            }
+          }
+
+          layer.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+        }
+
+        function hide(){
+          layer.classList.remove('show');
+          layer.setAttribute('aria-hidden', 'true');
+          layer.style.transform = 'translate(-9999px, -9999px)';
+          activeEl = null;
+        }
+
+        function onEnter(e){
+          const t = e.currentTarget;
+          const text = t.getAttribute('data-tooltip');
+          if (!text) return;
+          activeEl = t;
+          // Initial placement near pointer if available
+          placeTooltip(t, text, e.clientX, e.clientY);
+        }
+        function onMove(e){
+          if (!activeEl) return;
+          // Throttle with rAF
+          cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(() => {
+            const text = activeEl.getAttribute('data-tooltip');
+            placeTooltip(activeEl, text, e.clientX, e.clientY);
+          });
+        }
+        function onLeave(){ hide(); }
+
+        function bind(el){
+          el.addEventListener('mouseenter', onEnter);
+          el.addEventListener('mousemove', onMove, { passive: true });
+          el.addEventListener('mouseleave', onLeave);
+          // Keyboard focus support
+          el.addEventListener('focus', (e) => onEnter(e));
+          el.addEventListener('blur', onLeave);
+        }
+
+        function init(){
+          // Attach to anything with data-tooltip
+          document.querySelectorAll('[data-tooltip]').forEach(bind);
+          // Mutations: bind dynamically added nodes (e.g., language change updates)
+          const mo = new MutationObserver((muts) => {
+            for (const m of muts) {
+              m.addedNodes && m.addedNodes.forEach(node => {
+                if (!(node instanceof Element)) return;
+                if (node.hasAttribute && node.hasAttribute('data-tooltip')) bind(node);
+                node.querySelectorAll && node.querySelectorAll('[data-tooltip]').forEach(bind);
+              });
+            }
+          });
+          mo.observe(document.body, { childList: true, subtree: true });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else { init(); }
+
+        // Hide on Escape
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+        // Respect reduced motion by not following mouse, only element center
+        if (prefersReduced) {
+          document.addEventListener('mousemove', () => {}); // no-op to keep listeners lightweight
+        }
+      })();
+
       // Graceful global error handling — user-friendly overlay and toast
       (function(){
         const overlay = document.getElementById('errorOverlay');
@@ -2317,7 +2633,7 @@
           
           // Start scroll immediately (non-blocking)
           const scrollY = Math.max(0, el.offsetTop - 100);
-          window.scrollTo({ top: scrollY, behavior: 'smooth' });
+          smoothScrollTo(scrollY, 600);
           
           // Start highlight immediately - don't wait for scroll
           requestAnimationFrame(() => {
@@ -2412,7 +2728,7 @@
                 if (projectsSection) {
                   // Start immediately - no delays
                   projectsSection.classList.add('fire-highlight');
-                  window.scrollTo({ top: projectsSection.offsetTop - 100, behavior: 'smooth' });
+                  smoothScrollTo(Math.max(0, projectsSection.offsetTop - 100), 600);
                   // Activate highlight immediately
                   requestAnimationFrame(() => {
                     projectsSection.classList.add('active');
@@ -2464,7 +2780,7 @@
             action: () => {
               const el = document.querySelector('#projects');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
@@ -2476,7 +2792,7 @@
             action: () => {
               const el = document.querySelector('#vision');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
@@ -2488,7 +2804,7 @@
             action: () => {
               const el = document.querySelector('#why');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
@@ -2500,7 +2816,7 @@
             action: () => {
               const el = document.querySelector('#faq');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
@@ -2512,7 +2828,7 @@
             action: () => {
               const el = document.querySelector('#skills');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
@@ -2524,7 +2840,7 @@
             action: () => {
               const el = document.querySelector('#contact');
               if (el) {
-                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
                 cmdk.classList.remove('open');
               }
             }
