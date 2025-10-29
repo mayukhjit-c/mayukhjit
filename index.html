@@ -1,0 +1,3864 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mayukhjit Chakraborty — Developer Portfolio</title>
+    <meta name="description" content="Minimalist, interactive portfolio of Mayukhjit Chakraborty. Full‑stack developer building clean, performant experiences." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://mayukhjitchakraborty.tech/" />
+    <meta name="author" content="Mayukhjit Chakraborty" />
+    <meta name="keywords" content="Mayukhjit, Chakraborty, portfolio, full‑stack developer, web developer, JavaScript, TypeScript, React, Next.js, Laravel, Python" />
+    <meta name="theme-color" content="#000000" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mayukhjit Chakraborty — Developer Portfolio" />
+    <meta property="og:description" content="Minimalist, interactive portfolio. Clean code, performant UX, modern stack." />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:url" content="https://mayukhjitchakraborty.tech/" />
+    <meta property="og:site_name" content="mayukhjitchakraborty.tech" />
+    <meta property="og:locale" content="en_GB" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mayukhjit Chakraborty — Developer Portfolio" />
+    <meta name="twitter:description" content="Minimalist, interactive portfolio. Clean code, performant UX, modern stack." />
+    <meta name="twitter:image" content="/og.png" />
+    <meta name="twitter:site" content="@mayukhjitc" />
+    <meta name="twitter:creator" content="@mayukhjitc" />
+
+    <!-- Favicons -->
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="msapplication-TileColor" content="#0a0a0a" />
+
+    <!-- Preload OpenAI Sans fonts (black & white theme uses clean typography) -->
+    <link rel="preload" as="font" type="font/woff2" href="https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Medium.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Semibold.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Bold.woff2" crossorigin>
+    <link rel="preload" as="font" type="font/woff2" href="https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-RegularItalic.woff2" crossorigin>
+
+    <style>
+      /*
+        Mayukhjit Chakraborty — Portfolio
+        - Minimal, monochrome, responsive
+        - Subtle interactions: scroll reveal, hover micro‑interactions, smooth anchors
+        - Typography: OpenAI Sans (Regular, Medium, Semibold, Bold, Italic)
+        
+        Design Philosophy:
+        Every pixel has a purpose. Every animation has meaning.
+        This isn't just a portfolio — it's a conversation.
+        
+        Pro Tip: Check the console. Sometimes the best code comments
+        are the ones that make you smile while debugging at 3am.
+        
+        Easter Eggs: Yes, they exist. Yes, they're documented.
+        No, I won't tell you where. That's the fun part.
+      */
+
+      /* Font faces: OpenAI Sans */
+      @font-face {
+        font-family: "OpenAI Sans";
+        src: url("https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Regular.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "OpenAI Sans";
+        src: url("https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-RegularItalic.woff2") format("woff2");
+        font-weight: 400;
+        font-style: italic;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "OpenAI Sans";
+        src: url("https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Medium.woff2") format("woff2");
+        font-weight: 500;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "OpenAI Sans";
+        src: url("https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Semibold.woff2") format("woff2");
+        font-weight: 600;
+        font-style: normal;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: "OpenAI Sans";
+        src: url("https://cdn.openai.com/common/fonts/openai-sans/v2/OpenAISans-Bold.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      :root {
+        --bg: #0a0a0a;         /* near-black for softer contrast */
+        --fg: #f5f5f5;         /* near-white for softer contrast */
+        --muted: #bdbdbd;      /* subdued text */
+        --line: #232323;       /* hairline separators */
+        --card: #111111;       /* panels */
+        --accent: #ffffff;     /* monochrome accent */
+        --maxw: 1120px;
+        --radius: 14px;
+        --ease: cubic-bezier(.2,.8,.2,1);
+        --ease-out: cubic-bezier(.16,1,.3,1);
+        
+        /* Dynamic color palette system - cycles every 5 seconds */
+        /* Fire palette (default) */
+        --theme-primary-1: #fff8;
+        --theme-primary-2: #ffd166;
+        --theme-primary-3: #ff9f1c;
+        --theme-primary-4: #ff6a00;
+        --theme-primary-5: #e85d04;
+        --theme-primary-6: #9d0208;
+        --theme-glow-1: rgba(255,200,100,0.75);
+        --theme-glow-2: rgba(255,120,0,0.35);
+        --theme-glow-3: rgba(255,90,0,0.25);
+        --theme-glow-4: rgba(255,170,0,0.18);
+        --theme-filter: url(#liquid-fire);
+      }
+      /* Ultra-wide displays */
+      @media (min-width: 1600px) {
+        :root { --maxw: 1320px; }
+        .container { padding: 0 48px; }
+        .grid { gap: 28px; }
+        .thumb { height: 220px; }
+      }
+      /* Small phones */
+      @media (max-width: 480px) {
+        .container { padding: 0 18px; }
+        header { padding: 10px 0; }
+        .cta { gap: 12px; }
+        .btn { min-height: 44px; padding: 12px 16px; }
+        .thumb { height: 160px; }
+      }
+      /* Safe areas */
+      body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+      
+      /* Color transitions - applied via JavaScript for smooth CSS variable animation */
+      html {
+        transition: filter 3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      /* Force smooth color transitions on elements using theme variables - extra long fade */
+      .typer-text,
+      .typer-fire::before,
+      .typer-fire::after,
+      .fire-highlight::before,
+      .fire-highlight::after,
+      .theme-indicator::before {
+        transition: background 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                     background-color 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                     box-shadow 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                     text-shadow 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                     filter 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                     color 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+      
+      /* Theme indicator in header */
+      .theme-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--muted);
+        opacity: 0;
+        transform: translateX(-8px);
+        transition: opacity 2s cubic-bezier(0.16, 1, 0.3, 1),
+                     transform 2s cubic-bezier(0.16, 1, 0.3, 1),
+                     color 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+        margin-left: 12px;
+      }
+      .theme-indicator.visible {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      .theme-indicator::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--theme-primary-4);
+        box-shadow: 0 0 8px var(--theme-glow-2),
+                    0 0 16px var(--theme-glow-3);
+        transition: background 4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                    box-shadow 4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        display: inline-block;
+      }
+
+      * { box-sizing: border-box; }
+      button, input, select, textarea { font: inherit; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "OpenAI Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background-color 1200ms var(--ease), color 1200ms var(--ease);
+      }
+
+      /* Subtle, theme-aware background wash for seamless palette shifts */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background: radial-gradient(1200px 600px at 20% 10%, var(--theme-primary-2), transparent 60%),
+                    radial-gradient(1000px 500px at 80% 90%, var(--theme-primary-6), transparent 65%);
+        opacity: 0.075;
+        /* Only fade opacity to avoid color-space timing weirdness during variable interpolation */
+        transition: opacity 3000ms linear;
+      }
+      body.scrolled::before { opacity: 0.11; }
+
+      /* Additional ambient theme‑matched blurs — subtle, layered color wash */
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        /* Multiple softly blurred radial glows positioned around the viewport */
+        background:
+          radial-gradient(900px 420px at 12% 78%, color-mix(in oklab, var(--theme-glow-2) 60%, transparent), transparent 70%),
+          radial-gradient(760px 360px at 88% 22%, color-mix(in oklab, var(--theme-glow-3) 55%, transparent), transparent 72%),
+          radial-gradient(680px 300px at 30% 35%, color-mix(in oklab, var(--theme-primary-3) 30%, transparent), transparent 68%),
+          radial-gradient(900px 380px at 70% 70%, color-mix(in oklab, var(--theme-primary-5) 24%, transparent), transparent 72%);
+        opacity: 0.05;
+        filter: blur(8px) saturate(110%);
+        transition: opacity 3000ms linear, filter 3000ms linear;
+      }
+      body.scrolled::after { opacity: 0.085; filter: blur(10px) saturate(120%); }
+
+      /* Fallbacks for browsers without color-mix */
+      .no-colormix .card { background: var(--card); }
+      .no-colormix .card:hover { background-color: #151515; }
+      .no-colormix .tag, .no-colormix .chip, .no-colormix .badge { border-color: var(--line); }
+
+      a { 
+        color: var(--fg); 
+        text-decoration: none; 
+        transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      a:hover { 
+        opacity: 0.85;
+      }
+      /* Animated underline for inline links */
+      .link-underline {
+        background: linear-gradient(currentColor, currentColor) left bottom/0 2px no-repeat;
+        transition: background-size 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+      }
+      .link-underline:hover { 
+        background-size: 100% 2px; 
+        opacity: 1;
+      }
+
+      .container { max-width: var(--maxw); margin: 0 auto; padding: 0 36px; }
+      html.coarse .container { padding: 0 24px; }
+
+      /* Background canvas */
+      #bg-grid { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.28; }
+      #scroll-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; background: linear-gradient(90deg, #fff, #bbb); z-index: 60; box-shadow: 0 0 12px rgba(255,255,255,0.6); }
+
+      /* Header */
+      header {
+        position: sticky;
+        top: 0;
+        padding: 12px 0;
+        z-index: 50;
+        backdrop-filter: blur(8px) saturate(120%);
+        -webkit-backdrop-filter: blur(8px) saturate(120%);
+        transition: background-color 500ms var(--ease), border-color 500ms var(--ease), padding 300ms var(--ease);
+      }
+      body.scrolled header { 
+        background: rgba(10,10,10,0.6); 
+        border-bottom: 1px solid var(--line);
+        padding: 10px 0;
+      }
+      .nav { display: flex; align-items: center; gap: 24px; justify-content: space-between; }
+      .nav nav { flex: 1 1 auto; }
+      .nav nav ul { display: flex; gap: 18px; align-items: center; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+      .nav .brand { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
+      .lang-select { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+      .lang-select select { background: #0c0c0c; border: 1px solid #222; color: #fff; padding: 8px 10px; border-radius: 8px; }
+      @media (max-width: 900px) {
+        .nav { flex-wrap: wrap; row-gap: 10px; }
+        .lang-select { margin-left: 0; order: 3; width: 100%; justify-content: flex-end; }
+      }
+      .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+      .brand .theme-indicator { vertical-align: middle; }
+      nav ul { list-style: none; display: flex; gap: 28px; margin: 0; padding: 0; }
+      nav a { 
+        opacity: 0.9; 
+        transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        padding: 6px 8px;
+        border-radius: 8px;
+      }
+      /* Ensure icons have good contrast across backgrounds */
+      .icon { color: var(--fg); filter: drop-shadow(0 0 1px rgba(0,0,0,0.6)) drop-shadow(0 0 1px rgba(255,255,255,0.15)); }
+      nav a::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: currentColor;
+        transition: width 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      nav a:hover {
+        opacity: 1;
+        transform: translateY(-1px);
+      }
+      nav a:hover::after {
+        width: 100%;
+      }
+      nav a.active, nav a:focus-visible { 
+        text-decoration: underline; 
+        text-underline-offset: 6px; 
+        text-decoration-thickness: 2px;
+        opacity: 1;
+      }
+      nav a.active::after,
+      nav a:focus-visible::after {
+        width: 100%;
+      }
+
+      /* Focus ring */
+      :focus-visible { outline: 2px solid #e6e6e6; outline-offset: 2px; border-radius: 8px; }
+
+      /* Hero */
+      .hero { padding: 128px 0 88px; position: relative; z-index: 1; }
+      .kicker { color: var(--muted); font-weight: 500; letter-spacing: 0.4px; }
+      .title { 
+        font-size: clamp(32px, 7vw, 64px); 
+        line-height: 1.15; 
+        margin: 14px 0 14px; 
+        font-weight: 700;
+        /* Fixed height with 2 lines to prevent layout shift when text wraps */
+        min-height: 2.3em;
+        display: block;
+      }
+      .typer { 
+        position: relative; 
+        display: inline-flex; 
+        align-items: baseline; 
+        /* Fixed height to prevent layout shift */
+        min-height: 1.2em;
+        vertical-align: baseline;
+      }
+      .typer-text { 
+        position: relative; 
+        padding: 0 2px; 
+        paint-order: stroke fill; 
+        -webkit-text-stroke: 0.6px #000; 
+        text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000; 
+        will-change: contents; 
+        backface-visibility: hidden;
+        /* Dynamic color effect that cycles through palettes */
+        background: conic-gradient(from 0deg at 50% 60%, var(--theme-primary-1) 0%, var(--theme-primary-2) 10%, var(--theme-primary-3) 25%, var(--theme-primary-4) 45%, var(--theme-primary-5) 60%, var(--theme-primary-6) 85%, var(--theme-primary-4) 100%);
+        -webkit-background-clip: text; 
+        background-clip: text; 
+        color: transparent;
+        text-shadow: 0 0 12px var(--theme-glow-1), 0 0 36px var(--theme-glow-2), 0 0 72px var(--theme-glow-3);
+        filter: var(--theme-filter);
+        /* Smoother flicker - using ease instead of steps */
+        animation: flameFlicker 2s ease-in-out infinite;
+      }
+      /* Fire styling - enhanced effects when class is active */
+      .typer-fire .typer-text {
+        animation: flameFlicker 2s ease-in-out infinite;
+      }
+      .typer-fire::before, .typer-fire::after {
+        content: ""; 
+        position: absolute; 
+        inset: -6px -8px -2px; 
+        pointer-events: none; 
+        border-radius: 8px;
+        background: radial-gradient(60px 18px at 50% 80%, var(--theme-glow-4), transparent 60%);
+        filter: blur(8px);
+        opacity: 0.6; 
+        animation: heatWaves 3s ease-in-out infinite alternate;
+      }
+      .typer-fire::after { 
+        inset: -10px -12px -4px; 
+        filter: blur(14px); 
+        opacity: 0.35; 
+        animation-duration: 4.2s; 
+      }
+      @keyframes flameFlicker { 
+        0%, 100% { opacity: 0.98; filter: url(#liquid-fire) brightness(1); } 
+        25% { opacity: 1; filter: url(#liquid-fire) brightness(1.05); }
+        50% { opacity: 0.99; filter: url(#liquid-fire) brightness(1); }
+        75% { opacity: 1; filter: url(#liquid-fire) brightness(1.03); }
+      }
+      @keyframes heatWaves { 0% { transform: translateY(0) scale(1); } 100% { transform: translateY(-2px) scale(1.02); } }
+      .caret { width: 2px; height: 1em; background: currentColor; margin-left: 2px; align-self: baseline; transform: translateY(0.02em); animation: blink 1s step-end infinite; opacity: 0.9; }
+      @keyframes blink { 50% { opacity: 0; } }
+      .typer-glow .typer-text { 
+        /* Dynamic color effect with enhanced glow */
+        background: conic-gradient(from 0deg at 50% 60%, var(--theme-primary-1) 0%, var(--theme-primary-2) 10%, var(--theme-primary-3) 25%, var(--theme-primary-4) 45%, var(--theme-primary-5) 60%, var(--theme-primary-6) 85%, var(--theme-primary-4) 100%);
+        -webkit-background-clip: text; 
+        background-clip: text; 
+        color: transparent;
+        text-shadow: 0 0 12px var(--theme-glow-1), 0 0 36px var(--theme-glow-2), 0 0 72px var(--theme-glow-3);
+        filter: var(--theme-filter);
+      }
+      .typer-shimmer .typer-text { 
+        /* Dynamic color effect with shimmer */
+        background: conic-gradient(from 0deg at 50% 60%, var(--theme-primary-1) 0%, var(--theme-primary-2) 10%, var(--theme-primary-3) 25%, var(--theme-primary-4) 45%, var(--theme-primary-5) 60%, var(--theme-primary-6) 85%, var(--theme-primary-4) 100%);
+        -webkit-background-clip: text; 
+        background-clip: text; 
+        color: transparent;
+        animation: shimmerSlide 1.6s linear infinite, flameFlicker 2s ease-in-out infinite;
+        filter: var(--theme-filter);
+      }
+      @keyframes shimmerSlide { 0% { background-position: -100% 0; } 100% { background-position: 200% 0; } }
+      .sparkles { position: absolute; inset: 0; pointer-events: none; }
+      .sparkles i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.9); box-shadow: 0 0 10px rgba(255,255,255,0.7); animation: sparkle 800ms var(--ease-out) forwards; }
+      @keyframes sparkle { 0% { transform: scale(0.6) translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(0) translateY(-16px); opacity: 0; } }
+
+      /* Particle effects for text and buttons */
+      .particle-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 1;
+        overflow: visible;
+      }
+      .particle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.8);
+        box-shadow: 0 0 8px rgba(255,255,255,0.6), 0 0 16px rgba(255,255,255,0.3);
+        pointer-events: none;
+        animation: particleFloat 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes particleFloat {
+        0% {
+          transform: translate(0, 0) scale(0.8);
+          opacity: 0;
+        }
+        20% {
+          opacity: 1;
+        }
+        100% {
+          transform: translate(var(--tx, 0), var(--ty, -30px)) scale(0);
+          opacity: 0;
+        }
+      }
+      
+      /* Button particles */
+      .btn.particles-active {
+        position: relative;
+        overflow: visible;
+      }
+      
+      /* Text hover particles */
+      .particle-target:hover,
+      h1:hover, h2:hover, h3:hover,
+      .section-title:hover,
+      .btn:hover {
+        position: relative;
+      }
+      .subtitle { color: var(--muted); max-width: 64ch; }
+      .availability { margin-top: 18px; }
+      .badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line)); background: rgba(17,17,17,0.6); color: var(--fg); backdrop-filter: blur(6px) saturate(120%); font-weight: 500; }
+      .badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #8fff8f; box-shadow: 0 0 0 0 rgba(143,255,143,0.5); animation: pulse 2.2s var(--ease) infinite; }
+      @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(143,255,143,0.5); } 70% { box-shadow: 0 0 0 12px rgba(143,255,143,0); } 100% { box-shadow: 0 0 0 0 rgba(143,255,143,0); } }
+      .cta { 
+        display: flex; 
+        gap: 16px; 
+        margin-top: 32px; 
+        flex-wrap: wrap; 
+        align-items: center;
+        /* Fixed positioning to prevent layout shift from typer text wrapping */
+        position: relative;
+        min-height: 40px; /* Minimum height for button row */
+      }
+      .btn {
+        border-radius: 999px;
+        padding: 12px 18px;
+        border: 1px solid var(--fg);
+        transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+        font-family: inherit;
+        position: relative;
+        overflow: hidden;
+        min-height: 40px; /* prevent layout shift */
+        will-change: transform, box-shadow;
+        transform: translateZ(0);
+        cursor: pointer;
+        user-select: none;
+      }
+      .btn:hover { 
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25), 
+                    inset 0 0 0 1px rgba(255,255,255,0.08),
+                    0 8px 24px rgba(0,0,0,0.15);
+        transform: translateY(-1px) scale(1.02) translateZ(0);
+      }
+      .btn:active {
+        transform: translateY(0) scale(0.95) translateZ(0);
+        transition-duration: 80ms;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3), 
+                    inset 0 0 0 1px rgba(255,255,255,0.1);
+      }
+      /* Immediate click feedback with ripple effect */
+      .btn.clicked {
+        animation: buttonClick 200ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      /* Subtle human-like shake on click */
+      .btn.clicked-shake {
+        animation: shakeSubtle 240ms ease;
+      }
+      @keyframes buttonClick {
+        0% { transform: scale(0.98) translateZ(0); }
+        50% { transform: scale(1.02) translateZ(0); }
+        100% { transform: scale(1) translateZ(0); }
+      }
+      @keyframes shakeSubtle {
+        0% { transform: translateX(0) translateZ(0); }
+        20% { transform: translateX(0.6px) translateZ(0); }
+        40% { transform: translateX(0) translateZ(0); }
+        60% { transform: translateX(-0.6px) translateZ(0); }
+        80% { transform: translateX(0.3px) translateZ(0); }
+        100% { transform: translateX(0) translateZ(0); }
+      }
+      .btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+      .btn.ghost { background: transparent; color: var(--fg); }
+      /* Invert-on-hover for buttons */
+      .btn.primary:hover { background: transparent; color: var(--fg); }
+      .btn.ghost:hover { background: var(--fg); color: var(--bg); }
+      /* Button shine on hover with smooth follow effect */
+      .btn::after {
+        content: "";
+        position: absolute;
+        inset: -40% -20%;
+        background: radial-gradient(120px 40px at var(--hx, 50%) var(--hy, 50%), rgba(255,255,255,0.25), transparent 65%);
+        transition: opacity 350ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0;
+        pointer-events: none;
+        transform: translateZ(0);
+      }
+      .btn:hover::after { opacity: 1; }
+
+      /* Sections */
+      section { padding: 112px 0; position: relative; z-index: 1; content-visibility: auto; contain-intrinsic-size: 640px; }
+      .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 28px; margin-bottom: 32px; }
+      .section-title { font-weight: 600; font-size: 20px; letter-spacing: 0.4px; }
+      .section-desc { color: var(--muted); }
+
+      /* Projects */
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+      .card {
+        grid-column: span 12;
+        background: color-mix(in oklab, var(--card) 92%, var(--theme-primary-1));
+        border: none;
+        border-radius: var(--radius);
+        padding: 24px;
+        overflow: clip;
+        transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), 
+                    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+        /* Glassmorphism */
+        backdrop-filter: blur(10px) saturate(140%);
+        -webkit-backdrop-filter: blur(10px) saturate(140%);
+        will-change: box-shadow;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 6px 18px rgba(0,0,0,0.22);
+        position: relative;
+      }
+      .card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius);
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+      .card:hover {
+        background-color: color-mix(in oklab, var(--card) 88%, var(--theme-primary-2));
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 10px 28px rgba(0,0,0,0.28);
+      }
+      /* Simple reflective shine on hover that follows cursor */
+      .card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: radial-gradient(400px 140px at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,0.12), rgba(255,255,255,0.0) 60%);
+        opacity: 0;
+        transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .card:hover::after { opacity: 1; }
+      .card:hover::before {
+        opacity: 1;
+      }
+      .thumb { position: relative; height: 180px; border: 1px solid var(--line); border-radius: var(--radius); display: grid; place-items: center; background: #0f0f0f; overflow: hidden; }
+      @media (min-width: 1800px) { .thumb { height: 240px; } }
+      .thumb .logo { opacity: 0.95; transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1), stroke 220ms cubic-bezier(0.16, 1, 0.3, 1), fill 220ms cubic-bezier(0.16, 1, 0.3, 1); }
+      .thumb:hover .logo { transform: scale(1.06); opacity: 1; }
+      /* Theme-accent hover highlights for logos (SVG stroke/fill, IMG glow) */
+      .thumb:hover .logo, .thumb:focus-visible .logo {
+        filter: drop-shadow(0 2px 10px rgba(0,0,0,0.35)) drop-shadow(0 0 8px var(--theme-glow-2));
+      }
+      .thumb .logo [stroke], .thumb .logo [fill] { transition: stroke 300ms var(--ease), fill 300ms var(--ease); }
+      .thumb:hover .logo [stroke] { stroke: var(--accent) !important; }
+      .thumb:hover .logo [fill].accent-fill { fill: var(--accent-2) !important; }
+      .thumb:hover img.logo { box-shadow: 0 0 0 2px rgba(255,255,255,0.06), 0 0 18px var(--theme-glow-2), 0 0 34px var(--theme-glow-3); border-radius: 10px; }
+      .thumb::after { 
+        content: ""; 
+        position: absolute; 
+        inset: 0; 
+        background: radial-gradient(1000px 180px at var(--mx, 50%) var(--my, 50%), var(--theme-glow-2), transparent 45%); 
+        transition: opacity 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .card:hover .thumb {
+        transform: scale(1.02) translateZ(0);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 18px var(--theme-glow-2), 0 0 36px var(--theme-glow-3), 0 4px 16px rgba(0,0,0,0.28);
+      }
+      .card:hover .thumb::after { opacity: 1; }
+      .thumb img.logo, .thumb svg.logo { 
+        width: 72px; 
+        height: 72px; 
+        object-fit: contain; 
+        filter: grayscale(0.2); 
+        opacity: 0.96;
+        transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
+                    filter 220ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      /* Keep raster logos neutralized, but let SVG logos render their designed colors */
+      .thumb svg.logo { 
+        filter: none; 
+        opacity: 1; 
+        color: var(--fg);
+      }
+      /* Keep Subscriberlytics logo white, including on hover */
+      .thumb .logo.logo-subscriberlytics { color: #ffffff; }
+      .thumb .logo.logo-subscriberlytics [stroke] { stroke: #ffffff !important; }
+      .thumb .logo.logo-subscriberlytics [fill] { fill: #ffffff !important; }
+      .card:hover .thumb img.logo,
+      .card:hover .thumb svg.logo {
+        transform: scale(1.06) translateZ(0);
+        opacity: 1;
+        filter: grayscale(0);
+      }
+      /* GCSEMate: grayscale by default, full color on hover; remove any outlines */
+      article[data-project="gcsemate"] .thumb img.logo { filter: grayscale(1) saturate(0.9); opacity: 0.95; box-shadow: none !important; outline: none !important; }
+      article[data-project="gcsemate"]:hover .thumb img.logo,
+      article[data-project="gcsemate"] .thumb:hover img.logo { filter: none; opacity: 1; }
+      /* Larger featured logo */
+      .card:first-child .thumb img.logo { width: 120px; height: 120px; }
+      .card h3 { margin: 6px 0; font-size: 18px; font-weight: 600; }
+      .card p { margin: 0; color: var(--muted); }
+      .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+      .tag { 
+        border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line)); 
+        padding: 6px 10px; 
+        border-radius: 999px; 
+        color: var(--muted); 
+        font-size: 12px;
+        transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateZ(0);
+        display: inline-block;
+        position: relative;
+      }
+      @media (pointer: coarse) { .tag { padding: 8px 12px; } .chip { padding: 12px 14px; } }
+      .tag::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+        opacity: 0;
+        transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .tag:hover { 
+        color: var(--fg); 
+        border-color: var(--accent); 
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 15%, transparent), 
+                    0 0 14px var(--theme-glow-2),
+                    0 2px 10px rgba(0,0,0,0.2);
+        transform: translateY(-1px) scale(1.04) translateZ(0);
+      }
+      .tag:hover::before {
+        opacity: 1;
+      }
+
+      /* Glass utility (for future elements) */
+      .glass { background: rgba(17,17,17,0.6); backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+
+      /* Experience */
+      .timeline { display: grid; gap: 16px; }
+      .item { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 20px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--card); }
+      .item h4 { margin: 0; font-weight: 600; }
+      .item .meta { color: var(--muted); font-size: 14px; }
+
+      /* Skills */
+      .chips { display: flex; flex-wrap: wrap; gap: 14px; }
+      .chip { padding: 10px 12px; border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line)); border-radius: 999px; background: #0c0c0c; color: var(--fg); }
+
+      /* FAQ Section - Smooth animations */
+      .faq-list { display: grid; gap: 12px; }
+      .faq-item {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(17,17,17,0.78);
+        backdrop-filter: blur(10px) saturate(140%);
+        overflow: hidden;
+        transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        transform: translateZ(0);
+      }
+      .faq-item:hover {
+        border-color: rgba(255,255,255,0.12);
+        background: rgba(15,15,15,0.88);
+        transform: translateY(-3px) translateZ(0);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05);
+      }
+      .faq-item[open] {
+        border-color: rgba(255,255,255,0.18);
+        background: rgba(12,12,12,0.92);
+        transform: translateY(-2px) translateZ(0);
+      }
+      .faq-question {
+        padding: 20px 24px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        list-style: none;
+        position: relative;
+        user-select: none;
+        transition: color 300ms cubic-bezier(0.16, 1, 0.3, 1),
+                    padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .faq-item:hover .faq-question {
+        color: var(--fg);
+      }
+      .faq-question::-webkit-details-marker { display: none; }
+      .faq-question::marker { display: none; }
+      .faq-question::after {
+        content: '+';
+        position: absolute;
+        right: 24px;
+        top: 50%;
+        transform: translateY(-50%) scale(1);
+        font-size: 22px;
+        font-weight: 300;
+        transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                     color 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        color: var(--muted);
+        line-height: 1;
+      }
+      .faq-item[open] .faq-question::after {
+        transform: translateY(-50%) rotate(45deg) scale(1.1);
+        color: var(--fg);
+      }
+      .faq-item[open] .faq-question {
+        padding-bottom: 16px;
+        color: var(--fg);
+      }
+      .faq-answer {
+        padding: 0 24px;
+        color: var(--muted);
+        line-height: 1.75;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 500ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                    padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .faq-item[open] .faq-answer {
+        max-height: 600px;
+        opacity: 1;
+        padding-bottom: 24px;
+        padding-top: 0;
+      }
+      .faq-answer p {
+        margin: 0;
+        margin-top: 8px;
+        transform: translateY(-10px);
+        transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition-delay: 100ms;
+      }
+      .faq-item[open] .faq-answer p {
+        transform: translateY(0);
+      }
+      .particle-target {
+        position: relative;
+        display: inline-block;
+      }
+
+      /* Footer */
+      footer { border-top: 1px solid var(--line); padding: 88px 0 112px; color: var(--muted); position: relative; z-index: 1; backdrop-filter: blur(4px) saturate(120%); background: linear-gradient(180deg, rgba(10,10,10,0), rgba(10,10,10,0.6)); margin-top: 36px; }
+      .foot { gap: 20px; }
+      .foot { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; }
+      .handmade { margin-top: 10px; font-size: 13px; color: #9f9f9f; }
+
+      /* Icons */
+      .icon {
+        width: 18px; height: 18px;
+        display: inline-block;
+        vertical-align: text-bottom;
+        line-height: 1;
+        color: var(--fg);
+        margin: 0 2px;
+      }
+      .btn .icon { margin-left: 8px; width: 18px; height: 18px; padding: 0; color: currentColor; }
+      /* Ensure contrast on filled buttons (white bg) */
+      .btn.primary .icon { color: var(--bg); }
+      /* Ghost buttons already use foreground color */
+      .btn.ghost .icon { color: var(--fg); }
+      /* Standalone heading icons: large glassmorphic circle */
+      .section-title .icon {
+        width: 66px; height: 66px;
+        display: inline-grid; place-items: center;
+        vertical-align: middle; border-radius: 999px;
+        padding: 16px; margin-right: 8px; margin-left: 0;
+        background: rgba(17,17,17,0.6);
+        border: 1px solid #2a2a2a;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 4px 12px rgba(0,0,0,0.32);
+        transition: box-shadow 300ms var(--ease), border-color 300ms var(--ease), background 300ms var(--ease), transform 200ms var(--ease);
+      }
+      /* Glassy reflective hover: respond to parent hovers as well */
+      .section-title:hover .icon {
+        border-color: color-mix(in oklab, var(--accent) 60%, #2a2a2a);
+        box-shadow: 
+          inset 0 0 0 1px color-mix(in oklab, var(--accent) 25%, transparent),
+          0 4px 14px rgba(0,0,0,0.28),
+          0 0 16px var(--theme-glow-2),
+          0 0 28px var(--theme-glow-3);
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(17,17,17,0.4));
+        transform: translateY(-1px);
+      }
+      /* Slight active feedback (headings only) */
+      .section-title:active .icon { transform: translateY(0) scale(0.98); }
+      .icon-title { margin-right: 10px; }
+
+      /* Floating scroll-to-top button */
+      #toTop { position: fixed; right: 20px; bottom: 20px; z-index: 70; opacity: 0; transform: translateY(20px); transition: opacity 250ms var(--ease), transform 250ms var(--ease); }
+      #toTop.visible { opacity: 1; transform: translateY(0); }
+      /* Ensure high contrast for the floating Top button icon */
+      #toTop.btn.primary { box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+      #toTop.btn.primary .icon { color: var(--bg); filter: none; mix-blend-mode: normal; }
+
+      /* Command Palette */
+      #cmdk { position: fixed; inset: 0; z-index: 100; display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+      #cmdk.open { display: flex; }
+      .cmdk-panel { width: min(720px, 92vw); background: #0f0f0f; border: 1px solid #2a2a2a; border-radius: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); overflow: hidden; }
+      .cmdk-head { display: flex; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid #1f1f1f; }
+      .cmdk-input { width: 100%; background: #0c0c0c; border: 1px solid #222; color: #fff; padding: 10px 12px; border-radius: 8px; }
+      .cmdk-list { max-height: 48vh; overflow: auto; }
+      .cmdk-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-top: 1px solid #151515; cursor: pointer; }
+      .cmdk-item:hover, .cmdk-item[aria-selected="true"] { background: #121212; }
+      .cmdk-kbd { margin-left: auto; color: #9f9f9f; font-size: 12px; }
+
+      /* Modal */
+      #modal { position: fixed; inset: 0; z-index: 95; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
+      #modal.open { display: flex; }
+      .modal-card { width: min(900px, 94vw); max-height: 84vh; overflow: auto; background: #0e0e0e; border: 1px solid #2a2a2a; border-radius: 14px; padding: 18px; box-shadow: 0 24px 48px rgba(0,0,0,0.5); }
+      .modal-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom: 10px; }
+      .modal-close { background: transparent; border: 1px solid #2a2a2a; border-radius: 8px; color: #fff; padding: 6px 10px; }
+      .modal-grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+      .modal-media { display:grid; grid-auto-flow: column; gap: 10px; overflow-x: auto; }
+      .modal-media img { height: 180px; border-radius: 10px; border: 1px solid #222; }
+      .badges { display:flex; flex-wrap:wrap; gap:8px; }
+      .badge-tech { padding:6px 10px; border:1px solid #2a2a2a; border-radius:999px; color:#cfcfcf; }
+
+      /* Tooltips */
+      [data-tooltip] { position: relative; }
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        transform: translateX(-50%) translateY(4px);
+        background: rgba(20,20,20,0.95);
+        color: #fff;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        line-height: 1;
+        white-space: nowrap;
+        border: 1px solid #2a2a2a;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+      }
+      [data-tooltip]:hover::after, [data-tooltip]:focus-visible::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      /* Pros/Cons Table */
+      /* Error overlay — simple, graphical error handling surface (slightly opinionated) */
+      #errorOverlay {
+        position: fixed;
+        right: 16px;
+        bottom: 84px;
+        width: min(520px, 92vw);
+        display: none;
+        z-index: 120;
+      }
+      .error-card {
+        background: rgba(18,18,18,0.95);
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        box-shadow: 0 18px 44px rgba(0,0,0,0.45);
+        padding: 14px 14px 10px;
+        color: #eaeaea;
+      }
+      .error-head { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+      .error-title { font-weight: 700; font-size: 14px; }
+      .error-actions { display:flex; gap:8px; }
+      .error-actions button { background:#121212; color:#eaeaea; border:1px solid #2a2a2a; border-radius:8px; padding:6px 8px; cursor:pointer; }
+      .error-body { margin-top: 8px; color:#bbbbbb; font-size: 13px; }
+      .error-pre { margin-top: 8px; max-height: 200px; overflow:auto; background:#0e0e0e; border:1px solid #2a2a2a; border-radius:8px; padding:10px; color:#cfcfcf; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+      .table-wrapper { overflow: auto; }
+      .pros-cons-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .pros-cons-table thead {
+        color: var(--muted);
+        text-align: left;
+      }
+      .pros-cons-table th,
+      .pros-cons-table td {
+        padding: 10px 8px;
+        border-top: 1px solid var(--line);
+      }
+      .pros-cons-table tbody tr:hover {
+        background: rgba(255,255,255,0.02);
+        transition: background 180ms var(--ease);
+      }
+
+      /* Toast notification */
+      #toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: rgba(20,20,20,0.95);
+        color: #fff;
+        padding: 14px 20px;
+        border-radius: 999px;
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 300ms var(--ease-out), transform 300ms var(--ease-out);
+        z-index: 80;
+        backdrop-filter: blur(8px) saturate(140%);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+      }
+
+      /* Skip link for accessibility */
+      .skip-link {
+        position: absolute;
+        top: -100px;
+        left: 0;
+        background: var(--fg);
+        color: var(--bg);
+        padding: 12px 20px;
+        z-index: 100;
+        text-decoration: none;
+        font-weight: 600;
+        border-radius: 0 0 8px 0;
+      }
+      .skip-link:focus {
+        top: 0;
+      }
+
+      /* Fire highlight effect — clean fiery glow for button interactions */
+      .fire-highlight {
+        position: relative;
+        transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .fire-highlight::before {
+        content: '';
+        position: absolute;
+        inset: -8px -12px;
+        border-radius: 8px;
+        background: conic-gradient(from 0deg at 50% 50%, 
+          rgba(255,217,102,0.15) 0%, 
+          rgba(255,159,28,0.25) 20%, 
+          rgba(255,106,0,0.3) 40%, 
+          rgba(232,93,4,0.25) 60%, 
+          rgba(157,2,8,0.2) 80%, 
+          rgba(255,106,0,0.15) 100%);
+        opacity: 0;
+        filter: blur(12px);
+        z-index: -1;
+        transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        transform: scale(0.95);
+        pointer-events: none;
+      }
+      .fire-highlight::after {
+        content: '';
+        position: absolute;
+        inset: -4px -6px;
+        border-radius: 6px;
+        background: linear-gradient(135deg,
+          rgba(255,217,102,0.4) 0%,
+          rgba(255,106,0,0.5) 50%,
+          rgba(255,217,102,0.4) 100%);
+        opacity: 0;
+        box-shadow: 0 0 20px rgba(255,159,28,0.4),
+                    0 0 40px rgba(255,106,0,0.3),
+                    inset 0 0 20px rgba(255,217,102,0.2);
+        z-index: -1;
+        transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+      .fire-highlight.active::before {
+        opacity: 1;
+        transform: scale(1);
+        animation: firePulse 2s ease-in-out infinite;
+      }
+      .fire-highlight.active::after {
+        opacity: 1;
+      }
+      
+      /* For sections, use more padding */
+      section.fire-highlight::before,
+      section.fire-highlight::after {
+        inset: -16px -20px;
+      }
+      section.fire-highlight::after {
+        inset: -8px -12px;
+        border-radius: var(--radius);
+      }
+      
+      @keyframes firePulse {
+        0%, 100% { 
+          opacity: 0.85;
+          transform: scale(1);
+        }
+        50% { 
+          opacity: 1;
+          transform: scale(1.02);
+        }
+      }
+
+      /* Grid responsiveness */
+      @media (min-width: 640px) {
+        .card { grid-column: span 6; }
+        .thumb { height: 208px; }
+      }
+      @media (min-width: 920px) {
+        .card { grid-column: span 4; }
+        .thumb { height: 228px; }
+      }
+
+      /* Reveal animations — quicker fade for snappier feel */
+      .reveal { 
+        opacity: 0; 
+        transform: translateY(16px) scale(0.985); 
+        transition: opacity 480ms cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 480ms cubic-bezier(0.16, 1, 0.3, 1); 
+        will-change: opacity, transform;
+      }
+      .reveal.visible { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+      }
+
+      /* Keyboard shortcut styling */
+      kbd {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 4px 6px;
+        font-family: ui-monospace, monospace;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--fg);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+      }
+
+      /* Rainbow pulse animation for easter eggs */
+      @keyframes rainbowPulse {
+        0%, 100% { filter: hue-rotate(0deg); }
+        25% { filter: hue-rotate(90deg); }
+        50% { filter: hue-rotate(180deg); }
+        75% { filter: hue-rotate(270deg); }
+      }
+
+      /* Reduce motion */
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .btn:hover, .card:hover { transform: none; }
+        .reveal { opacity: 1; transform: none; }
+        .thumb::after { display: none; }
+        .btn::after { display: none; }
+        .caret { display: none; }
+        .sparkles { display: none; }
+        .typer-shimmer .typer-text { animation: none; color: #ffffff; -webkit-background-clip: initial; background-clip: initial; }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- SVG Icons -->
+    <svg width="0" height="0" style="position:absolute;">
+      <defs>
+        <!-- Liquid fire filter for typewriter -->
+        <filter id="liquid-fire">
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.02" numOctaves="2" seed="3" result="noise">
+            <animate attributeName="baseFrequency" dur="6s" values="0.008 0.02;0.012 0.03;0.008 0.02" repeatCount="indefinite"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <symbol id="icon-external" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42 9.3-9.29H14V3z"/>
+          <path fill="currentColor" d="M5 5h6v2H7v10h10v-4h2v6H5z"/>
+        </symbol>
+        <symbol id="icon-mail" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5L4 8V6l8 5 8-5v2Z"/>
+        </symbol>
+        <symbol id="icon-copy" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1Zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Zm0 16H10V7h9v14Z"/>
+        </symbol>
+        <symbol id="icon-up" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41Z"/>
+        </symbol>
+        <symbol id="icon-github" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.26c0 4.5 2.87 8.31 6.85 9.66.5.1.69-.22.69-.49 0-.24-.01-.87-.01-1.71-2.79.62-3.38-1.37-3.38-1.37-.46-1.2-1.12-1.52-1.12-1.52-.92-.64.07-.63.07-.63 1.02.07 1.55 1.07 1.55 1.07.9 1.58 2.36 1.12 2.94.86.09-.67.35-1.12.63-1.38-2.23-.26-4.57-1.14-4.57-5.09 0-1.13.39-2.05 1.03-2.78-.1-.26-.45-1.31.1-2.73 0 0 .85-.28 2.79 1.06A9.32 9.32 0 0 1 12 7.06c.86 0 1.73.12 2.54.35 1.93-1.34 2.78-1.06 2.78-1.06.56 1.42.21 2.47.1 2.73.64.73 1.03 1.65 1.03 2.78 0 3.96-2.34 4.82-4.58 5.08.36.32.68.93.68 1.89 0 1.36-.01 2.45-.01 2.78 0 .27.18.6.69.49A10.09 10.09 0 0 0 22 12.26C22 6.58 17.52 2 12 2Z"/>
+        </symbol>
+        <symbol id="icon-location" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5Z"/>
+        </symbol>
+        <symbol id="icon-calendar" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2Zm12 8H5v10h14V10Z"/>
+        </symbol>
+        <symbol id="icon-code" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M9.4 16.6 5.8 13l3.6-3.6L8 8l-5 5 5 5 1.4-1.4Zm5.2 0 3.6-3.6-3.6-3.6L16 8l5 5-5 5-1.4-1.4Z"/>
+        </symbol>
+        <symbol id="icon-bolt" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M13 2 3 14h7l-1 8 11-14h-7l0-6Z"/>
+        </symbol>
+        <symbol id="icon-star" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27Z"/>
+        </symbol>
+        <!-- Additional icons -->
+        <symbol id="icon-linkedin" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 1 0 3.5a2.5 2.5 0 0 1 4.98 0ZM.5 8.5h4.9V24H.5V8.5Zm7.5 0h4.7v2.1h.1c.7-1.3 2.5-2.7 5.1-2.7 5.5 0 6.5 3.6 6.5 8.2V24h-4.9v-7.1c0-1.7 0-3.9-2.4-3.9s-2.8 1.9-2.8 3.8V24H8V8.5Z"/>
+        </symbol>
+        <symbol id="icon-x" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M18 2H6a4 4 0 0 0-4 4v12a4 4 0 0 0 4 4h12a4 4 0 0 0 4-4V6a4 4 0 0 0-4-4Zm-1.6 16.2-3.4-4-3.5 4H7.2l4.4-5-4-4.9h2.4l3.1 3.7 3.2-3.7h2.2l-4 4.8 4.4 5.1h-2.5Z"/>
+        </symbol>
+        <symbol id="icon-globe" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2c1.7 0 3.3.6 4.6 1.6-.7.2-1.5.5-2.2.9-.9.5-1.9.7-2.9.7-1.3 0-2.4.9-2.7 2.2-.2.7-.6 1.3-1.2 1.8-.6.6-1 1.3-1.2 2.2A8 8 0 0 1 12 4Zm0 16a8 8 0 0 1-6.1-3c.3-.5.7-1 1.2-1.4.7-.6 1.1-1.4 1.3-2.3.2-.9.8-1.6 1.6-2 .7-.3 1.4-.7 2.1-1.1.7-.4 1.5-.6 2.3-.6.8 0 1.6-.2 2.3-.6.3-.1.5-.2.8-.3A8 8 0 0 1 12 20Z"/>
+        </symbol>
+        <symbol id="icon-phone" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2a1.5 1.5 0 0 1 1.7-.3c1 .4 2 .7 3 .7a1.5 1.5 0 0 1 1.5 1.5V21a1.5 1.5 0 0 1-1.5 1.5C10.3 22.5 1.5 13.7 1.5 3A1.5 1.5 0 0 1 3 1.5H6a1.5 1.5 0 0 1 1.5 1.5c0 1 .3 2 0 3a1.5 1.5 0 0 1-.4.8l-2.5 2.5Z"/>
+        </symbol>
+      </defs>
+    </svg>
+    <a href="#home" class="skip-link">Skip to main content</a>
+    <div id="scroll-progress" aria-hidden="true"></div>
+    <canvas id="bg-grid" aria-hidden="true"></canvas>
+    <div id="toast" aria-live="polite" aria-atomic="true"></div>
+    <div id="errorOverlay" role="alert" aria-live="assertive"></div>
+    <div id="cmdk" aria-modal="true" role="dialog" aria-label="Command palette">
+      <div class="cmdk-panel">
+        <div class="cmdk-head">
+          <input class="cmdk-input" id="cmdkInput" type="text" placeholder="Type a command... (e.g., Projects, Copy email, GitHub, Toggle reactive)" aria-label="Command input" />
+        </div>
+        <div class="cmdk-list" id="cmdkList"></div>
+      </div>
+    </div>
+    <div id="modal" aria-modal="true" role="dialog" aria-label="Project details">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3 id="modalTitle">Project</h3>
+          <button class="modal-close" id="modalClose" aria-label="Close">Close</button>
+        </div>
+        <div class="modal-grid">
+          <div id="modalBody"></div>
+          <div class="modal-media" id="modalMedia"></div>
+        </div>
+      </div>
+    </div>
+    <header>
+      <div class="container nav" aria-label="Primary">
+        <a class="brand" href="#home" aria-label="Go to top">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Mayukhjit&nbsp;Chakraborty</span>
+        </a>
+        <nav>
+          <ul>
+            <li><a href="#projects" data-i18n="nav.projects">Projects</a></li>
+            <li><a href="#vision" data-i18n="nav.vision">Vision</a></li>
+            <li><a href="#why" data-i18n="nav.why">Why me?</a></li>
+            <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+            <li><a href="#skills" data-i18n="nav.skills">Skills</a></li>
+            <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+          </ul>
+        </nav>
+        <div class="lang-select">
+          <label for="langSelect" class="visually-hidden">Language</label>
+          <select id="langSelect" aria-label="Language selector">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="hi">हिन्दी</option>
+            <option value="bn">বাংলা</option>
+            <option value="zh">简体中文</option>
+            <option value="ja">日本語</option>
+          </select>
+        </div>
+      </div>
+    </header>
+
+    <main id="home">
+      <section class="hero">
+        <div class="container">
+          <div class="kicker"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> <span data-i18n="kicker.role">Full‑stack Web Developer & Designer</span> · <svg class="icon" aria-hidden="true"><use href="#icon-location"/></svg> <span data-i18n="kicker.loc">Based in London, UK</span> · <svg class="icon" aria-hidden="true"><use href="#icon-calendar"/></svg> <span data-i18n="kicker.age">Age</span> <span id="age">—</span> · <span data-i18n="kicker.status">Currently seeking experience</span></div>
+          <h1 class="title" data-i18n="hero.title">I design and build <span id="typer" class="typer" data-tooltip="Watch the colors flow"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.</h1>
+          <p class="subtitle" data-i18n="hero.subtitle">I focus on clarity, performance, and maintainability. I enjoy shipping polished user experiences and robust backend systems with a pragmatic, modern stack.</p>
+          <div class="availability">
+            <span class="badge"><span class="dot" aria-hidden="true"></span> <span data-i18n="hero.availability">Open to internships / part‑time</span></span>
+          </div>
+          <div class="cta">
+            <a class="btn primary" href="#projects" data-tooltip="See featured work" data-i18n="cta.projects">View Projects <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a>
+            <button class="btn ghost" id="copyEmail" aria-label="Copy email to clipboard" data-tooltip="Copy my email" data-i18n="cta.copy">Copy Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg></button>
+            <a class="btn ghost" href="resume.pdf" target="_blank" rel="noopener" data-tooltip="Open resume PDF" data-i18n="cta.resume">Resume</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="projects" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> Projects</h2>
+          <p class="section-desc">Selected work demonstrating product thinking, clean code, and refined details.</p>
+        </div>
+        <div class="grid">
+          <article class="card reveal" data-project="gcsemate">
+            <a href="#" aria-label="Open GCSEMate details" data-open-modal="gcsemate">
+              <div class="thumb" data-thumb>
+                <img class="logo" src="https://gcsemate.com/gcsemate%20new.png" alt="GCSEMate logo" loading="lazy" />
+              </div>
+            </a>
+            <h3><a class="link-underline" href="https://gcsemate.com" target="_blank" rel="noopener">GCSEMate <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></h3>
+            <p>GCSE revision companion offering structured subjects, notes, and past papers for focused study.</p>
+            <div class="tags">
+              <span class="tag">Education</span>
+              <span class="tag">Web App</span>
+              <span class="tag">UX</span>
+            </div>
+          </article>
+          <article class="card reveal" data-project="codebuilder">
+            <a href="#" aria-label="Open CodeBuilder AI details" data-open-modal="codebuilder">
+              <div class="thumb" data-thumb>
+                <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 72px; height: 72px;">
+                  <rect x="20" y="20" width="60" height="60" rx="8" fill="none" stroke="currentColor" stroke-width="2" opacity="0.8"/>
+                  <path d="M35 40 L45 50 L35 60 M65 40 L55 50 L65 60" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>
+                </svg>
+              </div>
+            </a>
+            <h3>CodeBuilder AI</h3>
+            <p>Autonomous web app that generates startup ideas, analyzes profitability, considers marketing & branding, then fully implements working webapps using Gemini 2.5 Pro.</p>
+            <div class="tags">
+              <span class="tag">AI</span>
+              <span class="tag">Autonomous</span>
+              <span class="tag">Gemini 2.5 Pro</span>
+              <span class="tag">Full-stack</span>
+            </div>
+            <p style="margin-top: 12px; font-size: 13px; color: var(--muted); font-style: italic;">Available as a private repo — email for access</p>
+          </article>
+          <article class="card reveal" data-project="studio">
+            <a href="#" aria-label="Open Subscriberlytics details" data-open-modal="studio"><div class="thumb" data-thumb>
+              <svg class="logo logo-subscriberlytics" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" width="72" height="72" aria-hidden="true">
+                <title>Subscriberlytics</title>
+                <!-- White circular frame and letter S -->
+                <circle cx="60" cy="60" r="46" fill="none" stroke="#ffffff" stroke-width="3"/>
+                <text x="60" y="60" text-anchor="middle" dominant-baseline="middle" font-family="OpenAI Sans, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" font-size="54" font-weight="700" fill="#ffffff">S</text>
+              </svg>
+            </div></a>
+            <h3><a class="link-underline" href="https://github.com/mayukhjit-c/subscriberlytics" target="_blank" rel="noopener">Subscriberlytics <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></h3>
+            <p>Track and analyze all your subscriptions with advanced analytics, real‑time currency conversion, export/import, and full PWA offline support.</p>
+            <div class="tags">
+              <span class="tag">Analytics</span>
+              <span class="tag">PWA</span>
+              <span class="tag">Finance</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="vision" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-bolt"/></svg> Vision</h2>
+          <p class="section-desc">Building tools that amplify creativity, not replace it.</p>
+        </div>
+        <article class="card reveal">
+          <h3>Fully Autonomous Music AI — for musicians</h3>
+          <p class="subtitle">I'm exploring a musician‑first assistant that listens, understands intent, and helps compose, arrange, and produce — while keeping the artist in control.</p>
+          <ul>
+            <li>Interactive composition: suggest harmonies, counter‑melodies, and rhythmic motifs from a seed idea.</li>
+            <li>Contextual production: propose sound design chains, mix guidance, and session organization.</li>
+            <li>Ethical by design: consent‑based training data, attribution, and provenance baked in.</li>
+          </ul>
+          <p>Goal: a studio partner that removes technical friction so musicians can stay in the flow. If you care about ML for music, DSP, UI for creative tools, or rights & provenance — I'd love to collaborate.</p>
+          <div class="cta">
+            <a class="btn primary" href="#contact">Collaborate</a>
+            <a class="btn ghost link-underline" href="mailto:mayukhjit.chakraborty@gmail.com">Email me your thoughts</a>
+          </div>
+        </article>
+      </section>
+
+      <section id="why" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-star"/></svg> Why me?</h2>
+          <p class="section-desc">Teenager. Builder. Fast learner. Opinionated about clarity and craft.</p>
+        </div>
+        <article class="card reveal">
+          <h3>Real talk</h3>
+          <p class="subtitle">I'm a student who codes daily. I ship small, sharp features quickly and iterate. I care about readable code, fast pages, and clean UX. If you want energy, curiosity, and momentum — I'm your person.</p>
+          <div class="table-wrapper">
+            <table class="pros-cons-table">
+              <thead>
+                <tr>
+                  <th>Pros</th>
+                  <th>Cons</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Relentless learner, ships quickly, listens to feedback</td>
+                  <td>Still in school — replies during lunch may be extra enthusiastic</td>
+                </tr>
+                <tr>
+                  <td>Strong web foundation (JS/TS, HTML, CSS) and design sense</td>
+                  <td>Limited "corporate" experience — hire me to find out</td>
+                </tr>
+                <tr>
+                  <td>Helpful teammate: tests, a11y, performance, docs</td>
+                  <td>Will ask "why" a lot — but that's how we make it better</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="cta" style="margin-top: 20px;">
+            <a class="btn primary" href="#contact">Let's work together</a>
+            <a class="btn ghost link-underline" href="https://github.com/mayukhjit-c" target="_blank" rel="noopener">See code on GitHub</a>
+          </div>
+        </article>
+      </section>
+
+      <section id="faq" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> FAQ</h2>
+          <p class="section-desc">Common questions, quick answers.</p>
+        </div>
+        <div class="card reveal" style="margin-bottom:16px;">
+          <label for="faqSearch" class="visually-hidden">Search FAQ</label>
+          <input id="faqSearch" type="search" placeholder="Search the FAQ — go on, test me" aria-label="Search FAQ" style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:#0e0e0e; color:var(--fg);" />
+          <div id="faqSearchCount" aria-live="polite" style="margin-top:8px; color: var(--muted); font-size: 13px;">Type to filter. I’ll find it (probably).</div>
+        </div>
+        <div class="faq-list reveal">
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">What's your availability?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>I'm a student, so yes — I have time. But I'm not desperate. I code daily, ship fast, and only commit to projects that actually matter. If you want someone who'll grind through boring CRUD work without questioning it, maybe look elsewhere? But if you want someone who'll call out bad UX and suggest better solutions, hello 👋</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">What technologies do you focus on?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Python, TypeScript, React, Next.js, Laravel, Postgres — the usual suspects. But honestly? Tech stacks are less important than writing code that doesn't make future you (or me) want to throw up. I'll learn whatever if it solves the problem better. If you're hiring purely based on "knows X framework," that's a red flag and we probably shouldn't work together.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">Can I see examples of your work?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Scroll up, maybe? The <a href="#projects" class="link-underline">Projects</a> section is right there. I also have code on <a href="https://github.com/mayukhjit-c" target="_blank" rel="noopener" class="link-underline">GitHub</a>. Some work is private (because clients exist). Email me if you want access. If you're going to judge my skills based on one repo without understanding context, though, that says more about you than me.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">What's your approach to learning?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>I read docs, ship features, break things, fix them, ask "why does this suck?" a lot, then make it better. I'm not interested in cargo-culting Stack Overflow answers. If I don't understand something, I'll figure it out. If that bothers you because you want me to just "copy this code and don't ask questions," we're gonna have a bad time.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">Do you work remotely?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Yes. London-based, but I'm not commuting two hours for meetings that could've been Slack messages. Remote or hybrid works. If you need me in-person occasionally and it makes sense (actually makes sense, not "culture" hand-waving), I'm down. But if you're one of those "office culture" types who thinks creativity happens in open-plan hellscapes... hard pass.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">What kind of projects interest you?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>AI/ML, creative tools, dev experience stuff, anything with elegant solutions. But honestly? The project matters less than whether I'll be working with people who care about the craft. If you're building something genuinely interesting with a team that ships good work, I'm in. If you're building another "Uber for X" clone with spaghetti code and no tests? Hard pass. Check my <a href="#vision" class="link-underline">Vision</a> section if you want specifics.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">Do you write tests and docs?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Yes. Tests keep future-me from swearing at past-me. Docs stop teammates from swearing at me. If you think both are a waste of time, I fear your codebase — respectfully, but also a little bit judgmentally.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">Will you tell me if my idea is bad?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Kindly, yes. I'd rather save you months than ship something nobody wants. I'll bring data, run tiny tests, and suggest better angles. If you only want yes‑people, I am tragically not your person.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">How fast do you ship?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Small features: days. Polished flows: weeks. Big bets: scoped into shippable slices so we don’t suffer through never‑ending “almost there.” I optimize for momentum without trashing quality — no feature graveyards here.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">What’s your communication style?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Short, direct, a bit funny, occasionally spicy. I’ll over‑communicate unknowns and decisions, under‑communicate fluff. If something’s unclear, I’ll ask instead of guessing and breaking prod. You’re welcome.</p>
+            </div>
+          </details>
+          <details class="faq-item reveal">
+            <summary class="faq-question">
+              <span class="particle-target">Will you work on legacy code?</span>
+            </summary>
+            <div class="faq-answer">
+              <p>Happily — if I can improve it. I refactor incrementally with tests, feature flags, and zero‑drama rollouts. If “legacy” means “no tests, no code review, just vibes,” then I’ll need danger pay (or a strong coffee budget).</p>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <section id="skills" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> Skills</h2>
+          <p class="section-desc">Modern, pragmatic tools. Strong fundamentals.</p>
+        </div>
+        <div class="chips reveal">
+          <span class="chip">Python</span>
+          <span class="chip">TypeScript</span>
+          <span class="chip">React</span>
+          <span class="chip">Next.js</span>
+          <span class="chip">Node.js</span>
+          <span class="chip">Laravel</span>
+          <span class="chip">Postgres</span>
+          <span class="chip">Redis</span>
+          <span class="chip">Testing</span>
+          <span class="chip">Accessibility</span>
+          <span class="chip">Performance</span>
+        </div>
+      </section>
+
+      <section id="help" class="container">
+        <div class="section-head">
+          <h2 class="section-title">Help</h2>
+          <p class="section-desc">Tips, shortcuts, and how to navigate.</p>
+        </div>
+        <article class="card reveal">
+          <h3>Quick tips</h3>
+          <ul>
+            <li>Press <kbd>Ctrl+K</kbd> or <kbd>Cmd+K</kbd> to open the command palette — your shortcut to everything.</li>
+            <li>Press on nav items to smooth‑scroll. The progress bar shows where you are.</li>
+            <li>Hover over buttons for tooltips. Copy email in one click.</li>
+            <li>Move your mouse over project cards to preview subtle 3D tilt and lighting.</li>
+            <li>Click project cards to view detailed information in a modal.</li>
+            <li>Try clicking the brand dot multiple times — you might discover something 🤫</li>
+          </ul>
+          <div class="cta">
+            <a class="btn ghost" href="#projects" data-tooltip="Go to projects">Projects</a>
+            <a class="btn ghost" href="#why" data-tooltip="Why hire me?">Why me?</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer id="contact">
+      <div class="container foot">
+        <div>
+          <strong>Let's build something clear and fast.</strong>
+          <div>Contact: <a class="link-underline fire-highlight" id="emailLink" href="mailto:mayukhjit.chakraborty@gmail.com">mayukhjit.chakraborty@gmail.com <svg class="icon" aria-hidden="true"><use href="#icon-mail"/></svg></a></div>
+          <div class="handmade">Designed and coded by hand — no AI used in the build.</div>
+        </div>
+        <div class="cta">
+          <button class="btn ghost" id="copyEmailFooter" aria-label="Copy email to clipboard">Copy Email</button>
+          <a class="btn ghost" href="https://github.com/mayukhjit-c" target="_blank" rel="noopener" aria-label="Open GitHub profile" data-tooltip="GitHub profile">GitHub <svg class="icon" aria-hidden="true"><use href="#icon-github"/></svg></a>
+          <a class="btn primary" href="#home" aria-label="Back to top" data-tooltip="Scroll to top">Back to top <svg class="icon" aria-hidden="true"><use href="#icon-up"/></svg></a>
+        </div>
+      </div>
+    </footer>
+    <a id="toTop" class="btn primary" href="#home" aria-label="Scroll to top quickly" data-tooltip="Top">Top <svg class="icon" aria-hidden="true"><use href="#icon-up"/></svg></a>
+
+    <script>
+      // Scroll to top on page load/refresh — clean start, no animations
+      window.addEventListener('load', () => {
+        window.scrollTo(0, 0);
+      });
+      // Also handle refresh cases
+      if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', () => {
+          window.scrollTo(0, 0);
+        });
+      } else {
+        window.scrollTo(0, 0);
+      }
+
+      // Console Easter Egg — because developers deserve nice things too 🦄
+      // console hello (yes, this is definately written by a human)
+      console.log('%cHello, curious developer.', 'font-size: 16px; font-weight: bold; color: #fff;');
+      console.log('%cYou\'re poking around the code? Nice. The command palette (Cmd/Ctrl+K) is worth a look.', 'font-size: 12px; color: #bbb;');
+      console.log('%cP.S. There are easter eggs hidden around. Keep exploring.', 'font-size: 11px; color: #999; font-style: italic;');
+
+      // Cross-browser rAF polyfill
+      window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(cb){ return setTimeout(function(){ cb(Date.now()); }, 16); };
+      window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout;
+
+      // Smooth nav active underline on scroll + smooth anchor easing
+      // This function makes the nav feel alive — active states that actually make sense!
+      // Pro tip: The offset calculation accounts for sticky header, because details matter.
+      (function() {
+        // Input-mode detection: coarse pointer (touch), or TV-like devices (no hover)
+        try {
+          if (window.matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('coarse');
+          const noHover = window.matchMedia('(hover: none)').matches;
+          const big = Math.max(window.innerWidth, window.innerHeight) >= 1800;
+          if (noHover && big) document.documentElement.classList.add('tv');
+        } catch (_) {}
+
+        const links = Array.from(document.querySelectorAll('nav a'));
+        const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+        // add simple helpful tooltips for nav
+        links.forEach(a => {
+          if (!a.getAttribute('data-tooltip')) {
+            const txt = a.textContent && a.textContent.trim();
+            if (txt) a.setAttribute('data-tooltip', 'Go to ' + txt);
+          }
+        });
+        const setActive = () => {
+          const y = window.scrollY + 120; // header offset
+          let current = null;
+          for (const section of sections) {
+            if (section.offsetTop <= y) current = section;
+          }
+          links.forEach(a => a.classList.toggle('active', current && a.getAttribute('href') === '#' + current.id));
+        };
+        window.addEventListener('scroll', setActive, { passive: true });
+        window.addEventListener('load', setActive);
+
+        // Custom smooth anchor scrolling with ease
+        function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+        function smoothScrollTo(targetY, duration = 700) {
+          const startY = window.scrollY;
+          const delta = targetY - startY; // can be negative for upward scroll
+          const start = performance.now();
+          // Signal canvases to reduce work during scroll to avoid jank
+          window.__isSmoothScrolling = true;
+          const doneTimer = setTimeout(() => { window.__isSmoothScrolling = false; }, duration + 120);
+          function step(now) {
+            const p = Math.min(1, (now - start) / duration);
+            const eased = easeOutCubic(p);
+            window.scrollTo(0, startY + delta * eased);
+            if (p < 1) requestAnimationFrame(step); else { clearTimeout(doneTimer); window.__isSmoothScrolling = false; }
+          }
+          requestAnimationFrame(step);
+        }
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+          // Skip buttons that have custom fire highlight handlers
+          if (a.classList.contains('btn') && 
+              (a.textContent.includes('work together') || 
+               a.textContent.includes('Collaborate') || 
+               a.textContent.includes('Projects'))) {
+            return; // These are handled by fire highlight function
+          }
+          
+          a.addEventListener('click', e => {
+            const href = a.getAttribute('href');
+            const el = href && document.querySelector(href);
+            if (el) {
+              e.preventDefault();
+              const y = Math.max(0, el.offsetTop - 70);
+              smoothScrollTo(y);
+            }
+          });
+        });
+      })();
+
+      // FAQ live search — instant filter with polite results updates
+      (function(){
+        const input = document.getElementById('faqSearch');
+        const counter = document.getElementById('faqSearchCount');
+        const container = document.querySelector('#faq .faq-list');
+        if (!input || !container) return;
+        const items = Array.from(container.querySelectorAll('.faq-item'));
+        function normalize(s){ return (s || '').toLowerCase().trim(); }
+        function filter(){
+          const q = normalize(input.value);
+          let shown = 0;
+          items.forEach(d => {
+            const text = normalize(d.textContent);
+            const match = q.length === 0 || text.includes(q);
+            d.style.display = match ? '' : 'none';
+            if (match) shown++;
+          });
+          if (counter) counter.textContent = q ? `${shown} result${shown===1?'':'s'} for “${input.value}”` : 'Type to filter. I’ll find it (probably).';
+        }
+        input.addEventListener('input', filter);
+        // Keyboard niceties
+        input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value=''; filter(); input.blur(); } });
+      })();
+
+      // Intersection reveal — because scroll animations should be smooth, not jarring
+      // Uses Intersection Observer because we're living in 2024, not 2010.
+      // Staggered delays make it feel organic, like content appearing naturally.
+      (function() {
+        const els = document.querySelectorAll('.reveal');
+        const io = new IntersectionObserver(entries => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              io.unobserve(entry.target);
+            }
+          }
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        els.forEach((el, i) => {
+          el.style.transitionDelay = (i * 40) + 'ms';
+          io.observe(el);
+        });
+      })();
+
+      // Hover parallax light on project thumbs with smooth cursor follow
+      // This creates that satisfying "follow your cursor" effect
+      // CSS custom properties make this performant — no forced reflows here!
+      // Added smooth interpolation for buttery smooth motion
+      (function() {
+        document.querySelectorAll('[data-thumb]').forEach(el => {
+          let targetX = 50, targetY = 50;
+          let currentX = 50, currentY = 50;
+          
+          const lerp = (a, b, t) => a + (b - a) * t;
+          
+          function updatePosition() {
+            currentX = lerp(currentX, targetX, 0.15);
+            currentY = lerp(currentY, targetY, 0.15);
+            el.style.setProperty('--mx', currentX + '%');
+            el.style.setProperty('--my', currentY + '%');
+            requestAnimationFrame(updatePosition);
+          }
+          updatePosition();
+          
+          el.addEventListener('pointermove', e => {
+            const rect = el.getBoundingClientRect();
+            targetX = ((e.clientX - rect.left) / rect.width) * 100;
+            targetY = ((e.clientY - rect.top) / rect.height) * 100;
+          });
+          
+          el.addEventListener('pointerleave', () => {
+            targetX = 50;
+            targetY = 50;
+          });
+        });
+        // Simple reflective follow for cards (no tilt)
+        document.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('pointermove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+            const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+            card.style.setProperty('--mx', x + '%');
+            card.style.setProperty('--my', y + '%');
+          }, { passive: true });
+          card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--mx', '50%');
+            card.style.setProperty('--my', '0%');
+          }, { passive: true });
+        });
+
+        // TV/keyboard navigation for project cards
+        (function(){
+          const grid = document.querySelector('#projects .grid');
+          if (!grid) return;
+          const items = Array.from(grid.querySelectorAll('.card'));
+          items.forEach((it, i) => {
+            it.setAttribute('tabindex', '0');
+            it.dataset.index = String(i);
+          });
+          function moveFocus(current, dx, dy){
+            if (!current) return;
+            const idx = Number(current.dataset.index || '0');
+            const cols = Math.max(1, Math.round(grid.clientWidth / (grid.firstElementChild?.clientWidth || 1)));
+            let next = idx;
+            if (dx) next = idx + dx; if (dy) next = idx + dy * cols;
+            next = Math.max(0, Math.min(items.length - 1, next));
+            const el = items[next];
+            if (el) { el.focus({ preventScroll: false }); }
+          }
+          grid.addEventListener('keydown', (e) => {
+            const cur = document.activeElement?.closest?.('.card');
+            if (!cur) return;
+            if (e.key === 'ArrowRight') { e.preventDefault(); moveFocus(cur, 1, 0); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); moveFocus(cur, -1, 0); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(cur, 0, 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(cur, 0, -1); }
+            else if (e.key === 'Enter') {
+              const link = cur.querySelector('[data-open-modal]') || cur.querySelector('a');
+              if (link) { e.preventDefault(); (link instanceof HTMLElement) && link.click(); }
+            }
+          });
+        })();
+      })();
+
+      // Smooth button hover shine effect — tracks cursor position for that premium feel
+      (function() {
+        document.querySelectorAll('.btn').forEach(btn => {
+          btn.addEventListener('pointermove', e => {
+            const rect = btn.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            btn.style.setProperty('--hx', x + '%');
+            btn.style.setProperty('--hy', y + '%');
+          });
+        });
+      })();
+
+      // Background animated geometric grid — straight lines with smoothed hover highlights
+      // This is the silent hero of the page. Subtle enough to not distract,
+      // but adds depth when you notice it. The lerp smoothing makes it feel organic.
+      // Fun fact: The shimmer effect is synchronized with time, creating
+      // a very subtle "breathing" effect that humans notice subconsciously.
+      (function() {
+        const canvas = document.getElementById('bg-grid');
+        const ctx = canvas.getContext('2d');
+        let dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+        let w = 0, h = 0, t = 0;
+        const spacing = 60; // grid spacing in css px
+        let pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, active: false };
+        const lerp = (a,b,p) => a + (b - a) * p;
+        let lastFrame = 0;
+        let hidden = document.hidden;
+        document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Cache theme colors to avoid expensive style queries per frame
+        let glow2 = 'rgba(255,255,255,0.25)';
+        let glow3 = 'rgba(255,255,255,0.18)';
+        let prim3 = 'rgba(255,255,255,0.2)';
+        let colorCacheAt = 0;
+        function refreshColors(now){
+          if (now - colorCacheAt < 400) return; // refresh at most ~2.5 Hz
+          const cs = getComputedStyle(document.documentElement);
+          glow2 = (cs.getPropertyValue('--theme-glow-2') || glow2).trim();
+          glow3 = (cs.getPropertyValue('--theme-glow-3') || glow3).trim();
+          prim3 = (cs.getPropertyValue('--theme-primary-3') || prim3).trim();
+          colorCacheAt = now;
+        }
+
+        let resizeTimer;
+        function resize() {
+          w = Math.ceil(window.innerWidth);
+          h = Math.ceil(window.innerHeight);
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); }, { passive: true });
+        resize();
+
+        function drawGrid(time) {
+          if (hidden) { requestAnimationFrame(drawGrid); return; }
+          refreshColors(time);
+          const dt = Math.min(48, Math.max(0, time - (lastFrame || time)));
+          lastFrame = time;
+          t = time * 0.001; // seconds
+          ctx.clearRect(0, 0, w, h);
+          ctx.lineWidth = 1;
+
+          // shimmer factor for subtle motion along lines
+          const shimmer = prefersReduced ? 0 : (Math.sin(t * 1.2) + 1) * 0.03; // respect reduced motion
+
+          // use cached theme glow colors (avoid optional chaining for older browsers)
+
+          // base grid (offset by half-spacing so lines avoid common edges)
+          const offset = spacing / 2;
+          ctx.strokeStyle = `rgba(255,255,255,${0.08 + shimmer})`;
+          for (let y = offset; y <= h; y += spacing) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+          }
+          for (let x = offset; x <= w; x += spacing) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+          }
+
+          // highlight near pointer: skip heavy blending if we're smooth scrolling
+          if (pointer.active && !prefersReduced && !window.__isSmoothScrolling && !document.documentElement.classList.contains('tv')) {
+            // Smooth pointer position for buttery motion
+            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.12);
+            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.12);
+            const maxDist = 160; // larger radius for a more prominent aura
+            const band = 90; // width of colored intensity band around the pointer
+            for (let y = offset; y <= h; y += spacing) {
+              const dy = Math.abs(pointer.sy - y);
+              if (dy <= maxDist) {
+                const a = Math.exp(-dy / 70) * 0.6; // stronger but still smooth
+                // horizontal gradient centered at pointer.sx
+                const grad = ctx.createLinearGradient(0, y, w, y);
+                const cx = Math.max(0, Math.min(1, pointer.sx / w));
+                const bw = Math.max(0.02, band / Math.max(1, w)); // band as fraction
+                const left = Math.max(0, cx - bw);
+                const right = Math.min(1, cx + bw);
+                grad.addColorStop(0, 'rgba(255,255,255,0)');
+                grad.addColorStop(left, glow3);
+                grad.addColorStop(cx, prim3);
+                grad.addColorStop(right, glow2);
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.save();
+                ctx.globalAlpha *= a;
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+            for (let x = offset; x <= w; x += spacing) {
+              const dx = Math.abs(pointer.sx - x);
+              if (dx <= maxDist) {
+                const a = Math.exp(-dx / 70) * 0.6;
+                // vertical gradient centered at pointer.sy
+                const grad = ctx.createLinearGradient(x, 0, x, h);
+                const cy = Math.max(0, Math.min(1, pointer.sy / h));
+                const bw = Math.max(0.02, band / Math.max(1, h));
+                const top = Math.max(0, cy - bw);
+                const bottom = Math.min(1, cy + bw);
+                grad.addColorStop(0, 'rgba(255,255,255,0)');
+                grad.addColorStop(top, glow3);
+                grad.addColorStop(cy, prim3);
+                grad.addColorStop(bottom, glow2);
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.save();
+                ctx.globalAlpha *= a;
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+          }
+          requestAnimationFrame(drawGrid);
+        }
+        requestAnimationFrame(drawGrid);
+
+        function setPointer(e) {
+          const rect = canvas.getBoundingClientRect();
+          pointer.tx = e.clientX - rect.left;
+          pointer.ty = e.clientY - rect.top;
+          pointer.active = true;
+        }
+        window.addEventListener('pointermove', setPointer, { passive: true });
+        window.addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
+      })();
+
+      // Card tilt interaction — 3D effects that actually feel good with smooth interpolation
+      // The math here calculates tilt based on cursor position relative to card center.
+      // Negative values for X rotation because we want natural perspective.
+      // Pro tip: The 6-degree max tilt is a sweet spot — noticeable but not nauseating.
+      // Added smooth interpolation for buttery 3D effects
+      (function() {
+        const maxTilt = 6; // degrees
+        // Only enable tilt when opted in via data-tilt to keep cards basic
+        document.querySelectorAll('.card[data-tilt]').forEach(card => {
+          let targetRx = 0, targetRy = 0;
+          let currentRx = 0, currentRy = 0;
+          
+          const lerp = (a, b, t) => a + (b - a) * t;
+          
+          function updateTilt() {
+            currentRx = lerp(currentRx, targetRx, 0.12);
+            currentRy = lerp(currentRy, targetRy, 0.12);
+            card.style.setProperty('--rx', currentRx.toFixed(2) + 'deg');
+            card.style.setProperty('--ry', currentRy.toFixed(2) + 'deg');
+            requestAnimationFrame(updateTilt);
+          }
+          updateTilt();
+          
+          card.addEventListener('pointermove', e => {
+            const rect = card.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width; // 0..1
+            const py = (e.clientY - rect.top) / rect.height; // 0..1
+            targetRy = (px - 0.5) * (maxTilt * 2);
+            targetRx = -(py - 0.5) * (maxTilt * 2);
+          });
+          
+          card.addEventListener('pointerleave', () => {
+            targetRx = 0;
+            targetRy = 0;
+          });
+        });
+      })();
+
+      // Scroll progress bar
+      (function() {
+        const bar = document.getElementById('scroll-progress');
+        if (!bar) return;
+        const update = () => {
+          const scrollTop = window.scrollY;
+          const docH = document.documentElement.scrollHeight - window.innerHeight;
+          const p = docH > 0 ? Math.min(1, scrollTop / docH) : 0;
+          bar.style.width = (p * 100) + '%';
+        };
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('load', update);
+      })();
+
+      // Show floating to-top button when user scrolls up
+      (function() {
+        const toTop = document.getElementById('toTop');
+        if (!toTop) return;
+        let lastY = window.scrollY;
+        let ticking = false;
+        function onScroll() {
+          const y = window.scrollY;
+          const goingUp = y < lastY;
+          if (y > 300 && goingUp) toTop.classList.add('visible'); else toTop.classList.remove('visible');
+          lastY = y;
+          ticking = false;
+        }
+        window.addEventListener('scroll', () => {
+          if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
+        }, { passive: true });
+      })();
+
+      // Hero typewriter with realistic timing, pause, backspace, shimmer and sparkles
+      // This is where personality meets code. Random delays make it feel human,
+      // not robotic. The sparkles? Pure joy. Because why not add a bit of magic?
+      // The reduced-motion check ensures we're respectful of user preferences.
+      // Inspiration: The terminal hackers from 80s movies, but make it modern.
+      (function() {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        let idx = 0;
+        let current = '';
+        let abort = false;
+        let textEl = null;
+        let wrapper = null;
+        let typerVersion = 0;
+        const pendingTimeouts = new Set();
+
+        // Default features; may be overridden by i18n if provided
+        let features = [
+          'clean',
+          'fast',
+          'human‑centered',
+          'accessible',
+          'reliable'
+        ];
+
+        function randomDelay(min, max) { return Math.floor(min + Math.random() * (max - min)); }
+
+        function safeSetTimeout(fn, ms) {
+          const id = setTimeout(() => {
+            pendingTimeouts.delete(id);
+            fn();
+          }, ms);
+          pendingTimeouts.add(id);
+          return id;
+        }
+        function clearPendingTimeouts() {
+          pendingTimeouts.forEach(id => clearTimeout(id));
+          pendingTimeouts.clear();
+        }
+
+        function queryElements() {
+          textEl = document.getElementById('typerText');
+          wrapper = document.getElementById('typer');
+          return textEl && wrapper;
+        }
+
+        function spawnSparkles() {
+          if (!wrapper) return;
+          const s = document.createElement('div');
+          s.className = 'sparkles';
+          for (let i = 0; i < 5; i++) {
+            const dot = document.createElement('i');
+            dot.style.left = (40 + Math.random() * 20) + '%';
+            dot.style.top = (20 + Math.random() * 60) + '%';
+            dot.style.animationDelay = (i * 60) + 'ms';
+            s.appendChild(dot);
+          }
+          wrapper.appendChild(s);
+          safeSetTimeout(() => s.remove(), 900);
+        }
+
+        async function typeText(text) {
+          const v = typerVersion;
+          for (let i = 0; i < text.length; i++) {
+            if (abort || !textEl || v !== typerVersion) return;
+            current += text[i];
+            await new Promise(r => { requestAnimationFrame(() => { if (textEl) textEl.textContent = current; r(); }); });
+            await new Promise(r => safeSetTimeout(r, randomDelay(45, 120)));
+          }
+        }
+        async function backspace(count) {
+          const v = typerVersion;
+          for (let i = 0; i < count; i++) {
+            if (abort || !textEl || v !== typerVersion) return;
+            current = current.slice(0, -1);
+            await new Promise(r => { requestAnimationFrame(() => { if (textEl) textEl.textContent = current; r(); }); });
+            await new Promise(r => safeSetTimeout(r, randomDelay(28, 70)));
+          }
+        }
+
+        async function loop() {
+          const v = typerVersion;
+          if (!wrapper) return;
+          wrapper.classList.add('typer-fire');
+          while (!abort) {
+            if (v !== typerVersion) break;
+            const word = features[idx % features.length];
+            wrapper.classList.remove('typer-shimmer', 'typer-glow');
+            await typeText(word);
+            if (!wrapper) break;
+            wrapper.classList.add('typer-glow', 'typer-shimmer');
+            if (!prefersReduced) spawnSparkles();
+            await new Promise(r => safeSetTimeout(r, 3000));
+            if (!wrapper) break;
+            wrapper.classList.remove('typer-glow', 'typer-shimmer');
+            await backspace(word.length);
+            await new Promise(r => safeSetTimeout(r, 100));
+            idx++;
+          }
+        }
+
+        function start() {
+          if (!queryElements()) return;
+          current = '';
+          if (textEl) textEl.textContent = '';
+          abort = false;
+          clearPendingTimeouts();
+          typerVersion++;
+          // Allow i18n to provide localized features
+          if (typeof window.getI18nFeatures === 'function') {
+            const localized = window.getI18nFeatures();
+            if (Array.isArray(localized) && localized.length > 0) features = localized;
+            else features = ['clean','fast','human‑centered','accessible','reliable'];
+          }
+          if (prefersReduced) {
+            if (textEl) textEl.textContent = features[0] || '';
+          } else {
+            loop();
+          }
+        }
+
+        function stop() { abort = true; clearPendingTimeouts(); typerVersion++; }
+
+        // Expose reinit so translations that replace DOM can restart the typer
+        window.typerReinit = function() {
+          stop();
+          // Give DOM a moment to update
+          safeSetTimeout(() => { idx = 0; start(); }, 30);
+        };
+
+        // Kick off
+        start();
+        window.addEventListener('beforeunload', () => { abort = true; });
+      })();
+
+      // Dynamic age calculation (DOB: 2010-08-23)
+      // Because updating your age manually every year is a pain,
+      // and we're developers. We automate the boring stuff.
+      // This calculates age properly accounting for birth month/day,
+      // because not all years are the same length (looking at you, leap years).
+      (function() {
+        const out = document.getElementById('age');
+        if (!out) return;
+        const dob = new Date('2010-08-23T00:00:00Z');
+        function computeAge() {
+          const now = new Date();
+          let age = now.getUTCFullYear() - dob.getUTCFullYear();
+          const m = now.getUTCMonth() - dob.getUTCMonth();
+          if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) {
+            age--;
+          }
+          out.textContent = String(age);
+        }
+        computeAge();
+        // Update daily at midnight
+        const msUntilTomorrow = new Date(new Date().setHours(24,0,0,0)) - new Date();
+        setTimeout(() => { computeAge(); setInterval(computeAge, 24*60*60*1000); }, msUntilTomorrow);
+      })();
+
+      // Toast notification helper — because alerts are so 2010 😎
+      (function() {
+        const toast = document.getElementById('toast');
+        function showToast(message, duration = 2500) {
+          if (!toast) return;
+          toast.textContent = message;
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), duration);
+        }
+        window.showToast = showToast; // Global for other functions
+      })();
+
+      // Graceful global error handling — user-friendly overlay and toast
+      (function(){
+        const overlay = document.getElementById('errorOverlay');
+        if (!overlay) return;
+        function showError(msg, detail){
+          overlay.innerHTML = '';
+          overlay.style.display = 'block';
+          overlay.style.position = 'fixed'; overlay.style.inset = '10px'; overlay.style.zIndex = '1000';
+          overlay.style.background = 'rgba(30,30,30,0.8)'; overlay.style.border = '1px solid #333'; overlay.style.borderRadius = '12px';
+          overlay.style.backdropFilter = 'blur(6px) saturate(120%)'; overlay.style.padding = '16px';
+          const title = document.createElement('div'); title.style.fontWeight = '600'; title.style.marginBottom = '6px'; title.textContent = 'Something went wrong — but we handled it.';
+          const message = document.createElement('div'); message.style.color = '#ccc'; message.textContent = msg || 'An unexpected error occurred.';
+          const details = document.createElement('details'); details.style.marginTop = '8px';
+          const sum = document.createElement('summary'); sum.textContent = 'Details'; details.appendChild(sum);
+          const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.style.fontSize = '12px'; pre.style.color = '#aaa'; pre.textContent = detail || '';
+          details.appendChild(pre);
+          const btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Dismiss'; btn.style.marginTop = '12px';
+          btn.addEventListener('click', () => { overlay.style.display = 'none'; overlay.innerHTML = ''; });
+          overlay.append(title, message, details, btn);
+          window.showToast && window.showToast('An error occurred — details shown.');
+        }
+        window.addEventListener('error', (e) => { showError(e.message, (e.error && e.error.stack) || ''); });
+        window.addEventListener('unhandledrejection', (e) => { const reason = e.reason || {}; showError(reason.message || 'Unhandled promise rejection', reason.stack || JSON.stringify(reason)); });
+      })();
+
+      // Global copy toast — surface feedback whenever user copies text
+      (function(){
+        let lastToastAt = 0;
+        document.addEventListener('copy', () => {
+          const now = Date.now();
+          if (now - lastToastAt < 800) return; // avoid duplicate spam from programmatic copies
+          lastToastAt = now;
+          window.showToast && window.showToast('Copied to clipboard.');
+        });
+      })();
+
+      // Particle effects system — adds delightful sparkles to buttons and text
+      // Creates a sense of magic and responsiveness throughout the site
+      (function() {
+        function createParticle(x, y, spread = 40) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Random trajectory with spread
+          const angle = (Math.random() - 0.5) * Math.PI * 0.8; // Slightly upward bias
+          const distance = 20 + Math.random() * spread;
+          const tx = Math.cos(angle) * distance;
+          const ty = Math.sin(angle) * distance - Math.abs(Math.sin(angle)) * 10; // More upward
+          
+          particle.style.left = x + 'px';
+          particle.style.top = y + 'px';
+          particle.style.setProperty('--tx', tx + 'px');
+          particle.style.setProperty('--ty', ty + 'px');
+          
+          // Random size variation
+          const size = 3 + Math.random() * 2;
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random animation delay for staggered effect
+          particle.style.animationDelay = (Math.random() * 100) + 'ms';
+          
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1200);
+        }
+        
+        function spawnButtonParticles(btn) {
+          const rect = btn.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          // Spawn cluster of particles from button center
+          const count = 6 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < count; i++) {
+            const offsetX = (Math.random() - 0.5) * rect.width * 0.6;
+            const offsetY = (Math.random() - 0.5) * rect.height * 0.6;
+            setTimeout(() => {
+              createParticle(centerX + offsetX, centerY + offsetY, 50);
+            }, i * 15);
+          }
+        }
+        
+        function spawnTextParticles(el, e) {
+          const rect = el.getBoundingClientRect();
+          const x = e.clientX || (rect.left + rect.width / 2);
+          const y = e.clientY || (rect.top + rect.height / 2);
+          
+          // Fewer, more subtle particles for text
+          const count = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+              createParticle(x, y, 30);
+            }, i * 40);
+          }
+        }
+        
+        window.spawnButtonParticles = spawnButtonParticles;
+        
+        // Add particles to buttons on click
+        document.addEventListener('DOMContentLoaded', () => {
+          // Buttons get particles on click (already handled in setupButtonFeedback)
+          
+          // Add particles to text elements on hover/click
+          document.querySelectorAll('.particle-target, h1, h2, h3, .section-title, .chip, .tag').forEach(el => {
+            let lastHover = 0;
+            el.addEventListener('mouseenter', (e) => {
+              const now = Date.now();
+              if (now - lastHover > 300) { // Throttle to avoid spam
+                spawnTextParticles(el, e);
+                lastHover = now;
+              }
+            });
+            
+            el.addEventListener('click', (e) => {
+              spawnTextParticles(el, e);
+            });
+          });
+          
+          // Add particles to section titles on interaction
+          document.querySelectorAll('.section-title').forEach(el => {
+            el.addEventListener('mouseenter', (e) => spawnTextParticles(el, e));
+          });
+          
+          // More particles for tags/chips on hover
+          document.querySelectorAll('.chip, .tag').forEach(el => {
+            el.addEventListener('mouseenter', (e) => {
+              const rect = el.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const y = rect.top + rect.height / 2;
+              const count = 4 + Math.floor(Math.random() * 3);
+              for (let i = 0; i < count; i++) {
+                setTimeout(() => createParticle(x, y, 25), i * 30);
+              }
+            });
+          });
+        });
+      })();
+
+      // Fire highlight utility — creates clean fiery glow animation
+      // Immediate response with smooth animations
+      (function() {
+        function highlightElement(selector, scrollDelay = 0) {
+          const el = document.querySelector(selector);
+          if (!el) return;
+          
+          // Add fire-highlight class immediately if not present
+          if (!el.classList.contains('fire-highlight')) {
+            el.classList.add('fire-highlight');
+          }
+          
+          // Start scroll immediately (non-blocking)
+          const scrollY = Math.max(0, el.offsetTop - 100);
+          window.scrollTo({ top: scrollY, behavior: 'smooth' });
+          
+          // Start highlight immediately - don't wait for scroll
+          requestAnimationFrame(() => {
+            el.classList.add('active');
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              el.classList.remove('active');
+            }, 3000);
+          });
+        }
+        
+        window.highlightElement = highlightElement; // Global for other functions
+      })();
+
+      // Copy email helpers with toast notification and fire highlight (spelling is hard sometimes)
+      // Immediate response with visual feedback
+      (function() {
+        const email = 'mayukhjit.chakraborty@gmail.com';
+        const copy = async (btn) => {
+          // Immediate visual feedback
+          if (btn) {
+            btn.classList.add('clicked');
+            btn.classList.add('clicked-shake');
+            setTimeout(() => btn.classList.remove('clicked'), 200);
+            setTimeout(() => btn.classList.remove('clicked-shake'), 260);
+          }
+          window.playUiPop && window.playUiPop({ frequency: 420 });
+          
+          try {
+            await navigator.clipboard.writeText(email);
+            window.showToast && window.showToast('Email copied to clipboard.');
+            // Highlight email immediately
+            requestAnimationFrame(() => {
+              window.highlightElement && window.highlightElement('#emailLink', 0);
+            });
+          } catch (e) {
+            // Fallback for older browsers (yes this will look old school)
+            const ta = document.createElement('textarea');
+            ta.value = email; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            window.showToast && window.showToast('Email copied to clipboard.');
+            requestAnimationFrame(() => {
+              window.highlightElement && window.highlightElement('#emailLink', 0);
+            });
+          }
+        };
+        const b1 = document.getElementById('copyEmail');
+        const b2 = document.getElementById('copyEmailFooter');
+        b1 && b1.addEventListener('click', () => copy(b1));
+        b2 && b2.addEventListener('click', () => copy(b2));
+      })();
+
+      // Button fire highlights — immediate response with smooth animations
+      (function() {
+        // Immediate button click feedback for all action buttons
+        function setupButtonFeedback(btn) {
+          btn.addEventListener('click', function(e) {
+            // Immediate visual feedback - no delay
+            this.classList.add('clicked');
+            this.classList.add('clicked-shake');
+            setTimeout(() => this.classList.remove('clicked'), 200);
+            setTimeout(() => this.classList.remove('clicked-shake'), 260);
+            // Particle effect on click
+            spawnButtonParticles(this);
+          }, { passive: true });
+        }
+        
+        // Wait for DOM to be fully loaded
+        setTimeout(() => {
+          // "Let's work together" button → highlight email
+          document.querySelectorAll('a.btn[href="#contact"]').forEach(btn => {
+            if (btn.textContent.includes('work together') || btn.textContent.includes('Collaborate')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Immediate action - no delay
+                requestAnimationFrame(() => {
+                  window.highlightElement && window.highlightElement('#emailLink', 0);
+                });
+              });
+            }
+          });
+          
+          // "View Projects" button → highlight projects section
+          document.querySelectorAll('a.btn[href="#projects"]').forEach(btn => {
+            if (btn.textContent.includes('Projects')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const projectsSection = document.querySelector('#projects');
+                if (projectsSection) {
+                  // Start immediately - no delays
+                  projectsSection.classList.add('fire-highlight');
+                  window.scrollTo({ top: projectsSection.offsetTop - 100, behavior: 'smooth' });
+                  // Activate highlight immediately
+                  requestAnimationFrame(() => {
+                    projectsSection.classList.add('active');
+                    setTimeout(() => {
+                      projectsSection.classList.remove('active');
+                    }, 3000);
+                  });
+                }
+              });
+            }
+          });
+          
+          // "Collaborate" button in vision section → highlight email
+          document.querySelectorAll('.card .btn[href="#contact"]').forEach(btn => {
+            if (btn.textContent.includes('Collaborate')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                requestAnimationFrame(() => {
+                  window.highlightElement && window.highlightElement('#emailLink', 0);
+                });
+              });
+            }
+          });
+          
+          // Setup feedback for all other buttons too
+          document.querySelectorAll('.btn').forEach(btn => {
+            if (!btn.classList.contains('clicked')) {
+              setupButtonFeedback(btn);
+            }
+          });
+        }, 100);
+      })();
+
+      // Command Palette — the Swiss Army knife of navigation 🚀
+      // Pro tip: This is where the magic happens. Press Cmd+K (or Ctrl+K) to open.
+      (function() {
+        const cmdk = document.getElementById('cmdk');
+        const cmdkInput = document.getElementById('cmdkInput');
+        const cmdkList = document.getElementById('cmdkList');
+        if (!cmdk || !cmdkInput || !cmdkList) return;
+
+        // Command definitions — each action is a delightful little function
+        const commands = [
+          {
+            id: 'projects',
+            title: 'Go to Projects',
+            keywords: ['project', 'work', 'portfolio'],
+            action: () => {
+              const el = document.querySelector('#projects');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'vision',
+            title: 'Go to Vision',
+            keywords: ['vision', 'future', 'music', 'ai'],
+            action: () => {
+              const el = document.querySelector('#vision');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'why',
+            title: 'Why me?',
+            keywords: ['why', 'hire', 'about'],
+            action: () => {
+              const el = document.querySelector('#why');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'faq',
+            title: 'Go to FAQ',
+            keywords: ['faq', 'question', 'answer', 'help'],
+            action: () => {
+              const el = document.querySelector('#faq');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'skills',
+            title: 'View Skills',
+            keywords: ['skill', 'tech', 'stack'],
+            action: () => {
+              const el = document.querySelector('#skills');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'contact',
+            title: 'Go to Contact',
+            keywords: ['contact', 'email', 'reach'],
+            action: () => {
+              const el = document.querySelector('#contact');
+              if (el) {
+                window.scrollTo({ top: el.offsetTop - 70, behavior: 'smooth' });
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'copy-email',
+            title: 'Copy Email Address',
+            keywords: ['email', 'copy', 'contact'],
+            action: () => {
+              const email = 'mayukhjit.chakraborty@gmail.com';
+              navigator.clipboard.writeText(email).then(() => {
+                window.showToast && window.showToast('✓ Email copied to clipboard');
+                cmdk.classList.remove('open');
+              }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = email; document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+                window.showToast && window.showToast('✓ Email copied to clipboard');
+                cmdk.classList.remove('open');
+              });
+            }
+          },
+          {
+            id: 'github',
+            title: 'Open GitHub Profile',
+            keywords: ['github', 'code', 'repo'],
+            action: () => {
+              window.open('https://github.com/mayukhjit-c', '_blank');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'top',
+            title: 'Scroll to Top',
+            keywords: ['top', 'home', 'beginning'],
+            action: () => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'easter-egg',
+            title: 'Easter Egg 🥚',
+            keywords: ['easter', 'egg', 'secret', 'konami'],
+            action: () => {
+              window.showToast && window.showToast('🎉 You found an easter egg! Keep exploring...');
+              // Add a subtle celebration effect
+              document.body.style.animation = 'none';
+              setTimeout(() => {
+                document.body.style.animation = 'rainbowPulse 0.6s ease';
+              }, 10);
+              cmdk.classList.remove('open');
+            }
+          }
+        ];
+
+        // Customization commands
+        let ambientStrength = 1.0;
+        let gridHighlight = 1.0;
+        let effectsPaused = false;
+        function setAmbientStrength(val){ ambientStrength = Math.max(0.5, Math.min(1.5, val)); document.body.style.setProperty('--ambient-scale', String(ambientStrength)); }
+        function setGridHighlight(val){ gridHighlight = Math.max(0.6, Math.min(1.6, val)); document.documentElement.style.setProperty('--grid-highlight-scale', String(gridHighlight)); }
+        function toggleEffects(){ effectsPaused = !effectsPaused; if (effectsPaused) { window.__isSmoothScrolling = true; } else { window.__isSmoothScrolling = false; } }
+
+        commands.push(
+          { id: 'ambient-up', title: 'Ambient glow: stronger', keywords: ['ambient','background','glow','color'], action: () => setAmbientStrength(ambientStrength + 0.1) },
+          { id: 'ambient-down', title: 'Ambient glow: softer', keywords: ['ambient','background','glow','color'], action: () => setAmbientStrength(ambientStrength - 0.1) },
+          { id: 'grid-strong', title: 'Grid highlight: stronger', keywords: ['grid','highlight','hover'], action: () => setGridHighlight(gridHighlight + 0.1) },
+          { id: 'grid-soft', title: 'Grid highlight: softer', keywords: ['grid','highlight','hover'], action: () => setGridHighlight(gridHighlight - 0.1) },
+          { id: 'effects-toggle', title: 'Toggle visual effects', keywords: ['effects','particles','background'], action: () => { toggleEffects(); window.showToast && window.showToast(effectsPaused ? 'Effects paused' : 'Effects resumed'); } },
+          { id: 'themes-slow', title: 'Theme rotation: slow', keywords: ['theme','palette','rotation','slow'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(true); window.showToast && window.showToast('Theme rotation slowed'); } },
+          { id: 'themes-normal', title: 'Theme rotation: normal', keywords: ['theme','palette','rotation','normal'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(false); window.showToast && window.showToast('Theme rotation normal'); } }
+        );
+
+        let selectedIndex = 0;
+        let filteredCommands = commands;
+
+        function renderCommands() {
+          cmdkList.innerHTML = '';
+          filteredCommands.forEach((cmd, idx) => {
+            const item = document.createElement('div');
+            item.className = 'cmdk-item';
+            item.setAttribute('role', 'option');
+            item.setAttribute('aria-selected', idx === selectedIndex);
+            item.innerHTML = `
+              <span>${cmd.title}</span>
+              ${idx === selectedIndex ? '<span class="cmdk-kbd">↵</span>' : ''}
+            `;
+            item.addEventListener('click', () => cmd.action());
+            cmdkList.appendChild(item);
+          });
+          // Update aria-selected for all items
+          cmdkList.querySelectorAll('.cmdk-item').forEach((item, idx) => {
+            item.setAttribute('aria-selected', idx === selectedIndex);
+          });
+        }
+
+        function filterCommands(query) {
+          const q = query.toLowerCase().trim();
+          if (!q) {
+            filteredCommands = commands;
+            selectedIndex = 0;
+            renderCommands();
+            return;
+          }
+          filteredCommands = commands.filter(cmd => {
+            return cmd.title.toLowerCase().includes(q) ||
+                   cmd.keywords.some(kw => kw.toLowerCase().includes(q));
+          });
+          selectedIndex = Math.max(0, Math.min(selectedIndex, filteredCommands.length - 1));
+          renderCommands();
+        }
+
+        function openPalette() {
+          cmdk.classList.add('open');
+          cmdkInput.focus();
+          cmdkInput.value = '';
+          filteredCommands = commands;
+          selectedIndex = 0;
+          renderCommands();
+        }
+
+        function closePalette() {
+          cmdk.classList.remove('open');
+          cmdkInput.blur();
+        }
+
+        // Keyboard shortcuts: Cmd+K or Ctrl+K to open
+        window.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            if (cmdk.classList.contains('open')) {
+              closePalette();
+            } else {
+              openPalette();
+            }
+          }
+          if (e.key === 'Escape' && cmdk.classList.contains('open')) {
+            closePalette();
+          }
+        });
+
+        // Handle input filtering
+        cmdkInput.addEventListener('input', (e) => {
+          filterCommands(e.target.value);
+        });
+
+        // Handle keyboard navigation
+        cmdkInput.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % filteredCommands.length;
+            renderCommands();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = selectedIndex === 0 ? filteredCommands.length - 1 : selectedIndex - 1;
+            renderCommands();
+          } else if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
+            e.preventDefault();
+            filteredCommands[selectedIndex].action();
+          }
+        });
+
+        // Close on backdrop click
+        cmdk.addEventListener('click', (e) => {
+          if (e.target === cmdk) closePalette();
+        });
+      })();
+
+      // Modal functionality — because details matter ✨
+      (function() {
+        const modal = document.getElementById('modal');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalMedia = document.getElementById('modalMedia');
+        if (!modal || !modalClose) return;
+
+        // Project data — each project gets its moment in the spotlight
+        const projectData = {
+          gcsemate: {
+            title: 'GCSEMate',
+            description: 'GCSE revision companion offering structured subjects, notes, and past papers for focused study.',
+            details: 'Built with a focus on clarity and accessibility, GCSEMate helps students navigate their revision journey with structured content and intuitive navigation. The platform combines clean UI with performant backend architecture.',
+            tech: ['Web App', 'Education', 'UX', 'React', 'Node.js'],
+            url: 'https://gcsemate.com'
+          },
+          codebuilder: {
+            title: 'CodeBuilder AI',
+            description: 'Autonomous web app that generates startup ideas, analyzes profitability, considers marketing & branding, then fully implements working webapps using Gemini 2.5 Pro.',
+            details: 'An autonomous AI system that demonstrates end-to-end product development. CodeBuilder AI generates innovative startup concepts, performs deep market analysis including profitability assessment, develops comprehensive marketing strategies and branding guidelines, identifies improvement areas, and then autonomously builds fully functional web applications using Google\'s Gemini 2.5 Pro. This project showcases advanced AI orchestration, full-stack development automation, and intelligent decision-making systems.',
+            tech: ['AI', 'Autonomous Systems', 'Gemini 2.5 Pro', 'Full-stack', 'Machine Learning'],
+            url: null
+          },
+          studio: {
+            title: 'Subscriberlytics',
+            description: 'Track and analyze your subscriptions with real‑time currency conversion, comprehensive insights, and offline PWA support.',
+            details: 'Subscriberlytics is a privacy‑first subscription manager. It offers advanced analytics (cost breakdowns, value analysis, visual charts), export/import, keyboard shortcuts, 30+ currencies with automatic conversion, and installs as a PWA for offline use. Clean, accessible UI with smooth animations and responsive design.',
+            tech: ['Analytics', 'PWA', 'Vanilla JS', 'CSS', 'Currency', 'Accessibility'],
+            url: 'https://github.com/mayukhjit-c/subscriberlytics'
+          }
+        };
+
+        function openModal(projectId) {
+          const data = projectData[projectId];
+          if (!data) return;
+          modalTitle.textContent = data.title;
+          modalBody.innerHTML = `
+            <p class="subtitle">${data.description}</p>
+            <p>${data.details}</p>
+            <div class="badges" style="margin-top: 16px;">
+              ${data.tech.map(t => `<span class="badge-tech">${t}</span>`).join('')}
+            </div>
+            ${data.url ? `<div style="margin-top: 20px;"><a class="btn primary" href="${data.url}" target="_blank" rel="noopener">Visit ${data.title} <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>` : ''}
+          `;
+          modalMedia.innerHTML = ''; // Clear media for now
+          modal.classList.add('open');
+          modalClose.focus();
+        }
+
+        function closeModal() {
+          modal.classList.remove('open');
+        }
+
+        // Bind modal triggers
+        document.querySelectorAll('[data-open-modal]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const projectId = btn.getAttribute('data-open-modal');
+            openModal(projectId);
+          });
+        });
+
+        modalClose.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('open')) {
+            closeModal();
+          }
+        });
+      })();
+
+      // Easter Egg: Konami Code — classic sequence, slightly more useful now
+      // Try: ↑ ↑ ↓ ↓ ← → ← → B A (or just mash keys in sequence)
+      (function() {
+        const konamiCode = [
+          'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+          'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+          'KeyB', 'KeyA'
+        ];
+        let konamiIndex = 0;
+        window.addEventListener('keydown', (e) => {
+          if (e.key === konamiCode[konamiIndex]) {
+            konamiIndex++;
+            if (konamiIndex === konamiCode.length) {
+              konamiIndex = 0;
+              // Open command palette as a practical easter surprise
+              const cmdk = document.getElementById('cmdk');
+              if (cmdk && !cmdk.classList.contains('open')) {
+                cmdk.classList.add('open');
+                const input = document.getElementById('cmdkInput');
+                input && input.focus();
+              }
+              // Also toggle a slower theme rotation for a bit of calm
+              if (typeof window.__toggleSlowThemes === 'function') {
+                window.__toggleSlowThemes(true);
+                setTimeout(() => window.__toggleSlowThemes(false), 120000); // 2 mins
+              }
+              window.showToast && window.showToast('Secret mode enabled. Press Esc to close.');
+            }
+          } else {
+            konamiIndex = 0;
+          }
+        });
+      })();
+
+      // Easter Egg: Brand dot click counter — click the dot 7 times for a surprise 🎯
+      (function() {
+        const brandDot = document.querySelector('.brand .dot');
+        if (!brandDot) return;
+        let clickCount = 0;
+        let lastClickTime = 0;
+        brandDot.style.cursor = 'pointer';
+        brandDot.addEventListener('click', () => {
+          const now = Date.now();
+          if (now - lastClickTime > 2000) clickCount = 0; // Reset if too slow
+          clickCount++;
+          lastClickTime = now;
+          if (clickCount === 7) {
+            window.showToast && window.showToast('✨ 7 clicks! You discovered the secret dot. Impressive persistence!');
+            // Make it dance
+            brandDot.style.animation = 'none';
+            setTimeout(() => {
+              brandDot.style.animation = 'pulse 0.5s ease 3';
+            }, 10);
+            clickCount = 0;
+          }
+        });
+      })();
+
+      // Theme Manager — rotates palettes and renders subtle themed effects
+      // Themes: fire (smoke + crackle), ice (snow blizzard), forest (branches + sub-branches), lilac (bubbles), fog (fog layer)
+      (function() {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const root = document.documentElement;
+        // Feature detect color-mix and mark fallback class
+        try { if (!CSS.supports('background: color-mix(in oklab, #fff 10%, #000)')) { document.documentElement.classList.add('no-colormix'); } } catch(_) {}
+        // Coarse pointer scale for effects and hover bands
+        const pointerCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+        const themes = [
+          {
+            id: 'fire',
+            vars: {
+              p1: '#fff8', p2: '#ffd166', p3: '#ff9f1c', p4: '#ff6a00', p5: '#e85d04', p6: '#9d0208',
+              g1: 'rgba(255,200,100,0.75)', g2: 'rgba(255,120,0,0.35)', g3: 'rgba(255,90,0,0.25)', g4: 'rgba(255,170,0,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'ice',
+            vars: {
+              p1: '#f8ffff', p2: '#90d5ff', p3: '#5bb3ff', p4: '#0084ff', p5: '#0066cc', p6: '#004499',
+              g1: 'rgba(144,213,255,0.75)', g2: 'rgba(91,179,255,0.35)', g3: 'rgba(0,132,255,0.25)', g4: 'rgba(144,213,255,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'forest',
+            vars: {
+              p1: '#f6fff6', p2: '#a8e6a1', p3: '#6edb7a', p4: '#37b24d', p5: '#2f9e44', p6: '#1b7a32',
+              g1: 'rgba(104, 220, 130, 0.75)', g2: 'rgba(55, 178, 77, 0.35)', g3: 'rgba(31, 124, 54, 0.25)', g4: 'rgba(168, 230, 161, 0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'lilac',
+            vars: {
+              p1: '#fff8ff', p2: '#d9aaff', p3: '#b885ff', p4: '#9966ff', p5: '#7a33ff', p6: '#5c00cc',
+              g1: 'rgba(217,170,255,0.75)', g2: 'rgba(184,133,255,0.35)', g3: 'rgba(153,102,255,0.25)', g4: 'rgba(217,170,255,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'fog',
+            vars: {
+              p1: '#ffffff', p2: '#dcdcdc', p3: '#bfbfbf', p4: '#9a9a9a', p5: '#7d7d7d', p6: '#5f5f5f',
+              g1: 'rgba(230,230,230,0.75)', g2: 'rgba(200,200,200,0.35)', g3: 'rgba(160,160,160,0.25)', g4: 'rgba(220,220,220,0.18)',
+              filter: 'none'
+            }
+          }
+        ];
+
+        // Color interpolation utilities for smooth transitions
+        function hexToRgb(hex) {
+          // Handle rgba strings like rgba(255,200,100,0.75)
+          if (hex.startsWith('rgba') || hex.startsWith('rgb')) {
+            const match = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+              return {
+                r: parseInt(match[1]),
+                g: parseInt(match[2]),
+                b: parseInt(match[3]),
+                a: match[4] ? parseFloat(match[4]) : 1
+              };
+            }
+          }
+          // Handle 4-digit hex with alpha shorthand (e.g., #fff8 -> rgba(255,255,255,0.533))
+          const hex4Match = /^#?([a-f\d]{3})([a-f\d])$/i.exec(hex);
+          if (hex4Match) {
+            const s = hex4Match[1];
+            return {
+              r: parseInt(s[0] + s[0], 16),
+              g: parseInt(s[1] + s[1], 16),
+              b: parseInt(s[2] + s[2], 16),
+              a: parseInt(hex4Match[2] + hex4Match[2], 16) / 255
+            };
+          }
+          // Handle short hex (e.g., #fff -> #ffffff)
+          if (/^#?[a-f\d]{3}$/i.test(hex)) {
+            const shorthand = hex.replace('#', '');
+            return {
+              r: parseInt(shorthand[0] + shorthand[0], 16),
+              g: parseInt(shorthand[1] + shorthand[1], 16),
+              b: parseInt(shorthand[2] + shorthand[2], 16),
+              a: 1
+            };
+          }
+          // Handle 8-digit hex with alpha (e.g., #ffffff88)
+          const hex8Match = /^#?([a-f\d]{6})([a-f\d]{2})$/i.exec(hex);
+          if (hex8Match) {
+            return {
+              r: parseInt(hex8Match[1].substring(0, 2), 16),
+              g: parseInt(hex8Match[1].substring(2, 4), 16),
+              b: parseInt(hex8Match[1].substring(4, 6), 16),
+              a: parseInt(hex8Match[2], 16) / 255
+            };
+          }
+          // Handle standard 6-digit hex colors
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+            a: 1
+          } : { r: 255, g: 255, b: 255, a: 1 };
+        }
+        
+        function rgbToHex(r, g, b) {
+          return "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
+        }
+        
+        function rgbaToString(r, g, b, a) {
+          return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
+        }
+        
+        function interpolateColor(color1, color2, t) {
+          const c1 = hexToRgb(color1);
+          const c2 = hexToRgb(color2);
+          const hasAlpha1 = color1.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color1) || /#?[a-f\d]{8}$/i.test(color1);
+          const hasAlpha2 = color2.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color2) || /#?[a-f\d]{8}$/i.test(color2);
+          const useAlpha = hasAlpha1 || hasAlpha2 || c1.a !== 1 || c2.a !== 1;
+          
+          const r = c1.r + (c2.r - c1.r) * t;
+          const g = c1.g + (c2.g - c1.g) * t;
+          const b = c1.b + (c2.b - c1.b) * t;
+          const a = useAlpha ? (c1.a + (c2.a - c1.a) * t) : 1;
+          
+          return useAlpha ? rgbaToString(r, g, b, a) : rgbToHex(r, g, b);
+        }
+        
+        // Linear easing for perfectly even-rate crossfades (less "surprise" than cubic)
+        function linearEase(t) { return t; }
+        
+        let currentThemeVars = {};
+        let isTransitioning = false;
+        
+        function applyTheme(theme, instant = false) {
+          root.classList.remove('theme-fire','theme-ice','theme-forest','theme-lilac','theme-fog');
+          root.classList.add(`theme-${theme.id}`);
+          const v = theme.vars;
+          
+          if (instant || Object.keys(currentThemeVars).length === 0) {
+            // Apply instantly on first load
+            currentThemeVars = { ...v };
+            root.style.setProperty('--theme-primary-1', v.p1);
+            root.style.setProperty('--theme-primary-2', v.p2);
+            root.style.setProperty('--theme-primary-3', v.p3);
+            root.style.setProperty('--theme-primary-4', v.p4);
+            root.style.setProperty('--theme-primary-5', v.p5);
+            root.style.setProperty('--theme-primary-6', v.p6);
+            root.style.setProperty('--theme-glow-1', v.g1);
+            root.style.setProperty('--theme-glow-2', v.g2);
+            root.style.setProperty('--theme-glow-3', v.g3);
+            root.style.setProperty('--theme-glow-4', v.g4);
+            root.style.setProperty('--theme-filter', v.filter);
+            // Also sync accent variables immediately
+            root.style.setProperty('--accent', v.p4);
+            root.style.setProperty('--accent-2', v.p3);
+            return;
+          }
+          
+          // Smooth transition over 3 seconds
+          if (isTransitioning) return; // Don't start a new transition if one is in progress
+          isTransitioning = true;
+          
+          const startVars = { ...currentThemeVars };
+          const endVars = { ...v };
+          const duration = 4500; // smoother 4.5 seconds
+          const startTime = performance.now();
+          
+          function animate() {
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = linearEase(progress);
+            
+            // Interpolate each color variable
+            ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].forEach(key => {
+              if (startVars[key] !== endVars[key]) {
+                const num = key.slice(1);
+                const interpolated = interpolateColor(startVars[key], endVars[key], eased);
+                root.style.setProperty(`--theme-primary-${num}`, interpolated);
+              }
+            });
+            ['g1', 'g2', 'g3', 'g4'].forEach(key => {
+              if (startVars[key] !== endVars[key]) {
+                const num = key.slice(1);
+                const interpolated = interpolateColor(startVars[key], endVars[key], eased);
+                root.style.setProperty(`--theme-glow-${num}`, interpolated);
+              }
+            });
+            // Interpolate accent pair
+            const acc = interpolateColor(startVars.p4, endVars.p4, eased);
+            const acc2 = interpolateColor(startVars.p3, endVars.p3, eased);
+            root.style.setProperty('--accent', acc);
+            root.style.setProperty('--accent-2', acc2);
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              currentThemeVars = { ...endVars };
+              isTransitioning = false;
+              // Set final values to ensure accuracy
+              root.style.setProperty('--theme-primary-1', endVars.p1);
+              root.style.setProperty('--theme-primary-2', endVars.p2);
+              root.style.setProperty('--theme-primary-3', endVars.p3);
+              root.style.setProperty('--theme-primary-4', endVars.p4);
+              root.style.setProperty('--theme-primary-5', endVars.p5);
+              root.style.setProperty('--theme-primary-6', endVars.p6);
+              root.style.setProperty('--theme-glow-1', endVars.g1);
+              root.style.setProperty('--theme-glow-2', endVars.g2);
+              root.style.setProperty('--theme-glow-3', endVars.g3);
+              root.style.setProperty('--theme-glow-4', endVars.g4);
+              root.style.setProperty('--theme-filter', endVars.filter);
+              root.style.setProperty('--accent', endVars.p4);
+              root.style.setProperty('--accent-2', endVars.p3);
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+
+        // Themed overlay effects on a lightweight canvas
+        let fx, ctx, w = 0, h = 0, dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        // Defer visual effects until after initial view or first interaction
+        let effectsEnabled = false;
+        let effectsAlpha = 0;
+        let perfMode = false; // enable when FPS is low
+        let lastTick = 0, fpsEMA = 60;
+        function animateEffectsAlpha() {
+          if (!effectsEnabled) return;
+          effectsAlpha = Math.min(1, effectsAlpha + 0.045);
+          if (effectsAlpha < 1) requestAnimationFrame(animateEffectsAlpha);
+        }
+        const enableEffects = () => {
+          if (effectsEnabled) return;
+          effectsEnabled = true;
+          effectsAlpha = 0;
+          // Reseed particles now that effects are enabled
+          resetFor(themes[themeIndex].id);
+          requestAnimationFrame(animateEffectsAlpha);
+        };
+        // Enable after 4s or on first interaction (whichever comes first)
+        setTimeout(enableEffects, 4000);
+        const firstInteraction = () => { enableEffects(); window.removeEventListener('scroll', firstInteraction); window.removeEventListener('pointermove', firstInteraction); };
+        window.addEventListener('scroll', firstInteraction, { passive: true });
+        window.addEventListener('pointermove', firstInteraction, { passive: true });
+        let resizeId;
+        function ensureCanvas() {
+          if (!fx) {
+            fx = document.createElement('canvas');
+            fx.id = 'fx-layer';
+            Object.assign(fx.style, {
+              position: 'fixed', inset: '0', zIndex: '0', pointerEvents: 'none'
+            });
+            document.body.prepend(fx);
+            ctx = fx.getContext('2d');
+          }
+          const nw = Math.ceil(window.innerWidth);
+          const nh = Math.ceil(window.innerHeight);
+          if (nw !== w || nh !== h) {
+            w = nw; h = nh; fx.width = Math.floor(w * dpr); fx.height = Math.floor(h * dpr);
+            fx.style.width = w + 'px'; fx.style.height = h + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
+        }
+        window.addEventListener('resize', () => { cancelAnimationFrame(resizeId); resizeId = requestAnimationFrame(ensureCanvas); }, { passive: true });
+        // Interactive background clicks — tailored per theme (small but fun)
+        function spawnBurst(x, y, themeId) {
+          if (prefersReduced) return;
+          const burst = { x, y, themeId, life: 0, max: 1200, items: [] };
+          const add = (o) => burst.items.push(o);
+          if (themeId === 'fire') {
+            for (let i = 0; i < 26; i++) {
+              const a = Math.random() * Math.PI * 2; const s = 0.8 + Math.random()*1.6;
+              add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.4, r: 0.8 + Math.random()*1.6, life: 0, max: 700 + Math.random()*500 });
+            }
+          } else if (themeId === 'ice') {
+            for (let i = 0; i < 3; i++) add({ x, y, ring: true, r: 2, vr: 1.6 + i*0.3, life: 0, max: 900 });
+          } else if (themeId === 'forest') {
+            const petals = 8; for (let i = 0; i < petals; i++) add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr: 0.9, life: 0, max: 1000 });
+          } else if (themeId === 'lilac') {
+            for (let i = 0; i < 14; i++) { const a = Math.random()*Math.PI*2; const s = 0.9 + Math.random()*1.4; add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, r: 1.2 + Math.random()*1.8, life: 0, max: 800 }); }
+          } else if (themeId === 'fog') {
+            for (let i = 0; i < 10; i++) add({ x, y, smoke: true, r: 4 + Math.random()*6, vr: 0.3 + Math.random()*0.4, life: 0, max: 1400, ox: (Math.random()-0.5)*8, oy: (Math.random()-0.5)*8 });
+          }
+          (state.bursts || (state.bursts = [])).push(burst);
+        }
+        window.addEventListener('pointerdown', (e) => {
+          const themeId = themes[themeIndex].id;
+          spawnBurst(e.clientX, e.clientY, themeId);
+        }, { passive: true });
+
+        // Particles for effects
+        const state = { t: 0, parts: [], sparks: [], cross: null };
+        const branchState = { branches: [], exit: null };
+        let fogPhase = 0; // 0..1 smoothed alpha for fog
+        let fogTarget = 0;
+        function resetFor(themeId, prevThemeId) {
+          // Snapshot current parts BEFORE clearing, so crossfade always has something to draw
+          const prevSnapshot = (state.parts && state.parts.length) ? state.parts.map(p => ({ ...p })) : (state.partsPrev || []);
+          state.parts.length = 0;
+          state.sparks.length = 0;
+          // Crossfade: keep a fading copy of old parts
+          if (prevThemeId && !prefersReduced) {
+            // Limit old parts for performance during crossfade, especially for ice
+            const prevCopy = prevSnapshot.map(p => ({ ...p }));
+            let dur = 2600;
+            let limited = prevCopy;
+            if (prevThemeId === 'ice') {
+              dur = 3200; // slightly longer for a calmer fade-out
+              const cap = 100; // cap fading flakes to avoid jitter/lag
+              if (prevCopy.length > cap) limited = prevCopy.slice(0, cap);
+            }
+            state.cross = {
+              oldTheme: prevThemeId,
+              oldParts: limited,
+              t: 0, dur
+            };
+            // Ensure effects layer is visible during crossfade
+            effectsEnabled = true;
+            effectsAlpha = Math.max(effectsAlpha, 0.9);
+          } else {
+            state.cross = null;
+          }
+          // Seed a small number of elements per theme
+          const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : 28);
+          const coarseScale = pointerCoarse ? 0.7 : 1;
+          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale);
+          for (let i = 0; i < count; i++) {
+            if (themeId === 'ice') {
+              // Snowflake
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 1 + Math.random() * 2.6,
+                vx: -0.15 + Math.random() * 0.3,
+                vy: 0.25 + Math.random() * 0.55,
+                sway: Math.random() * Math.PI * 2,
+                swayAmp: 0.6 + Math.random() * 1.2,
+                life: 0, max: 12000 + Math.random() * 8000,
+                data: Math.random()
+              });
+            } else if (themeId === 'forest') {
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
+                life: 0, max: 4000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            } else if (themeId === 'fire') {
+              state.parts.push({
+                x: Math.random() * w, y: h * (0.55 + Math.random() * 0.45),
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.15,
+                vy: -0.1 - Math.random() * 0.1,
+                life: 0, max: 5000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            } else {
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
+                life: 0, max: 4000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            }
+          }
+          if (themeId === 'forest') {
+            initBranches();
+          } else {
+            // If leaving forest, capture an exit animation snapshot that rolls back
+            if (prevThemeId === 'forest' && branchState.branches.length) {
+              branchState.exit = {
+                branches: branchState.branches.map(b => ({ ...b, points: b.points.map(pt => ({...pt})) })),
+                phase: 1.0
+              };
+            }
+            branchState.branches = [];
+          }
+          if (themeId === 'fog') { fogTarget = 1; } else { fogTarget = 0; }
+          // Preserve current parts for next crossfade
+          state.partsPrev = state.parts.map(p => ({ ...p }));
+        }
+
+        let themeIndex = 0; applyTheme(themes[themeIndex], true);
+        ensureCanvas(); resetFor(themes[themeIndex].id);
+        // Initialize enter fade for first theme
+        state.enter = { t: 1200, dur: 1200 };
+
+        // Dynamic favicon based on theme colors
+        function generateFavicon(){
+          try {
+            const cs = getComputedStyle(document.documentElement);
+            const p3 = cs.getPropertyValue('--theme-primary-3').trim() || '#ffffff';
+            const p5 = cs.getPropertyValue('--theme-primary-5').trim() || '#999999';
+            const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+            const c = canvas.getContext('2d');
+            const g = c.createLinearGradient(0,0,64,64); g.addColorStop(0, p3); g.addColorStop(1, p5);
+            c.fillStyle = g; c.fillRect(0,0,64,64);
+            c.fillStyle = 'rgba(0,0,0,0.2)'; c.fillRect(0,48,64,16);
+            c.fillStyle = '#000'; c.font = 'bold 36px system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText('M', 32, 30);
+            const url = canvas.toDataURL('image/png');
+            let link = document.querySelector('link[rel="icon"][data-gen="1"]');
+            if (!link) { link = document.createElement('link'); link.setAttribute('rel','icon'); link.setAttribute('data-gen','1'); document.head.appendChild(link); }
+            link.setAttribute('href', url);
+          } catch (_) { /* ignore */ }
+        }
+        generateFavicon();
+
+        function drawFireSmoke(p) {
+          ctx.fillStyle = 'rgba(255, 180, 120, 0.04)';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.4, 0, Math.PI * 2); ctx.fill();
+          p.vx *= 0.99; p.vy = -0.12 - p.data * 0.08; // drift upward
+        }
+        function spawnFireSpark() {
+          if (state.sparks.length > 220) return;
+          state.sparks.push({
+            x: Math.random() * w,
+            y: h * (0.65 + Math.random() * 0.35),
+            vx: (Math.random() - 0.5) * 0.25,
+            vy: -0.35 - Math.random() * 0.35,
+            life: 0,
+            max: 700 + Math.random() * 700,
+            r: 0.8 + Math.random() * 1.4,
+            hue: 20 + Math.random() * 40
+          });
+        }
+        function drawFireSpark(s) {
+          const a = 1 - (s.life / s.max);
+          ctx.fillStyle = `rgba(255, ${160 + Math.random()*60|0}, 60, ${0.25 * a})`;
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+          s.vx *= 0.995; s.vy *= 0.99; s.vx += (Math.random() - 0.5) * 0.02;
+        }
+        function drawBurst(b) {
+          const k = b.life / b.max; const alpha = Math.max(0, 1 - k);
+          if (b.themeId === 'fire') {
+            for (const it of b.items) {
+              const a = 1 - (it.life / it.max);
+              ctx.fillStyle = `rgba(255,170,60,${0.35 * a * alpha})`;
+              ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill();
+              it.x += it.vx; it.y += it.vy; it.vy += 0.006; it.life += 16;
+            }
+          } else if (b.themeId === 'ice') {
+            ctx.strokeStyle = `rgba(200,230,255,${0.45*alpha})`; ctx.lineWidth = 1;
+            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.stroke(); }
+          } else if (b.themeId === 'forest') {
+            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.a); ctx.fillStyle = `rgba(104,220,130,${0.25*alpha})`; ctx.beginPath(); ctx.ellipse(it.r*1.2, 0, 8, 5, 0, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = `rgba(60,160,90,${0.5*alpha})`; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(it.r*1.2, -3); ctx.lineTo(it.r*1.2, 3); ctx.stroke(); ctx.restore(); }
+          } else if (b.themeId === 'lilac') {
+            for (const it of b.items) { const a = 1 - (it.life/it.max); ctx.fillStyle = `rgba(255,255,255,${0.28*a*alpha})`; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill(); it.x += it.vx; it.y += it.vy; it.life += 16; }
+          } else if (b.themeId === 'fog') {
+            for (const it of b.items) { ctx.fillStyle = `rgba(255,60,60,${0.08*alpha})`; ctx.beginPath(); ctx.arc(it.x + it.ox, it.y + it.oy, it.r, 0, Math.PI*2); ctx.fill(); it.r += it.vr; it.ox *= 0.99; it.oy *= 0.99; it.life += 16; }
+          }
+          b.life += 16;
+        }
+        function drawSnowflake(p) {
+          // Fade in/out envelope over life (roll in/out)
+          const lifeT = (p.life % p.max) / p.max; // 0..1 looping
+          const sIn = Math.min(1, lifeT / 0.25);
+          const sOut = Math.min(1, (1 - lifeT) / 0.3);
+          const a = Math.max(0, (sIn*sIn*(3 - 2*sIn)) * (sOut*sOut*(3 - 2*sOut)));
+          // wind sway + gentle spin (roll)
+          p.vx = Math.sin(state.t * 0.001 + p.sway) * (0.08 * p.swayAmp);
+          p.rot = (p.rot || 0) + (p.spin || 0.002 + Math.random()*0.002);
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          if (p._crossScale) { ctx.scale(p._crossScale, p._crossScale); }
+          ctx.globalAlpha *= a;
+          ctx.strokeStyle = 'rgba(220,240,255,0.45)';
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(-p.r, 0);
+          ctx.lineTo(p.r, 0);
+          ctx.moveTo(0, -p.r);
+          ctx.lineTo(0, p.r);
+          ctx.stroke();
+          // glow
+          ctx.fillStyle = 'rgba(220,240,255,0.15)';
+          ctx.beginPath(); ctx.arc(0, 0, p.r * 1.6, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        function drawLeaves(p) {
+          // Better leaf shape with vein
+          ctx.fillStyle = 'rgba(80, 200, 120, 0.12)';
+          ctx.strokeStyle = 'rgba(60, 160, 90, 0.15)';
+          ctx.lineWidth = 0.5;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.data * Math.PI * 2);
+          // Leaf shape (teardrop)
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.r * 1.5, p.r * 0.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Vein
+          ctx.beginPath();
+          ctx.moveTo(0, -p.r * 0.8);
+          ctx.lineTo(0, p.r * 0.8);
+          ctx.stroke();
+          ctx.restore();
+          p.vy = 0.06 + p.data * 0.1; p.vx += (Math.sin(state.t * 0.001 + p.data * 6) * 0.015);
+        }
+        
+        // Brown branches growing from edges with recursive sub-branches
+        function initBranches() {
+          branchState.branches = [];
+          // Create branches from edges, with precomputed curved paths (no wiggle)
+          const edgePoints = [
+            {x: 0, y: h * 0.3, angle: 0},
+            {x: 0, y: h * 0.7, angle: 0},
+            {x: w, y: h * 0.2, angle: Math.PI},
+            {x: w, y: h * 0.8, angle: Math.PI},
+            {x: w * 0.2, y: 0, angle: -Math.PI/2},
+            {x: w * 0.8, y: 0, angle: -Math.PI/2},
+            {x: w * 0.3, y: h, angle: Math.PI/2},
+            {x: w * 0.7, y: h, angle: Math.PI/2}
+          ];
+          const branchCount = 6;
+          for (let i = 0; i < branchCount; i++) {
+            const ep = edgePoints[Math.floor(Math.random() * edgePoints.length)];
+            const baseAngle = ep.angle + (Math.random() - 0.5) * 0.4;
+            const totalLength = 80 + Math.random() * 120;
+            const segments = 8 + Math.floor(Math.random() * 6);
+            const thickness = 1.5 + Math.random() * 2.5;
+            // Precompute a gentle, organic curve with small, fixed deviations
+            const points = [{ x: ep.x, y: ep.y }];
+            let cx = ep.x, cy = ep.y, ca = baseAngle;
+            const segLen = totalLength / segments;
+            for (let s = 0; s < segments; s++) {
+              // small fixed curvature
+              ca += (Math.random() - 0.5) * 0.15;
+              cx += Math.cos(ca) * segLen;
+              cy += Math.sin(ca) * segLen;
+              points.push({ x: cx, y: cy });
+            }
+            // generate sub-branches from mid segments
+            const subs = [];
+            for (let s = 2; s < points.length - 2; s += 2 + (Math.random()*2|0)) {
+              const from = points[s];
+              const ang = baseAngle + (Math.random() - 0.5) * 1.4;
+              const len = totalLength * (0.25 + Math.random() * 0.35);
+              const segs = 5 + Math.floor(Math.random() * 4);
+              const subPts = [{ x: from.x, y: from.y }];
+              let sca = ang; let sx = from.x; let sy = from.y;
+              for (let k = 0; k < segs; k++) {
+                sca += (Math.random() - 0.5) * 0.25;
+                sx += Math.cos(sca) * (len / segs);
+                sy += Math.sin(sca) * (len / segs);
+                subPts.push({ x: sx, y: sy });
+              }
+              subs.push({ points: subPts, thickness: Math.max(0.5, thickness * 0.6), growth: 0, totalLength: len, segments: segs });
+            }
+            branchState.branches.push({ points, thickness, growth: 0, totalLength, segments, subs });
+          }
+        }
+        
+        function drawBranches(now) {
+          ctx.strokeStyle = 'rgba(101, 67, 33, 0.28)';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          function drawTinyLeaf(x, y, angle, scale, alpha) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.scale(scale, scale);
+            ctx.globalAlpha *= alpha;
+            // leaf body
+            ctx.fillStyle = 'rgba(80, 200, 120, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // veins
+            ctx.strokeStyle = 'rgba(50, 140, 85, 0.6)';
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(0, -3);
+            ctx.lineTo(0, 3);
+            ctx.moveTo(0, -1.5);
+            ctx.lineTo(2.2, -0.5);
+            ctx.moveTo(0, 1.5);
+            ctx.lineTo(-2.2, 0.5);
+            ctx.stroke();
+            ctx.restore();
+          }
+          for (const branch of branchState.branches) {
+            // Timelapse growth: accelerate early, slow later
+            branch.growth = Math.min(1, branch.growth + 0.0035);
+            const targetLength = branch.totalLength * branch.growth;
+            let drawn = 0;
+            ctx.lineWidth = Math.max(0.6, branch.thickness * (0.6 + 0.4 * branch.growth));
+            ctx.beginPath();
+            const pts = branch.points;
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+              const px = pts[i - 1];
+              const py = pts[i];
+              const seg = Math.hypot(py.x - px.x, py.y - px.y);
+              if (drawn + seg <= targetLength) {
+                ctx.lineTo(py.x, py.y);
+                drawn += seg;
+              } else {
+                const remain = Math.max(0, targetLength - drawn);
+                if (remain > 0) {
+                  const t = remain / seg;
+                  ctx.lineTo(px.x + (py.x - px.x) * t, px.y + (py.y - px.y) * t);
+                }
+                break;
+              }
+            }
+            ctx.stroke();
+            // add small green leaves along grown segments
+            const pts2 = branch.points;
+            const leavesCount = Math.floor(pts2.length * Math.max(0, branch.growth - 0.2));
+            for (let i = 2; i < leavesCount; i += 2) {
+              const a = pts2[i - 1];
+              const b = pts2[i];
+              const ang = Math.atan2(b.y - a.y, b.x - a.x);
+              const midx = (a.x + b.x) / 2;
+              const midy = (a.y + b.y) / 2;
+              drawTinyLeaf(midx, midy, ang + Math.PI/2, 1, 0.9);
+            }
+            // draw sub-branches with slightly delayed growth
+            if (branch.subs) {
+              ctx.save();
+              ctx.strokeStyle = 'rgba(101, 67, 33, 0.22)';
+              for (const sb of branch.subs) {
+                sb.growth = Math.min(1, sb.growth + 0.003);
+                const tgt = sb.totalLength * Math.max(0, branch.growth - 0.15) * sb.growth;
+                let d2 = 0;
+                ctx.lineWidth = Math.max(0.45, sb.thickness * (0.5 + 0.4 * sb.growth));
+                ctx.beginPath();
+                const sp = sb.points;
+                ctx.moveTo(sp[0].x, sp[0].y);
+                for (let i = 1; i < sp.length; i++) {
+                  const a = sp[i - 1]; const b = sp[i];
+                  const seg = Math.hypot(b.x - a.x, b.y - a.y);
+                  if (d2 + seg <= tgt) { ctx.lineTo(b.x, b.y); d2 += seg; }
+                  else { const rm = Math.max(0, tgt - d2); if (rm > 0) { const t = rm / seg; ctx.lineTo(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); } break; }
+                }
+                ctx.stroke();
+                // leaves on sub-branches
+                const sp2 = sb.points;
+                const cnt = Math.floor(sp2.length * Math.max(0, sb.growth - 0.2));
+                for (let j = 2; j < cnt; j += 2) {
+                  const a2 = sp2[j - 1];
+                  const b2 = sp2[j];
+                  const ang2 = Math.atan2(b2.y - a2.y, b2.x - a2.x);
+                  const mx = (a2.x + b2.x) / 2;
+                  const my = (a2.y + b2.y) / 2;
+                  drawTinyLeaf(mx, my, ang2 + Math.PI/2, 0.9, 0.85);
+                }
+              }
+              ctx.restore();
+            }
+          }
+        }
+        function drawBranchesExit() {
+          if (!branchState.exit) return;
+          const ex = branchState.exit;
+          ctx.save();
+          ctx.globalAlpha *= Math.max(0, ex.phase);
+          ctx.strokeStyle = 'rgba(101, 67, 33, 0.24)';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          for (const b of ex.branches) {
+            const target = b.totalLength * Math.max(0, ex.phase);
+            let drawn = 0; ctx.lineWidth = Math.max(0.5, b.thickness * ex.phase);
+            ctx.beginPath(); const pts = b.points; ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+              const p0 = pts[i-1], p1 = pts[i]; const seg = Math.hypot(p1.x-p0.x, p1.y-p0.y);
+              if (drawn + seg <= target) { ctx.lineTo(p1.x, p1.y); drawn += seg; }
+              else { const rm = Math.max(0, target - drawn); if (rm > 0) { const t = rm/seg; ctx.lineTo(p0.x + (p1.x-p0.x)*t, p0.y + (p1.y-p0.y)*t);} break; }
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+          ex.phase -= 0.02;
+          if (ex.phase <= 0) branchState.exit = null;
+        }
+        function drawBubbles(p) {
+          // Glassmorphic purple bubbles with gradient and highlight
+          // Add soft fade/scale envelope for silky enter/crossfade
+          const k = Math.min(1, Math.max(0, p.life / (p.max || 1000)));
+          const fadeIn = Math.min(1, k / 0.25);
+          const fadeOut = Math.min(1, (1 - k) / 0.25);
+          const env = (fadeIn * fadeIn * (3 - 2 * fadeIn)) * (fadeOut * fadeOut * (3 - 2 * fadeOut));
+          const scale = (p._crossScale !== undefined) ? p._crossScale : (0.9 + 0.1 * env);
+          ctx.save();
+          ctx.globalAlpha *= env;
+          ctx.translate(p.x, p.y);
+          ctx.scale(scale, scale);
+          const grad = ctx.createRadialGradient(
+            p.x - p.r * 0.3, p.y - p.r * 0.3, 0,
+            p.x, p.y, p.r * 1.2
+          );
+          grad.addColorStop(0, 'rgba(217, 180, 255, 0.25)');
+          grad.addColorStop(0.5, 'rgba(184, 133, 255, 0.15)');
+          grad.addColorStop(1, 'rgba(153, 102, 255, 0.05)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          // Highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.beginPath();
+          ctx.ellipse(- p.r * 0.3, - p.r * 0.3, p.r * 0.4, p.r * 0.25, -0.5, 0, Math.PI * 2);
+          ctx.fill();
+          // Outer ring
+          ctx.strokeStyle = 'rgba(217, 170, 255, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+          // gentle drift with slight damping for stability
+          p.vy = -0.06 - p.data * 0.08; p.vx *= 0.992;
+        }
+        function drawFog(now) {
+          // Smooth fog using a phase that eases to target
+          const envelope = 0.85 * fogPhase; // max density scaled
+          for (let layer = 0; layer < 3; layer++) {
+            const offset = layer * 200 + Math.sin(now * 0.0003 + layer) * 50;
+            const g = ctx.createRadialGradient(
+              w*0.4 + offset, h*0.5 + layer * 100, 30,
+              w*0.4 + offset, h*0.5 + layer * 100, Math.max(w,h)*0.7
+            );
+            const base = (0.08 - layer * 0.02) * envelope;
+            g.addColorStop(0, `rgba(240,240,250,${base})`);
+            g.addColorStop(0.5, `rgba(220,220,230,${base * 0.6})`);
+            g.addColorStop(1, 'rgba(200,200,210,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
+          }
+        }
+
+        function tick(now) {
+          ensureCanvas();
+          // Frame-accurate delta to make crossfades consistent across devices
+          const dt = Math.max(0, Math.min(48, now - (state._lastTick || now)));
+          state._lastTick = now;
+          state.t = now;
+          ctx.clearRect(0,0,w,h);
+          const themeId = themes[themeIndex].id;
+
+          // Perf monitor: exponential moving average of FPS
+          const fps = dt > 0 ? 1000 / dt : 60;
+          fpsEMA = fpsEMA * 0.9 + fps * 0.1;
+          const shouldPerf = fpsEMA < 50; // threshold
+          if (shouldPerf && !perfMode) {
+            perfMode = true; dpr = 1; ensureCanvas();
+          } else if (!shouldPerf && perfMode && dpr < 1.5) {
+            perfMode = false; dpr = Math.min(1.5, window.devicePixelRatio || 1); ensureCanvas();
+          }
+
+          if (effectsEnabled) {
+            ctx.save();
+            ctx.globalAlpha = effectsAlpha;
+            // Ease fog phase toward target
+            fogPhase += (fogTarget - fogPhase) * 0.04;
+            // Draw forest exit rollback if present
+            drawBranchesExit();
+            // Crossfade old parts
+            if (!window.__isSmoothScrolling && state.cross && state.cross.oldParts && state.cross.t < state.cross.dur) {
+              const ratio = state.cross.t / state.cross.dur;
+              // Smoothstep easing for even, soft fades
+              const eased = (ratio * ratio * (3 - 2 * ratio));
+              const a = 1 - eased;
+              ctx.save(); ctx.globalAlpha *= a;
+              if (state.cross.oldTheme === 'fire') {
+                for (const p of state.cross.oldParts) { drawFireSmoke(p); }
+              } else if (state.cross.oldTheme === 'ice') {
+                // animate old snow during crossfade for natural exit
+                for (const p of state.cross.oldParts) {
+                  const localRatio = state.cross.t / state.cross.dur;
+                  const localEased = (localRatio * localRatio * (3 - 2 * localRatio));
+                  // progressively damp velocities and sway to avoid jitter
+                  p.vx = (p.vx || 0) * 0.96;
+                  p.vy = (p.vy || 0.4) * 0.96;
+                  p.swayAmp = (p.swayAmp || 1) * 0.98;
+                  // gentle motion without edge wrapping to prevent teleports during fade
+                  p.x += (Math.sin(state.t * 0.001 + (p.sway||0)) * (0.08 * (p.swayAmp||1))) + (p.vx||0);
+                  p.y += (p.vy||0.4);
+                  p.life = (p.life||0) + 16;
+                  // shrink over crossfade for clearer fade-out, slightly stronger toward end
+                  p._crossScale = Math.max(0.3, 1 - localEased * 0.85);
+                  drawSnowflake(p);
+                }
+              } else if (state.cross.oldTheme === 'forest') {
+                // slight leaf fade
+                for (const p of state.cross.oldParts) { drawLeaves(p); }
+              } else if (state.cross.oldTheme === 'lilac') {
+                for (const p of state.cross.oldParts) {
+                  // Damp movement, scale down smoothly, avoid jitter
+                  p.vx = (p.vx || 0) * 0.97;
+                  p.vy = (p.vy || -0.05) * 0.97;
+                  p.x += p.vx;
+                  p.y += p.vy;
+                  p.life = (p.life||0) + dt;
+                  p._crossScale = Math.max(0.4, 1 - eased * 0.8);
+                  drawBubbles(p);
+                }
+              }
+              ctx.restore();
+              state.cross.t += dt;
+            }
+            // Draw current theme with eased enter fade-in (lighter during scroll)
+            let enterAlpha = 1;
+            if (state.enter) {
+              const ep = Math.min(1, state.enter.t / state.enter.dur);
+              // smoothstep for soft, perceptually even fade-in
+              enterAlpha = ep * ep * (3 - 2 * ep);
+            }
+            if (themeId === 'fire') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawFireSmoke(state.parts[i]); }
+              ctx.restore();
+              // occasional sparks
+              if (!perfMode && !window.__isSmoothScrolling && Math.random() < 0.5) spawnFireSpark();
+              // draw and advance sparks
+              for (let i = state.sparks.length - 1; i >= 0; i--) {
+                const s = state.sparks[i]; drawFireSpark(s);
+                s.x += s.vx; s.y += s.vy; s.life += 16;
+                if (s.life > s.max || s.y < -10) state.sparks.splice(i,1);
+              }
+            } else if (themeId === 'ice') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawSnowflake(state.parts[i]); }
+              ctx.restore();
+            } else if (themeId === 'forest') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              if (!window.__isSmoothScrolling) drawBranches(now);
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawLeaves(state.parts[i]); }
+              ctx.restore();
+            } else if (themeId === 'lilac') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawBubbles(state.parts[i]); }
+              ctx.restore();
+            }
+            // Draw fog if current theme is fog or while fading out
+            if (themeId === 'fog' || fogPhase > 0.001) { drawFog(now); }
+            // Draw interactive bursts
+            if (state.bursts && state.bursts.length) {
+              for (let i = state.bursts.length - 1; i >= 0; i--) {
+                const b = state.bursts[i];
+                drawBurst(b);
+                if (b.life >= b.max) state.bursts.splice(i, 1);
+              }
+            }
+            ctx.restore();
+          }
+
+          // Integrate particles
+          for (const p of state.parts) {
+            p.x += p.vx; p.y += p.vy; p.life += 16;
+            if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
+            if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+            // Loop life for snowflakes to keep fade cycling
+            if (themeId === 'ice' && p.life > p.max) p.life = 0;
+          }
+          // Advance enter fade
+          if (state.enter && state.enter.t < state.enter.dur) state.enter.t += dt;
+          if (!prefersReduced) requestAnimationFrame(tick);
+        }
+        if (!prefersReduced) requestAnimationFrame(tick);
+
+        // Rotate theme at a configurable interval with smooth crossfade and safe re-entry
+        let nextThemeTimeout;
+        let themeIntervalMs = 5000;
+        window.__toggleSlowThemes = function(slow){ themeIntervalMs = slow ? 9000 : 5000; };
+        function scheduleNextTheme() {
+          clearTimeout(nextThemeTimeout);
+          nextThemeTimeout = setTimeout(() => {
+            const prev = themes[themeIndex].id;
+            themeIndex = (themeIndex + 1) % themes.length;
+            const newTheme = themes[themeIndex];
+            applyTheme(newTheme);
+            // Make sure visual effects are enabled for visible crossfades
+            enableEffects();
+            resetFor(newTheme.id, prev);
+            scheduleNextTheme();
+          }, themeIntervalMs);
+        }
+        scheduleNextTheme();
+      })();
+
+      // i18n: simple native UI translations with RTL support
+      (function(){
+        const htmlEl = document.documentElement;
+        const langSelect = document.getElementById('langSelect');
+        if (!langSelect) return;
+        const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur']);
+        const DICT = {
+          en: {
+            'nav.projects': 'Projects', 'nav.vision': 'Vision', 'nav.why': 'Why me?', 'nav.faq': 'FAQ', 'nav.skills': 'Skills', 'nav.contact': 'Contact',
+            'kicker.role': 'Full‑stack Web Developer & Designer', 'kicker.loc': 'Based in London, UK', 'kicker.age': 'Age', 'kicker.status': 'Currently seeking experience',
+            'hero.title': 'I design and build <span id="typer" class="typer" data-tooltip="Watch the colors flow"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.',
+            'hero.subtitle': 'I focus on clarity, performance, and maintainability. I enjoy shipping polished user experiences and robust backend systems with a pragmatic, modern stack. I built this website myself from scratch.',
+            'hero.availability': 'Open to internships / part‑time',
+            'cta.projects': 'View Projects <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copy Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Résumé'
+          },
+          ar: {
+            'nav.projects': 'المشاريع', 'nav.vision': 'الرؤية', 'nav.why': 'لماذا أنا؟', 'nav.faq': 'الأسئلة الشائعة', 'nav.skills': 'المهارات', 'nav.contact': 'تواصل',
+            'kicker.role': 'مطوّر ويب متكامل ومصمم', 'kicker.loc': 'مقيم في لندن، المملكة المتحدة', 'kicker.age': 'العمر', 'kicker.status': 'أبحث عن خبرة عملية',
+            'hero.title': 'أصمّم وأبني <span id="typer" class="typer" data-tooltip="شاهد الألوان تتدفق"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> برمجيات.',
+            'hero.subtitle': 'أركّز على الوضوح والأداء وقابلية الصيانة. أحب تقديم تجارب مستخدم مصقولة وأنظمة خلفية قوية بمنهج عملي حديث.',
+            'hero.availability': 'متاح لتدريبات أو عمل جزئي',
+            'cta.projects': 'عرض المشاريع <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'نسخ البريد الإلكتروني <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'السيرة الذاتية'
+          },
+          es: {
+            'nav.projects': 'Proyectos', 'nav.vision': 'Visión', 'nav.why': '¿Por qué yo?', 'nav.faq': 'FAQ', 'nav.skills': 'Habilidades', 'nav.contact': 'Contacto',
+            'kicker.role': 'Desarrollador Full‑stack y Diseñador', 'kicker.loc': 'Con base en Londres, Reino Unido', 'kicker.age': 'Edad', 'kicker.status': 'Buscando experiencia',
+            'hero.title': 'Diseño y construyo software <span id="typer" class="typer" data-tooltip="Mira fluir los colores"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span>.',
+            'hero.subtitle': 'Me centro en claridad, rendimiento y mantenibilidad. Disfruto de experiencias pulidas y backend robusto con un stack moderno.',
+            'hero.availability': 'Abierto a prácticas / medio tiempo',
+            'cta.projects': 'Ver Proyectos <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copiar Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Currículum'
+          },
+          fr: {
+            'nav.projects': 'Projets', 'nav.vision': 'Vision', 'nav.why': 'Pourquoi moi ?', 'nav.faq': 'FAQ', 'nav.skills': 'Compétences', 'nav.contact': 'Contact',
+            'kicker.role': 'Développeur Full‑stack & Designer', 'kicker.loc': 'Basé à Londres, Royaume‑Uni', 'kicker.age': 'Âge', 'kicker.status': 'À la recherche d\'expérience',
+            'hero.title': 'Je conçois et construis des <span id="typer" class="typer" data-tooltip="Regardez les couleurs s\'écouler"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> logiciels.',
+            'hero.subtitle': 'Je privilégie clarté, performance et maintenabilité. J\'aime livrer des expériences soignées et des backends robustes.',
+            'hero.availability': 'Ouvert aux stages / temps partiel',
+            'cta.projects': 'Voir les Projets <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copier l\'email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'CV'
+          },
+          de: {
+            'nav.projects': 'Projekte', 'nav.vision': 'Vision', 'nav.why': 'Warum ich?', 'nav.faq': 'FAQ', 'nav.skills': 'Fähigkeiten', 'nav.contact': 'Kontakt',
+            'kicker.role': 'Full‑stack Webentwickler & Designer', 'kicker.loc': 'Mit Sitz in London, UK', 'kicker.age': 'Alter', 'kicker.status': 'Suche Erfahrung',
+            'hero.title': 'Ich entwerfe und baue <span id="typer" class="typer" data-tooltip="Sieh den Farbenfluss"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> Software.',
+            'hero.subtitle': 'Fokus auf Klarheit, Performance und Wartbarkeit. Polierte UX und robuste Backends.',
+            'hero.availability': 'Offen für Praktika / Teilzeit',
+            'cta.projects': 'Projekte ansehen <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'E-Mail kopieren <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Lebenslauf'
+          },
+          pt: { 'nav.projects':'Projetos','nav.vision':'Visão','nav.why':'Por que eu?','nav.faq':'FAQ','nav.skills':'Habilidades','nav.contact':'Contato',
+                'kicker.role':'Desenvolvedor Full‑stack & Designer','kicker.loc':'Baseado em Londres, Reino Unido','kicker.age':'Idade','kicker.status':'Buscando experiência',
+                'hero.title':'Eu projeto e construo <span id="typer" class="typer" data-tooltip="Veja as cores fluírem"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.',
+                'hero.subtitle':'Foco em clareza, desempenho e manutenção. UX polida e backends robustos.',
+                'hero.availability':'Aberto a estágios / meio período',
+                'cta.projects':'Ver Projetos <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'Copiar Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'Currículo' },
+          ru: { 'nav.projects':'Проекты','nav.vision':'Видение','nav.why':'Почему я?','nav.faq':'FAQ','nav.skills':'Навыки','nav.contact':'Контакты',
+                'kicker.role':'Фул‑стек разработчик и дизайнер','kicker.loc':'Лондон, Великобритания','kicker.age':'Возраст','kicker.status':'Ищу опыт',
+                'hero.title':'Я проектирую и создаю <span id="typer" class="typer" data-tooltip="Смотрите, как текут цвета"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> софт.',
+                'hero.subtitle':'Фокус на ясности, производительности и поддерживаемости. Аккуратный UX и надёжный бэкенд.',
+                'hero.availability':'Открыт к стажировкам / part‑time',
+                'cta.projects':'Смотреть проекты <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'Скопировать email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'Резюме' },
+          hi: { 'nav.projects':'प्रोजेक्ट्स','nav.vision':'विजन','nav.why':'क्यों मैं?','nav.faq':'FAQ','nav.skills':'स्किल्स','nav.contact':'संपर्क',
+                'kicker.role':'फुल‑स्टैक वेब डेवलपर और डिज़ाइनर','kicker.loc':'लंदन, यूके','kicker.age':'उम्र','kicker.status':'अनुभव की तलाश में',
+                'hero.title':'मैं <span id="typer" class="typer" data-tooltip="रंगों का प्रवाह देखें"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> सॉफ़्टवेयर डिज़ाइन और बनाता हूँ.',
+                'hero.subtitle':'स्पष्टता, प्रदर्शन और अनुरक्षण पर ध्यान। परिष्कृत UX और मज़बूत बैकएंड।',
+                'hero.availability':'इंटर्नशिप / पार्ट‑टाइम के लिए उपलब्ध',
+                'cta.projects':'प्रोजेक्ट्स देखें <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'ईमेल कॉपी करें <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'रिज़्यूमे' },
+          bn: { 'nav.projects':'প্রজেক্ট','nav.vision':'ভিশন','nav.why':'আমাকেই কেন?','nav.faq':'FAQ','nav.skills':'স্কিলস','nav.contact':'যোগাযোগ',
+                'kicker.role':'ফুল‑স্ট্যাক ওয়েব ডেভেলপার ও ডিজাইনার','kicker.loc':'লন্ডন, যুক্তরাজ্য','kicker.age':'বয়স','kicker.status':'অভিজ্ঞতা খুঁজছি',
+                'hero.title':'আমি <span id="typer" class="typer" data-tooltip="রঙের প্রবাহ দেখুন"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> সফটওয়্যার ডিজাইন ও তৈরি করি।',
+                'hero.subtitle':'স্বচ্ছতা, পারফরম্যান্স ও মেইনটেনেবিলিটিতে ফোকাস।',
+                'hero.availability':'ইন্টার্নশিপ / পার্ট‑টাইমের জন্য উন্মুক্ত',
+                'cta.projects':'প্রজেক্ট দেখুন <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'ইমেল কপি <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'রেজিউমে' },
+          zh: { 'nav.projects':'项目','nav.vision':'愿景','nav.why':'为什么选择我？','nav.faq':'常见问题','nav.skills':'技能','nav.contact':'联系',
+                'kicker.role':'全栈网页开发者与设计师','kicker.loc':'常驻英国伦敦','kicker.age':'年龄','kicker.status':'寻求实践经验',
+                'hero.title':'我设计并构建 <span id="typer" class="typer" data-tooltip="欣赏流动的色彩"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> 软件。',
+                'hero.subtitle':'专注清晰、性能与可维护性。追求精致体验与可靠后端。',
+                'hero.availability':'可参与实习 / 兼职',
+                'cta.projects':'查看项目 <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'复制邮箱 <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'简历' },
+          ja: { 'nav.projects':'プロジェクト','nav.vision':'ビジョン','nav.why':'私を選ぶ理由','nav.faq':'FAQ','nav.skills':'スキル','nav.contact':'連絡先',
+                'kicker.role':'フルスタック開発者・デザイナー','kicker.loc':'英国ロンドン拠点','kicker.age':'年齢','kicker.status':'経験を募集中',
+                'hero.title':'私は <span id="typer" class="typer" data-tooltip="色の流れを見て"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> ソフトウェアを設計・構築します。',
+                'hero.subtitle':'明快さ、性能、保守性を重視。洗練されたUXと堅牢なバックエンド。',
+                'hero.availability':'インターン / パートタイム可',
+                'cta.projects':'プロジェクトを見る <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'メールをコピー <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'履歴書' }
+        };
+
+        function applyLang(lang){
+          const dict = DICT[lang] || DICT.en;
+          document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerHTML = dict[key];
+          });
+          htmlEl.setAttribute('lang', lang);
+          const isRtl = RTL_LANGS.has(lang);
+          htmlEl.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+          // After DOM updates, re-init the typewriter safely
+          if (typeof window.typerReinit === 'function') {
+            window.typerReinit();
+          }
+        }
+
+        // Persist selection
+        const stored = localStorage.getItem('lang');
+        if (stored && DICT[stored]) {
+          langSelect.value = stored;
+          applyLang(stored);
+        }
+        langSelect.addEventListener('change', () => {
+          const lang = langSelect.value;
+          localStorage.setItem('lang', lang);
+          applyLang(lang);
+        });
+
+        // Optionally allow localized feature list for the typewriter
+        window.getI18nFeatures = function() {
+          const lang = htmlEl.getAttribute('lang') || 'en';
+          const dict = DICT[lang] || DICT.en;
+          // If a localized list exists, return it; else undefined
+          return Array.isArray(dict.features) ? dict.features : undefined;
+        };
+      })();
+      // Header state: add subtle style when scrolled
+      (function(){
+        const onScroll = () => {
+          document.body.classList.toggle('scrolled', window.scrollY > 8);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
+    </script>
+  </body>
+</html>
+
+
