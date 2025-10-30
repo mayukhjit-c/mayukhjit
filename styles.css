@@ -186,6 +186,8 @@
       * { box-sizing: border-box; }
       button, input, select, textarea { font: inherit; }
       html { scroll-behavior: smooth; }
+      /* Ensure anchored sections account for sticky header height to avoid jump/fumble */
+      section, #home, footer { scroll-margin-top: 96px; }
       body {
         margin: 0;
         background: var(--bg);
@@ -311,10 +313,15 @@
       nav ul { list-style: none; display: flex; gap: 28px; margin: 0; padding: 0; }
       nav a { 
         opacity: 0.9; 
-        transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    background 250ms cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         padding: 6px 8px;
         border-radius: 8px;
+        will-change: transform, opacity;
+        backface-visibility: hidden;
       }
       /* Ensure icons have good contrast across backgrounds */
       .icon { color: var(--fg); filter: drop-shadow(0 0 1px rgba(0,0,0,0.6)) drop-shadow(0 0 1px rgba(255,255,255,0.15)); }
@@ -504,7 +511,10 @@
         border-radius: 999px;
         padding: 12px 18px;
         border: 1px solid var(--fg);
-        transition: all 350ms var(--ease-smooth), 
+        transition: background-color 350ms var(--ease-smooth),
+                    color 350ms var(--ease-smooth),
+                    border-color 350ms var(--ease-smooth),
+                    box-shadow 350ms var(--ease-smooth),
                     transform 250ms var(--ease-out);
         font-family: inherit;
         position: relative;
@@ -513,7 +523,12 @@
         transform: translateZ(0);
         cursor: pointer;
         user-select: none;
+        will-change: transform, box-shadow;
+        backface-visibility: hidden;
+        contain: paint;
       }
+      /* Allow tooltips/glows to render outside buttons when needed */
+      .btn[data-tooltip] { overflow: visible; }
       .btn:hover { 
         box-shadow: 0 6px 20px rgba(0,0,0,0.28), 
                     inset 0 0 0 1px rgba(255,255,255,0.12),
@@ -591,6 +606,9 @@
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 6px 18px rgba(0,0,0,0.22);
         position: relative;
         transform: translateZ(0);
+        will-change: transform, box-shadow;
+        backface-visibility: hidden;
+        contain: paint;
       }
       .card::before {
         content: '';
@@ -696,10 +714,16 @@
         border-radius: 999px; 
         color: var(--muted); 
         font-size: 12px;
-        transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    border-color 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 250ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
         transform: translateZ(0);
         display: inline-block;
         position: relative;
+        will-change: transform, box-shadow;
+        backface-visibility: hidden;
+        contain: paint;
       }
       /* Enhanced touch targets for mobile/tablet */
       @media (pointer: coarse) { 
@@ -766,10 +790,17 @@
         border-radius: var(--radius);
         background: rgba(17,17,17,0.78);
         backdrop-filter: blur(10px) saturate(140%);
-        overflow: hidden;
-        transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        /* Allow hover glows/shadows to not get clipped by the container */
+        overflow: visible;
+        transition: border-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                    background-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                    box-shadow 400ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         transform: translateZ(0);
+        will-change: transform, box-shadow;
+        backface-visibility: hidden;
+        contain: paint;
       }
       .faq-item:hover {
         border-color: rgba(255,255,255,0.12);
