@@ -2944,7 +2944,7 @@
         }
 
         // Helper: Draw crossfade old theme particles
-        function drawCrossfadeParts(cross, smoothScrolling) {
+        function drawCrossfadeParts(cross, smoothScrolling, dt) {
           if (smoothScrolling || !cross || !cross.oldParts || cross.t >= cross.dur) return;
           
           const ratio = cross.t / cross.dur;
@@ -3047,7 +3047,7 @@
             drawBranchesExit();
             
             // Crossfade old theme particles
-            drawCrossfadeParts(state.cross, window.__isSmoothScrolling);
+            drawCrossfadeParts(state.cross, window.__isSmoothScrolling, dt);
             if (state.cross && state.cross.t < state.cross.dur) {
               state.cross.t += dt;
             }
