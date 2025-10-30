@@ -2068,20 +2068,26 @@
             pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.12);
             const maxDist = 160; // larger radius for a more prominent aura
             const band = 90; // width of colored intensity band around the pointer
+            // Pre-compute common gradient values to reduce redundant calculations
+            const cx = Math.max(0, Math.min(1, pointer.sx / w));
+            const cy = Math.max(0, Math.min(1, pointer.sy / h));
+            const bwH = Math.max(0.02, band / Math.max(1, w)); // band as fraction horizontal
+            const bwV = Math.max(0.02, band / Math.max(1, h)); // band as fraction vertical
+            const leftStop = Math.max(0, cx - bwH);
+            const rightStop = Math.min(1, cx + bwH);
+            const topStop = Math.max(0, cy - bwV);
+            const bottomStop = Math.min(1, cy + bwV);
+            
             for (let y = offset; y <= h; y += spacing) {
               const dy = Math.abs(pointer.sy - y);
               if (dy <= maxDist) {
                 const a = Math.exp(-dy / 70) * 0.6; // stronger but still smooth
                 // horizontal gradient centered at pointer.sx
                 const grad = ctx.createLinearGradient(0, y, w, y);
-                const cx = Math.max(0, Math.min(1, pointer.sx / w));
-                const bw = Math.max(0.02, band / Math.max(1, w)); // band as fraction
-                const left = Math.max(0, cx - bw);
-                const right = Math.min(1, cx + bw);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
-                grad.addColorStop(left, glow3);
+                grad.addColorStop(leftStop, glow3);
                 grad.addColorStop(cx, prim3);
-                grad.addColorStop(right, glow2);
+                grad.addColorStop(rightStop, glow2);
                 grad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.save();
                 ctx.globalAlpha *= a;
@@ -2099,14 +2105,10 @@
                 const a = Math.exp(-dx / 70) * 0.6;
                 // vertical gradient centered at pointer.sy
                 const grad = ctx.createLinearGradient(x, 0, x, h);
-                const cy = Math.max(0, Math.min(1, pointer.sy / h));
-                const bw = Math.max(0.02, band / Math.max(1, h));
-                const top = Math.max(0, cy - bw);
-                const bottom = Math.min(1, cy + bw);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
-                grad.addColorStop(top, glow3);
+                grad.addColorStop(topStop, glow3);
                 grad.addColorStop(cy, prim3);
-                grad.addColorStop(bottom, glow2);
+                grad.addColorStop(bottomStop, glow2);
                 grad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.save();
                 ctx.globalAlpha *= a;
