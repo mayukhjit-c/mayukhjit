@@ -23,19 +23,143 @@
         // Fallback: hide after 3 seconds regardless
         setTimeout(hideLoadingScreen, 3000);
       })();
-
-      // Scroll to top on page load/refresh — clean start, no animations
-      window.addEventListener('load', () => {
-        window.scrollTo(0, 0);
-      });
-      // Also handle refresh cases
-      if (document.readyState === 'loading') {
-        window.addEventListener('DOMContentLoaded', () => {
-          window.scrollTo(0, 0);
-        });
-      } else {
-        window.scrollTo(0, 0);
+      // Motion & input helpers
+      const __motionQuery = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
+        ? window.matchMedia('(prefers-reduced-motion: reduce)')
+        : null;
+      const __pointerQuery = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
+        ? window.matchMedia('(pointer: coarse)')
+        : null;
+      function userPrefersReducedMotion() {
+        return __motionQuery ? __motionQuery.matches : false;
       }
+      function userHasCoarsePointer() {
+        return __pointerQuery ? __pointerQuery.matches : false;
+      }
+
+      // Device capability detection for adaptive performance
+      const DeviceCapabilities = (function() {
+        const ua = navigator.userAgent || '';
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        const isTablet = /(iPad|tablet|playbook|silk)|(android(?!.*mobile))/i.test(ua);
+        const isLowEndDevice = /Android ([1-4]\.|5\.[0-1])|MSIE [6-9]|Windows Phone|Trident\/[4-7]/i.test(ua);
+        
+        // Estimate device tier based on available metrics
+        function estimateDeviceTier() {
+          let score = 10; // Start optimistic
+          
+          // Check CPU cores
+          const cores = navigator.hardwareConcurrency || 2;
+          if (cores <= 2) score -= 3;
+          else if (cores <= 4) score -= 1;
+          
+          // Check memory (if available)
+          if (navigator.deviceMemory) {
+            if (navigator.deviceMemory <= 2) score -= 3;
+            else if (navigator.deviceMemory <= 4) score -= 1;
+          }
+          
+          // Mobile devices typically lower tier
+          if (isMobile && !isTablet) score -= 2;
+          if (isLowEndDevice) score -= 4;
+          
+          // Check for older Safari/Chrome versions
+          const safariVersion = ua.match(/Version\/(\d+)/);
+          const chromeVersion = ua.match(/Chrome\/(\d+)/);
+          if (safariVersion && parseInt(safariVersion[1]) < 13) score -= 2;
+          if (chromeVersion && parseInt(chromeVersion[1]) < 80) score -= 2;
+          
+          // Classify into tiers
+          if (score >= 8) return 'high';
+          if (score >= 5) return 'medium';
+          return 'low';
+        }
+        
+        // Battery/power save detection
+        function checkLowPowerMode(callback) {
+          if (!('getBattery' in navigator)) {
+            callback(false);
+            return;
+          }
+          navigator.getBattery().then(battery => {
+            const isLowPower = battery.charging === false && battery.level < 0.2;
+            callback(isLowPower);
+            battery.addEventListener('levelchange', () => {
+              const nowLowPower = battery.charging === false && battery.level < 0.2;
+              if (nowLowPower !== isLowPower) callback(nowLowPower);
+            });
+          }).catch(() => callback(false));
+        }
+        
+        // Connection speed detection
+        function getConnectionSpeed() {
+          const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+          if (!conn) return 'unknown';
+          
+          const effectiveType = conn.effectiveType;
+          if (effectiveType === 'slow-2g' || effectiveType === '2g') return 'slow';
+          if (effectiveType === '3g') return 'medium';
+          return 'fast';
+        }
+        
+        const tier = estimateDeviceTier();
+        const connectionSpeed = getConnectionSpeed();
+        
+        return {
+          isMobile,
+          isTablet,
+          isLowEndDevice,
+          tier,
+          connectionSpeed,
+          cores: navigator.hardwareConcurrency || 2,
+          memory: navigator.deviceMemory || null,
+          checkLowPowerMode,
+          
+          // Performance budgets based on tier
+          getParticleLimit() {
+            if (userPrefersReducedMotion()) return 0;
+            if (tier === 'low') return 15;
+            if (tier === 'medium') return 40;
+            return 80;
+          },
+          
+          getTargetFPS() {
+            if (tier === 'low') return 30;
+            if (tier === 'medium') return 45;
+            return 60;
+          },
+          
+          shouldUseAdvancedEffects() {
+            return tier === 'high' && !isMobile;
+          },
+          
+          getCanvasScale() {
+            if (tier === 'low') return 0.5;
+            if (isMobile) return 0.75;
+            return 1;
+          }
+        };
+      })();
+
+      // Scroll positioning — respect anchors and session restore while keeping hero reveal intact
+      (function() {
+        if ('scrollRestoration' in history) {
+          history.scrollRestoration = 'manual';
+        }
+        const reset = () => {
+          if (location.hash) return;
+          try {
+            window.scrollTo({ top: 0, behavior: 'auto' });
+          } catch (_) {
+            window.scrollTo(0, 0);
+          }
+        };
+        if (document.readyState === 'complete') {
+          reset();
+        } else {
+          window.addEventListener('load', reset, { once: true });
+        }
+      })();
 
       // Console Easter Egg — because developers deserve nice things too 🦄
       // console hello (yes, this is definitely written by a human)
@@ -46,6 +170,22 @@
       // Cross-browser rAF polyfill
       window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(cb){ return setTimeout(function(){ cb(Date.now()); }, 16); };
       window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout;
+
+      // Progressive image hints — ensure non-critical imagery is lazy + async decoded
+      (function() {
+        const mark = () => {
+          document.querySelectorAll('img').forEach(img => {
+            if (img.dataset.priority === 'hero') return;
+            if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+            if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
+          });
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', mark, { once: true });
+        } else {
+          mark();
+        }
+      })();
 
       // Smooth nav active underline on scroll + smooth anchor easing
       // This function makes the nav feel alive — active states that actually make sense!
@@ -82,10 +222,12 @@
         // Custom smooth anchor scrolling with ease
         function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
         let __scrollAnimId = 0;
-        let __scrollTimeout = null;
-        function smoothScrollTo(targetY, duration = 500) {
-          // Cancel any pending scroll to prevent overlapping animations
-          if (__scrollTimeout) clearTimeout(__scrollTimeout);
+        function smoothScrollTo(targetY, duration = 300) {
+          if (userPrefersReducedMotion() || duration <= 0) {
+            window.__isSmoothScrolling = false;
+            window.scrollTo({ top: targetY, behavior: 'auto' });
+            return;
+          }
           __scrollAnimId++;
           const myId = __scrollAnimId;
           const startY = window.scrollY;
@@ -145,6 +287,8 @@
             }
           });
         });
+
+        window.smoothScrollTo = smoothScrollTo;
       })();
 
       // FAQ live search — instant filter with polite results updates
@@ -191,38 +335,85 @@
       })();
 
       // Hover parallax light on project thumbs with smooth cursor follow
-      // This creates that satisfying "follow your cursor" effect
-      // CSS custom properties make this performant — no forced reflows here!
-      // Added smooth interpolation for buttery smooth motion
+      // Now runs only while the pointer is active to keep the main thread cool
       (function() {
-        document.querySelectorAll('[data-thumb]').forEach(el => {
-          let targetX = 50, targetY = 50;
-          let currentX = 50, currentY = 50;
-          
+        const thumbs = document.querySelectorAll('[data-thumb]');
+        if (!thumbs.length) return;
+        if (userPrefersReducedMotion()) {
+          thumbs.forEach(el => {
+            el.style.setProperty('--mx', '50%');
+            el.style.setProperty('--my', '50%');
+          });
+        } else {
           const lerp = (a, b, t) => a + (b - a) * t;
-          
-          function updatePosition() {
-            currentX = lerp(currentX, targetX, 0.15);
-            currentY = lerp(currentY, targetY, 0.15);
-            el.style.setProperty('--mx', currentX + '%');
-            el.style.setProperty('--my', currentY + '%');
-            requestAnimationFrame(updatePosition);
+          const states = new WeakMap();
+
+          function ensureLoop(el) {
+            const state = states.get(el);
+            if (!state || state.rafId) return;
+            const tick = () => {
+              const nextX = lerp(state.currentX, state.targetX, 0.18);
+              const nextY = lerp(state.currentY, state.targetY, 0.18);
+              state.currentX = nextX;
+              state.currentY = nextY;
+              el.style.setProperty('--mx', nextX + '%');
+              el.style.setProperty('--my', nextY + '%');
+
+              const done = Math.abs(nextX - state.targetX) < 0.2 && Math.abs(nextY - state.targetY) < 0.2 && !state.active;
+              if (done) {
+                state.currentX = state.targetX;
+                state.currentY = state.targetY;
+                el.style.setProperty('--mx', state.targetX + '%');
+                el.style.setProperty('--my', state.targetY + '%');
+                state.rafId = null;
+                return;
+              }
+              state.rafId = requestAnimationFrame(tick);
+            };
+            state.rafId = requestAnimationFrame(tick);
           }
-          updatePosition();
-          
-          el.addEventListener('pointermove', e => {
-            const rect = el.getBoundingClientRect();
-            targetX = ((e.clientX - rect.left) / rect.width) * 100;
-            targetY = ((e.clientY - rect.top) / rect.height) * 100;
+
+          thumbs.forEach(el => {
+            const state = {
+              targetX: 50,
+              targetY: 50,
+              currentX: 50,
+              currentY: 50,
+              rafId: null,
+              active: false
+            };
+            states.set(el, state);
+            el.style.setProperty('--mx', '50%');
+            el.style.setProperty('--my', '50%');
+
+            el.addEventListener('pointerenter', e => {
+              state.active = true;
+              const rect = el.getBoundingClientRect();
+              state.targetX = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+              state.targetY = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+              ensureLoop(el);
+            });
+            el.addEventListener('pointermove', e => {
+              const rect = el.getBoundingClientRect();
+              state.targetX = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+              state.targetY = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+              ensureLoop(el);
+            }, { passive: true });
+            el.addEventListener('pointerleave', () => {
+              state.active = false;
+              state.targetX = 50;
+              state.targetY = 50;
+              ensureLoop(el);
+            });
           });
-          
-          el.addEventListener('pointerleave', () => {
-            targetX = 50;
-            targetY = 50;
-          });
-        });
-        // Simple reflective follow for cards (no tilt)
-        document.querySelectorAll('.card').forEach(card => {
+        }
+
+        const interactiveCards = document.querySelectorAll('.card');
+        const enableCardFollow = !userPrefersReducedMotion() && !userHasCoarsePointer();
+        interactiveCards.forEach(card => {
+          card.style.setProperty('--mx', '50%');
+          card.style.setProperty('--my', '0%');
+          if (!enableCardFollow) return;
           card.addEventListener('pointermove', e => {
             const rect = card.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
@@ -291,7 +482,9 @@
       (function() {
         const canvas = document.getElementById('bg-grid');
         const ctx = canvas.getContext('2d');
-        let dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+        // Adaptive canvas resolution based on device capabilities
+        const canvasScale = DeviceCapabilities.getCanvasScale();
+        let dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1)) * canvasScale;
         let w = 0, h = 0, t = 0;
         const spacing = 60; // grid spacing in css px
         let pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, active: false };
@@ -305,6 +498,7 @@
         let glow2 = 'rgba(255,255,255,0.25)';
         let glow3 = 'rgba(255,255,255,0.18)';
         let prim3 = 'rgba(255,255,255,0.2)';
+        let gridScale = 1.0;
         let colorCacheAt = 0;
         function refreshColors(now){
           if (now - colorCacheAt < 400) return; // refresh at most ~2.5 Hz
@@ -312,6 +506,8 @@
           glow2 = (cs.getPropertyValue('--theme-glow-2') || glow2).trim();
           glow3 = (cs.getPropertyValue('--theme-glow-3') || glow3).trim();
           prim3 = (cs.getPropertyValue('--theme-primary-3') || prim3).trim();
+          const gs = parseFloat((cs.getPropertyValue('--grid-highlight-scale') || '1').trim());
+          gridScale = isNaN(gs) ? 1 : Math.max(0.6, Math.min(1.8, gs));
           colorCacheAt = now;
         }
 
@@ -335,16 +531,16 @@
           lastFrame = time;
           t = time * 0.001; // seconds
           ctx.clearRect(0, 0, w, h);
-          ctx.lineWidth = 1;
+          ctx.lineWidth = 1.4;
 
           // shimmer factor for subtle motion along lines
-          const shimmer = prefersReduced ? 0 : (Math.sin(t * 1.2) + 1) * 0.03; // respect reduced motion
+          const shimmer = prefersReduced ? 0 : (Math.sin(t * 1.6) + 1) * 0.06 * gridScale; // respect reduced motion
 
           // use cached theme glow colors (avoid optional chaining for older browsers)
 
           // base grid (offset by half-spacing so lines avoid common edges)
           const offset = spacing / 2;
-          ctx.strokeStyle = `rgba(255,255,255,${0.08 + shimmer})`;
+          ctx.strokeStyle = `rgba(255,255,255,${(0.12 + shimmer)})`;
           for (let y = offset; y <= h; y += spacing) {
             ctx.beginPath();
             ctx.moveTo(0, y);
@@ -361,10 +557,10 @@
           // highlight near pointer: skip heavy blending if we're smooth scrolling
           if (pointer.active && !prefersReduced && !window.__isSmoothScrolling && !document.documentElement.classList.contains('tv')) {
             // Smooth pointer position for buttery motion
-            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.12);
-            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.12);
-            const maxDist = 160; // larger radius for a more prominent aura
-            const band = 90; // width of colored intensity band around the pointer
+            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.2);
+            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.2);
+            const maxDist = 220 * gridScale; // larger radius for a more prominent aura
+            const band = 120 * gridScale; // width of colored intensity band around the pointer
             // Pre-compute common gradient values to reduce redundant calculations
             const cx = Math.max(0, Math.min(1, pointer.sx / w));
             const cy = Math.max(0, Math.min(1, pointer.sy / h));
@@ -378,7 +574,7 @@
             for (let y = offset; y <= h; y += spacing) {
               const dy = Math.abs(pointer.sy - y);
               if (dy <= maxDist) {
-                const a = Math.exp(-dy / 70) * 0.6; // stronger but still smooth
+                const a = Math.exp(-dy / 70) * (0.85 * gridScale); // stronger but still smooth
                 // horizontal gradient centered at pointer.sx
                 const grad = ctx.createLinearGradient(0, y, w, y);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -399,7 +595,7 @@
             for (let x = offset; x <= w; x += spacing) {
               const dx = Math.abs(pointer.sx - x);
               if (dx <= maxDist) {
-                const a = Math.exp(-dx / 70) * 0.6;
+                const a = Math.exp(-dx / 70) * (0.85 * gridScale);
                 // vertical gradient centered at pointer.sy
                 const grad = ctx.createLinearGradient(x, 0, x, h);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -677,7 +873,8 @@
       (function(){
         const layer = document.getElementById('tooltip');
         if (!layer) return;
-        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const prefersReduced = userPrefersReducedMotion();
+        const followPointer = !prefersReduced;
         let activeEl = null;
         let rafId = 0;
         const margin = 10; // gap from element
@@ -693,9 +890,13 @@
           // Preferred: above center
           let x = Math.round(rect.left + rect.width/2 - tt.width/2);
           let y = Math.round(rect.top - tt.height - margin);
+          let side = 'top';
 
           // If above overflows, try below
-          if (y < 8) y = Math.round(rect.bottom + margin);
+          if (y < 8) {
+            y = Math.round(rect.bottom + margin);
+            side = 'bottom';
+          }
 
           // Clamp horizontally to viewport
           const vw = Math.max(0, window.innerWidth);
@@ -711,16 +912,19 @@
               // Align vertically with mouse position if available
               const ty = Math.round((mouseY ?? (rect.top + rect.height/2)) - tt.height/2);
               y = Math.min(vh - tt.height - 8, Math.max(8, ty));
+              side = preferLeft ? 'left' : 'right';
             }
           }
 
           layer.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+          layer.dataset.side = side;
         }
 
         function hide(){
           layer.classList.remove('show');
           layer.setAttribute('aria-hidden', 'true');
           layer.style.transform = 'translate(-9999px, -9999px)';
+          delete layer.dataset.side;
           activeEl = null;
         }
 
@@ -734,6 +938,7 @@
         }
         function onMove(e){
           if (!activeEl) return;
+          if (!followPointer) return;
           // Throttle with rAF
           cancelAnimationFrame(rafId);
           rafId = requestAnimationFrame(() => {
@@ -777,10 +982,6 @@
 
         // Hide on Escape
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
-        // Respect reduced motion by not following mouse, only element center
-        if (prefersReduced) {
-          document.addEventListener('mousemove', () => {}); // no-op to keep listeners lightweight
-        }
       })();
 
       // Graceful global error handling — user-friendly overlay and toast
@@ -822,6 +1023,11 @@
       // Particle effects system — adds delightful sparkles to buttons and text
       // Creates a sense of magic and responsiveness throughout the site
       (function() {
+        const allowParticles = !userPrefersReducedMotion();
+        if (!allowParticles) {
+          window.spawnButtonParticles = function noop() {};
+          return;
+        }
         function createParticle(x, y, spread = 40) {
           const particle = document.createElement('div');
           particle.className = 'particle';
@@ -878,8 +1084,7 @@
             }, i * 40);
           }
         }
-        
-        window.spawnButtonParticles = spawnButtonParticles;
+  window.spawnButtonParticles = spawnButtonParticles;
         
         // Add particles to buttons on click
         document.addEventListener('DOMContentLoaded', () => {
@@ -935,7 +1140,10 @@
           
           // Start scroll immediately (non-blocking)
           const scrollY = Math.max(0, el.offsetTop - 100);
-          smoothScrollTo(scrollY, 600);
+          const scroller = typeof window.smoothScrollTo === 'function'
+            ? window.smoothScrollTo
+            : (target => window.scrollTo({ top: target, behavior: userPrefersReducedMotion() ? 'auto' : 'smooth' }));
+          scroller(scrollY, 600);
           
           // Start highlight immediately - don't wait for scroll
           requestAnimationFrame(() => {
@@ -995,12 +1203,16 @@
         function setupButtonFeedback(btn) {
           btn.addEventListener('click', function(e) {
             // Immediate visual feedback - no delay
+            const reduce = userPrefersReducedMotion();
             this.classList.add('clicked');
-            this.classList.add('clicked-shake');
+            if (!reduce) {
+              this.classList.add('clicked-shake');
+              setTimeout(() => this.classList.remove('clicked-shake'), 260);
+              if (typeof window.spawnButtonParticles === 'function') {
+                window.spawnButtonParticles(this);
+              }
+            }
             setTimeout(() => this.classList.remove('clicked'), 200);
-            setTimeout(() => this.classList.remove('clicked-shake'), 260);
-            // Particle effect on click
-            spawnButtonParticles(this);
           }, { passive: true });
         }
         
@@ -1316,10 +1528,11 @@
       (function() {
         const modal = document.getElementById('modal');
         const modalClose = document.getElementById('modalClose');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-        const modalMedia = document.getElementById('modalMedia');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalMedia = document.getElementById('modalMedia');
         if (!modal || !modalClose) return;
+  let lastFocus = null;
 
         // Project data — each project gets its moment in the spotlight
         const projectData = {
@@ -1349,6 +1562,7 @@
         function openModal(projectId) {
           const data = projectData[projectId];
           if (!data) return;
+          lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
           modalTitle.textContent = data.title;
           modalBody.innerHTML = `
             <p class="subtitle">${data.description}</p>
@@ -1365,6 +1579,10 @@
 
         function closeModal() {
           modal.classList.remove('open');
+          if (lastFocus && typeof lastFocus.focus === 'function') {
+            lastFocus.focus({ preventScroll: true });
+          }
+          lastFocus = null;
         }
 
         // Bind modal triggers
@@ -1428,11 +1646,40 @@
         let clickCount = 0;
         let lastClickTime = 0;
         brandDot.style.cursor = 'pointer';
+        function spawnDotSmoke(originEl) {
+          try {
+            const rect = originEl.getBoundingClientRect();
+            const wrap = document.createElement('div');
+            wrap.className = 'dot-smoke';
+            wrap.style.position = 'fixed';
+            wrap.style.left = (rect.left + rect.width / 2) + 'px';
+            wrap.style.top = (rect.top + rect.height / 2) + 'px';
+            wrap.style.transform = 'translate(-50%, -50%)';
+            for (let i = 0; i < 10; i++) {
+              const puff = document.createElement('span');
+              puff.className = 'smoke-puff';
+              const angle = (Math.PI * 2) * (i / 10) + (Math.random() * 0.6 - 0.3);
+              const radius = 12 + Math.random() * 16;
+              const dx = Math.cos(angle) * radius;
+              const dy = Math.sin(angle) * radius - (6 + Math.random() * 10);
+              puff.style.setProperty('--dx', dx + 'px');
+              puff.style.setProperty('--dy', dy + 'px');
+              puff.style.left = '0px';
+              puff.style.top = '0px';
+              puff.style.animationDelay = (i * 12) + 'ms';
+              wrap.appendChild(puff);
+            }
+            document.body.appendChild(wrap);
+            setTimeout(() => wrap.remove(), 1100);
+          } catch (_) {}
+        }
         brandDot.addEventListener('click', () => {
           const now = Date.now();
           if (now - lastClickTime > 2000) clickCount = 0; // Reset if too slow
           clickCount++;
           lastClickTime = now;
+          // spawn red smoke diffusion on each click
+          spawnDotSmoke(brandDot);
           if (clickCount === 7) {
             window.showToast && window.showToast('7 clicks! You discovered the secret dot. Impressive persistence!');
             // Make it dance
@@ -1657,6 +1904,210 @@
           lastX = acc.x;
           lastY = acc.y;
           lastZ = acc.z;
+        }, { passive: true });
+      })();
+
+      // Request Idle Callback polyfill for better performance on low-end devices
+      window.requestIdleCallback = window.requestIdleCallback || function(cb) {
+        const start = Date.now();
+        return setTimeout(function() {
+          cb({
+            didTimeout: false,
+            timeRemaining: function() {
+              return Math.max(0, 50 - (Date.now() - start));
+            }
+          });
+        }, 1);
+      };
+
+      window.cancelIdleCallback = window.cancelIdleCallback || function(id) {
+        clearTimeout(id);
+      };
+
+      // Unique Feature: Time-based greeting message - shows personality
+      (function() {
+        const hour = new Date().getHours();
+        let greeting = '';
+        let emoji = '';
+        
+        if (hour >= 5 && hour < 12) {
+          greeting = 'Good morning!';
+          emoji = '🌅';
+        } else if (hour >= 12 && hour < 17) {
+          greeting = 'Good afternoon!';
+          emoji = '☀️';
+        } else if (hour >= 17 && hour < 21) {
+          greeting = 'Good evening!';
+          emoji = '🌆';
+        } else {
+          greeting = 'Burning the midnight oil?';
+          emoji = '🌙';
+        }
+        
+        // Show greeting after initial load - use requestIdleCallback for better performance
+        window.requestIdleCallback(() => {
+          setTimeout(() => {
+            if (window.showToast) {
+              window.showToast(`${emoji} ${greeting} Welcome to my portfolio!`);
+            }
+          }, 2000);
+        });
+      })();
+
+      // Unique Feature: Long-press tooltips for mobile (accessibility!)
+      (function() {
+        let longPressTimer;
+        let currentTooltip = null;
+        
+        document.addEventListener('touchstart', (e) => {
+          const target = e.target.closest('[data-tooltip], [title]');
+          if (!target) return;
+          
+          const tooltipText = target.getAttribute('data-tooltip') || target.getAttribute('title');
+          if (!tooltipText) return;
+          
+          longPressTimer = setTimeout(() => {
+            // Show custom mobile tooltip
+            if (currentTooltip) currentTooltip.remove();
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'mobile-tooltip';
+            tooltip.textContent = tooltipText;
+            tooltip.style.cssText = `
+              position: fixed;
+              bottom: 20px;
+              left: 50%;
+              transform: translateX(-50%);
+              background: rgba(20, 20, 20, 0.95);
+              color: white;
+              padding: 12px 20px;
+              border-radius: 12px;
+              font-size: 14px;
+              z-index: 10000;
+              max-width: 80vw;
+              text-align: center;
+              backdrop-filter: blur(10px);
+              -webkit-backdrop-filter: blur(10px);
+              box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+              animation: fadeInUp 0.3s ease;
+            `;
+            document.body.appendChild(tooltip);
+            currentTooltip = tooltip;
+            
+            // Haptic feedback
+            window.triggerHaptic && window.triggerHaptic('medium');
+            
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+              if (currentTooltip === tooltip) {
+                tooltip.style.animation = 'fadeOutDown 0.3s ease';
+                setTimeout(() => tooltip.remove(), 300);
+                currentTooltip = null;
+              }
+            }, 3000);
+          }, 500); // 500ms long press
+        }, { passive: true });
+        
+        document.addEventListener('touchend', () => {
+          clearTimeout(longPressTimer);
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', () => {
+          clearTimeout(longPressTimer);
+        }, { passive: true });
+      })();
+
+      // Unique Feature: Idle detection - subtle animation after inactivity
+      (function() {
+        let idleTimer;
+        let isIdle = false;
+        const idleTimeout = 30000; // 30 seconds
+        
+        function resetIdle() {
+          clearTimeout(idleTimer);
+          isIdle = false;
+          idleTimer = setTimeout(() => {
+            isIdle = true;
+            // Subtle reminder that the page is interactive
+            if (window.showToast) {
+              const messages = [
+                '👋 Still here? Try clicking around - there are surprises!',
+                '💡 Psst... try the Konami code (↑↑↓↓←→←→BA)',
+                '🎨 The colors change every few seconds. Watch closely!',
+                '✨ Try double-tapping anywhere for sparkles!',
+                '🔍 Click the section icons in order for a reward!'
+              ];
+              const msg = messages[Math.floor(Math.random() * messages.length)];
+              window.showToast(msg);
+            }
+          }, idleTimeout);
+        }
+        
+        ['mousemove', 'mousedown', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+          document.addEventListener(event, resetIdle, { passive: true });
+        });
+        
+        resetIdle();
+      })();
+
+      // Unique Feature: Progress indicator for long content
+      (function() {
+        const progressBar = document.createElement('div');
+        progressBar.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 3px;
+          background: linear-gradient(90deg, var(--theme-primary-3), var(--theme-primary-5));
+          width: 0%;
+          z-index: 9999;
+          transition: width 0.1s ease;
+          pointer-events: none;
+        `;
+        document.body.appendChild(progressBar);
+        
+        function updateProgress() {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const progress = (scrollTop / scrollHeight) * 100;
+          progressBar.style.width = progress + '%';
+          
+          // Adaptive opacity - hide when at top
+          progressBar.style.opacity = progress < 5 ? '0' : '1';
+        }
+        
+        window.addEventListener('scroll', updateProgress, { passive: true });
+        updateProgress();
+      })();
+
+      // Unique Feature: Celebrate milestones (scroll depth achievements)
+      (function() {
+        const milestones = [
+          { percent: 25, message: '🎉 Quarter way through! Keep scrolling!', triggered: false },
+          { percent: 50, message: '⭐ Halfway there! You\'re doing great!', triggered: false },
+          { percent: 75, message: '🚀 Almost done! Just a bit more!', triggered: false },
+          { percent: 100, message: '🎊 You made it to the bottom! Thanks for exploring!', triggered: false }
+        ];
+        
+        function checkMilestones() {
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+          const progress = (scrollTop / scrollHeight) * 100;
+          
+          milestones.forEach(milestone => {
+            if (!milestone.triggered && progress >= milestone.percent) {
+              milestone.triggered = true;
+              window.showToast && window.showToast(milestone.message);
+              window.triggerHaptic && window.triggerHaptic('success');
+            }
+          });
+        }
+        
+        // Throttle scroll handler for performance
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+          clearTimeout(scrollTimeout);
+          scrollTimeout = setTimeout(checkMilestones, 300);
         }, { passive: true });
       })();
 
@@ -1944,7 +2395,21 @@
         }
 
         // Themed overlay effects on a lightweight canvas
-        let fx, ctx, w = 0, h = 0, dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        let fx, ctx, w = 0, h = 0;
+        let dpr = Math.min(1.5, window.devicePixelRatio || 1) * DeviceCapabilities.getCanvasScale();
+        let isLowPowerMode = false;
+        
+        // Monitor battery status for adaptive performance
+        DeviceCapabilities.checkLowPowerMode((lowPower) => {
+          isLowPowerMode = lowPower;
+          if (lowPower && !perfMode) {
+            // Reduce particle counts in low power mode
+            const particleLimit = Math.floor(DeviceCapabilities.getParticleLimit() * 0.5);
+            if (state.parts && state.parts.length > particleLimit) {
+              state.parts.length = particleLimit;
+            }
+          }
+        });
         // Defer visual effects until after initial view or first interaction
         let effectsEnabled = false;
         let effectsAlpha = 0;
@@ -2046,10 +2511,12 @@
           } else {
             state.cross = null;
           }
-          // Seed a small number of elements per theme
+          // Seed a small number of elements per theme - adaptive based on device
+          const particleLimit = DeviceCapabilities.getParticleLimit();
           const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : 28);
           const coarseScale = pointerCoarse ? 0.7 : 1;
-          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale);
+          const deviceScale = particleLimit === 0 ? 0 : Math.min(1, particleLimit / baseCount);
+          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale * deviceScale);
           for (let i = 0; i < count; i++) {
             if (themeId === 'ice') {
               // Snowflake
@@ -2459,121 +2926,155 @@
           }
         }
 
+        // Helper: Update performance mode based on FPS
+        function updatePerfMode(dt) {
+          const fps = dt > 0 ? 1000 / dt : 60;
+          fpsEMA = fpsEMA * 0.9 + fps * 0.1;
+          const shouldPerf = fpsEMA < 50;
+          
+          if (shouldPerf && !perfMode) {
+            perfMode = true;
+            dpr = 1;
+            ensureCanvas();
+          } else if (!shouldPerf && perfMode && dpr < 1.5) {
+            perfMode = false;
+            dpr = Math.min(1.5, window.devicePixelRatio || 1);
+            ensureCanvas();
+          }
+        }
+
+        // Helper: Draw crossfade old theme particles
+        function drawCrossfadeParts(cross, smoothScrolling) {
+          if (smoothScrolling || !cross || !cross.oldParts || cross.t >= cross.dur) return;
+          
+          const ratio = cross.t / cross.dur;
+          const eased = ratio * ratio * (3 - 2 * ratio);
+          const a = 1 - eased;
+          
+          ctx.save();
+          ctx.globalAlpha *= a;
+          
+          if (cross.oldTheme === 'fire') {
+            for (const p of cross.oldParts) drawFireSmoke(p);
+          } else if (cross.oldTheme === 'ice') {
+            for (const p of cross.oldParts) {
+              const localRatio = cross.t / cross.dur;
+              const localEased = localRatio * localRatio * (3 - 2 * localRatio);
+              p.vx = (p.vx || 0) * 0.96;
+              p.vy = (p.vy || 0.4) * 0.96;
+              p.swayAmp = (p.swayAmp || 1) * 0.98;
+              p.x += (Math.sin(state.t * 0.001 + (p.sway || 0)) * (0.08 * (p.swayAmp || 1))) + (p.vx || 0);
+              p.y += (p.vy || 0.4);
+              p.life = (p.life || 0) + 16;
+              p._crossScale = Math.max(0.3, 1 - localEased * 0.85);
+              drawSnowflake(p);
+            }
+          } else if (cross.oldTheme === 'forest') {
+            for (const p of cross.oldParts) drawLeaves(p);
+          } else if (cross.oldTheme === 'lilac') {
+            for (const p of cross.oldParts) {
+              p.vx = (p.vx || 0) * 0.97;
+              p.vy = (p.vy || -0.05) * 0.97;
+              p.x += p.vx;
+              p.y += p.vy;
+              p.life = (p.life || 0) + dt;
+              p._crossScale = Math.max(0.4, 1 - eased * 0.8);
+              drawBubbles(p);
+            }
+          }
+          
+          ctx.restore();
+        }
+
+        // Helper: Draw current theme particles
+        function drawCurrentTheme(themeId, enterAlpha, smoothScrolling, now) {
+          const step = smoothScrolling ? 2 : 1;
+          ctx.save();
+          ctx.globalAlpha *= enterAlpha;
+          
+          if (themeId === 'fire') {
+            for (let i = 0; i < state.parts.length; i += step) {
+              drawFireSmoke(state.parts[i]);
+            }
+            ctx.restore();
+            // Sparks
+            if (!perfMode && !smoothScrolling && Math.random() < 0.5) {
+              spawnFireSpark();
+            }
+            for (let i = state.sparks.length - 1; i >= 0; i--) {
+              const s = state.sparks[i];
+              drawFireSpark(s);
+              s.x += s.vx;
+              s.y += s.vy;
+              s.life += 16;
+              if (s.life > s.max || s.y < -10) {
+                state.sparks.splice(i, 1);
+              }
+            }
+          } else if (themeId === 'ice') {
+            for (let i = 0; i < state.parts.length; i += step) {
+              drawSnowflake(state.parts[i]);
+            }
+            ctx.restore();
+          } else if (themeId === 'forest') {
+            if (!smoothScrolling) drawBranches(now);
+            for (let i = 0; i < state.parts.length; i += step) {
+              drawLeaves(state.parts[i]);
+            }
+            ctx.restore();
+          } else if (themeId === 'lilac') {
+            for (let i = 0; i < state.parts.length; i += step) {
+              drawBubbles(state.parts[i]);
+            }
+            ctx.restore();
+          }
+        }
+
         function tick(now) {
           ensureCanvas();
-          // Frame-accurate delta to make crossfades consistent across devices
           const dt = Math.max(0, Math.min(48, now - (state._lastTick || now)));
           state._lastTick = now;
           state.t = now;
-          ctx.clearRect(0,0,w,h);
+          ctx.clearRect(0, 0, w, h);
           const themeId = themes[themeIndex].id;
 
-          // Perf monitor: exponential moving average of FPS
-          const fps = dt > 0 ? 1000 / dt : 60;
-          fpsEMA = fpsEMA * 0.9 + fps * 0.1;
-          const shouldPerf = fpsEMA < 50; // threshold
-          if (shouldPerf && !perfMode) {
-            perfMode = true; dpr = 1; ensureCanvas();
-          } else if (!shouldPerf && perfMode && dpr < 1.5) {
-            perfMode = false; dpr = Math.min(1.5, window.devicePixelRatio || 1); ensureCanvas();
-          }
+          updatePerfMode(dt);
 
           if (effectsEnabled) {
             ctx.save();
             ctx.globalAlpha = effectsAlpha;
-            // Ease fog phase toward target
             fogPhase += (fogTarget - fogPhase) * 0.04;
-            // Draw forest exit rollback if present
             drawBranchesExit();
-            // Crossfade old parts
-            if (!window.__isSmoothScrolling && state.cross && state.cross.oldParts && state.cross.t < state.cross.dur) {
-              const ratio = state.cross.t / state.cross.dur;
-              // Smoothstep easing for even, soft fades
-              const eased = (ratio * ratio * (3 - 2 * ratio));
-              const a = 1 - eased;
-              ctx.save(); ctx.globalAlpha *= a;
-              if (state.cross.oldTheme === 'fire') {
-                for (const p of state.cross.oldParts) { drawFireSmoke(p); }
-              } else if (state.cross.oldTheme === 'ice') {
-                // animate old snow during crossfade for natural exit
-                for (const p of state.cross.oldParts) {
-                  const localRatio = state.cross.t / state.cross.dur;
-                  const localEased = (localRatio * localRatio * (3 - 2 * localRatio));
-                  // progressively damp velocities and sway to avoid jitter
-                  p.vx = (p.vx || 0) * 0.96;
-                  p.vy = (p.vy || 0.4) * 0.96;
-                  p.swayAmp = (p.swayAmp || 1) * 0.98;
-                  // gentle motion without edge wrapping to prevent teleports during fade
-                  p.x += (Math.sin(state.t * 0.001 + (p.sway||0)) * (0.08 * (p.swayAmp||1))) + (p.vx||0);
-                  p.y += (p.vy||0.4);
-                  p.life = (p.life||0) + 16;
-                  // shrink over crossfade for clearer fade-out, slightly stronger toward end
-                  p._crossScale = Math.max(0.3, 1 - localEased * 0.85);
-                  drawSnowflake(p);
-                }
-              } else if (state.cross.oldTheme === 'forest') {
-                // slight leaf fade
-                for (const p of state.cross.oldParts) { drawLeaves(p); }
-              } else if (state.cross.oldTheme === 'lilac') {
-                for (const p of state.cross.oldParts) {
-                  // Damp movement, scale down smoothly, avoid jitter
-                  p.vx = (p.vx || 0) * 0.97;
-                  p.vy = (p.vy || -0.05) * 0.97;
-                  p.x += p.vx;
-                  p.y += p.vy;
-                  p.life = (p.life||0) + dt;
-                  p._crossScale = Math.max(0.4, 1 - eased * 0.8);
-                  drawBubbles(p);
-                }
-              }
-              ctx.restore();
+            
+            // Crossfade old theme particles
+            drawCrossfadeParts(state.cross, window.__isSmoothScrolling);
+            if (state.cross && state.cross.t < state.cross.dur) {
               state.cross.t += dt;
             }
-            // Draw current theme with eased enter fade-in (lighter during scroll)
+            
+            // Calculate enter fade-in alpha
             let enterAlpha = 1;
             if (state.enter) {
               const ep = Math.min(1, state.enter.t / state.enter.dur);
-              // smoothstep for soft, perceptually even fade-in
               enterAlpha = ep * ep * (3 - 2 * ep);
             }
-            if (themeId === 'fire') {
-              ctx.save(); ctx.globalAlpha *= enterAlpha;
-              const step = window.__isSmoothScrolling ? 2 : 1;
-              for (let i = 0; i < state.parts.length; i += step) { drawFireSmoke(state.parts[i]); }
-              ctx.restore();
-              // occasional sparks
-              if (!perfMode && !window.__isSmoothScrolling && Math.random() < 0.5) spawnFireSpark();
-              // draw and advance sparks
-              for (let i = state.sparks.length - 1; i >= 0; i--) {
-                const s = state.sparks[i]; drawFireSpark(s);
-                s.x += s.vx; s.y += s.vy; s.life += 16;
-                if (s.life > s.max || s.y < -10) state.sparks.splice(i,1);
-              }
-            } else if (themeId === 'ice') {
-              ctx.save(); ctx.globalAlpha *= enterAlpha;
-              const step = window.__isSmoothScrolling ? 2 : 1;
-              for (let i = 0; i < state.parts.length; i += step) { drawSnowflake(state.parts[i]); }
-              ctx.restore();
-            } else if (themeId === 'forest') {
-              ctx.save(); ctx.globalAlpha *= enterAlpha;
-              if (!window.__isSmoothScrolling) drawBranches(now);
-              const step = window.__isSmoothScrolling ? 2 : 1;
-              for (let i = 0; i < state.parts.length; i += step) { drawLeaves(state.parts[i]); }
-              ctx.restore();
-            } else if (themeId === 'lilac') {
-              ctx.save(); ctx.globalAlpha *= enterAlpha;
-              const step = window.__isSmoothScrolling ? 2 : 1;
-              for (let i = 0; i < state.parts.length; i += step) { drawBubbles(state.parts[i]); }
-              ctx.restore();
+            
+            // Draw current theme
+            drawCurrentTheme(themeId, enterAlpha, window.__isSmoothScrolling, now);
+            
+            // Draw fog
+            if (themeId === 'fog' || fogPhase > 0.001) {
+              drawFog(now);
             }
-            // Draw fog if current theme is fog or while fading out
-            if (themeId === 'fog' || fogPhase > 0.001) { drawFog(now); }
+            
             // Draw interactive bursts
             if (state.bursts && state.bursts.length) {
               for (let i = state.bursts.length - 1; i >= 0; i--) {
                 const b = state.bursts[i];
                 drawBurst(b);
-                if (b.life >= b.max) state.bursts.splice(i, 1);
+                if (b.life >= b.max) {
+                  state.bursts.splice(i, 1);
+                }
               }
             }
             ctx.restore();
