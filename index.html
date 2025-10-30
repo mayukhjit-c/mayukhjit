@@ -2068,20 +2068,26 @@
             pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.12);
             const maxDist = 160; // larger radius for a more prominent aura
             const band = 90; // width of colored intensity band around the pointer
+            // Pre-compute common gradient values to reduce redundant calculations
+            const cx = Math.max(0, Math.min(1, pointer.sx / w));
+            const cy = Math.max(0, Math.min(1, pointer.sy / h));
+            const bwH = Math.max(0.02, band / Math.max(1, w)); // band as fraction horizontal
+            const bwV = Math.max(0.02, band / Math.max(1, h)); // band as fraction vertical
+            const leftStop = Math.max(0, cx - bwH);
+            const rightStop = Math.min(1, cx + bwH);
+            const topStop = Math.max(0, cy - bwV);
+            const bottomStop = Math.min(1, cy + bwV);
+            
             for (let y = offset; y <= h; y += spacing) {
               const dy = Math.abs(pointer.sy - y);
               if (dy <= maxDist) {
                 const a = Math.exp(-dy / 70) * 0.6; // stronger but still smooth
                 // horizontal gradient centered at pointer.sx
                 const grad = ctx.createLinearGradient(0, y, w, y);
-                const cx = Math.max(0, Math.min(1, pointer.sx / w));
-                const bw = Math.max(0.02, band / Math.max(1, w)); // band as fraction
-                const left = Math.max(0, cx - bw);
-                const right = Math.min(1, cx + bw);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
-                grad.addColorStop(left, glow3);
+                grad.addColorStop(leftStop, glow3);
                 grad.addColorStop(cx, prim3);
-                grad.addColorStop(right, glow2);
+                grad.addColorStop(rightStop, glow2);
                 grad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.save();
                 ctx.globalAlpha *= a;
@@ -2099,14 +2105,10 @@
                 const a = Math.exp(-dx / 70) * 0.6;
                 // vertical gradient centered at pointer.sy
                 const grad = ctx.createLinearGradient(x, 0, x, h);
-                const cy = Math.max(0, Math.min(1, pointer.sy / h));
-                const bw = Math.max(0.02, band / Math.max(1, h));
-                const top = Math.max(0, cy - bw);
-                const bottom = Math.min(1, cy + bw);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
-                grad.addColorStop(top, glow3);
+                grad.addColorStop(topStop, glow3);
                 grad.addColorStop(cy, prim3);
-                grad.addColorStop(bottom, glow2);
+                grad.addColorStop(bottomStop, glow2);
                 grad.addColorStop(1, 'rgba(255,255,255,0)');
                 ctx.save();
                 ctx.globalAlpha *= a;
@@ -3197,12 +3199,20 @@
         ];
 
         // Color interpolation utilities for smooth transitions
+        // Memoization cache for color parsing - significant performance improvement
+        const colorCache = new Map();
         function hexToRgb(hex) {
+          // Check cache first for O(1) lookup
+          if (colorCache.has(hex)) {
+            return colorCache.get(hex);
+          }
+          
+          let result;
           // Handle rgba strings like rgba(255,200,100,0.75)
           if (hex.startsWith('rgba') || hex.startsWith('rgb')) {
             const match = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
             if (match) {
-              return {
+              result = {
                 r: parseInt(match[1]),
                 g: parseInt(match[2]),
                 b: parseInt(match[3]),
@@ -3211,20 +3221,22 @@
             }
           }
           // Handle 4-digit hex with alpha shorthand (e.g., #fff8 -> rgba(255,255,255,0.533))
-          const hex4Match = /^#?([a-f\d]{3})([a-f\d])$/i.exec(hex);
-          if (hex4Match) {
-            const s = hex4Match[1];
-            return {
-              r: parseInt(s[0] + s[0], 16),
-              g: parseInt(s[1] + s[1], 16),
-              b: parseInt(s[2] + s[2], 16),
-              a: parseInt(hex4Match[2] + hex4Match[2], 16) / 255
-            };
+          if (!result) {
+            const hex4Match = /^#?([a-f\d]{3})([a-f\d])$/i.exec(hex);
+            if (hex4Match) {
+              const s = hex4Match[1];
+              result = {
+                r: parseInt(s[0] + s[0], 16),
+                g: parseInt(s[1] + s[1], 16),
+                b: parseInt(s[2] + s[2], 16),
+                a: parseInt(hex4Match[2] + hex4Match[2], 16) / 255
+              };
+            }
           }
           // Handle short hex (e.g., #fff -> #ffffff)
-          if (/^#?[a-f\d]{3}$/i.test(hex)) {
+          if (!result && /^#?[a-f\d]{3}$/i.test(hex)) {
             const shorthand = hex.replace('#', '');
-            return {
+            result = {
               r: parseInt(shorthand[0] + shorthand[0], 16),
               g: parseInt(shorthand[1] + shorthand[1], 16),
               b: parseInt(shorthand[2] + shorthand[2], 16),
@@ -3232,23 +3244,31 @@
             };
           }
           // Handle 8-digit hex with alpha (e.g., #ffffff88)
-          const hex8Match = /^#?([a-f\d]{6})([a-f\d]{2})$/i.exec(hex);
-          if (hex8Match) {
-            return {
-              r: parseInt(hex8Match[1].substring(0, 2), 16),
-              g: parseInt(hex8Match[1].substring(2, 4), 16),
-              b: parseInt(hex8Match[1].substring(4, 6), 16),
-              a: parseInt(hex8Match[2], 16) / 255
-            };
+          if (!result) {
+            const hex8Match = /^#?([a-f\d]{6})([a-f\d]{2})$/i.exec(hex);
+            if (hex8Match) {
+              result = {
+                r: parseInt(hex8Match[1].substring(0, 2), 16),
+                g: parseInt(hex8Match[1].substring(2, 4), 16),
+                b: parseInt(hex8Match[1].substring(4, 6), 16),
+                a: parseInt(hex8Match[2], 16) / 255
+              };
+            }
           }
           // Handle standard 6-digit hex colors
-          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-          return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-            a: 1
-          } : { r: 255, g: 255, b: 255, a: 1 };
+          if (!result) {
+            const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            result = match ? {
+              r: parseInt(match[1], 16),
+              g: parseInt(match[2], 16),
+              b: parseInt(match[3], 16),
+              a: 1
+            } : { r: 255, g: 255, b: 255, a: 1 };
+          }
+          
+          // Cache the result for future lookups
+          colorCache.set(hex, result);
+          return result;
         }
         
         function rgbToHex(r, g, b) {
@@ -3259,11 +3279,22 @@
           return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
         }
         
+        // Cache for alpha channel detection to avoid repeated regex tests
+        const alphaCache = new Map();
+        function hasAlphaChannel(color) {
+          if (alphaCache.has(color)) {
+            return alphaCache.get(color);
+          }
+          const result = color.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color) || /#?[a-f\d]{8}$/i.test(color);
+          alphaCache.set(color, result);
+          return result;
+        }
+        
         function interpolateColor(color1, color2, t) {
           const c1 = hexToRgb(color1);
           const c2 = hexToRgb(color2);
-          const hasAlpha1 = color1.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color1) || /#?[a-f\d]{8}$/i.test(color1);
-          const hasAlpha2 = color2.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color2) || /#?[a-f\d]{8}$/i.test(color2);
+          const hasAlpha1 = hasAlphaChannel(color1);
+          const hasAlpha2 = hasAlphaChannel(color2);
           const useAlpha = hasAlpha1 || hasAlpha2 || c1.a !== 1 || c2.a !== 1;
           
           const r = c1.r + (c2.r - c1.r) * t;
@@ -3314,29 +3345,61 @@
           const duration = 4500; // smoother 4.5 seconds
           const startTime = performance.now();
           
+          // Pre-compute color pairs and RGB values to avoid redundant parsing
+          const colorPairs = [];
+          ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].forEach(key => {
+            if (startVars[key] !== endVars[key]) {
+              const num = key.slice(1);
+              const c1 = hexToRgb(startVars[key]);
+              const c2 = hexToRgb(endVars[key]);
+              const useAlpha = hasAlphaChannel(startVars[key]) || hasAlphaChannel(endVars[key]) || c1.a !== 1 || c2.a !== 1;
+              colorPairs.push({ propName: `--theme-primary-${num}`, c1, c2, useAlpha });
+            }
+          });
+          ['g1', 'g2', 'g3', 'g4'].forEach(key => {
+            if (startVars[key] !== endVars[key]) {
+              const num = key.slice(1);
+              const c1 = hexToRgb(startVars[key]);
+              const c2 = hexToRgb(endVars[key]);
+              const useAlpha = hasAlphaChannel(startVars[key]) || hasAlphaChannel(endVars[key]) || c1.a !== 1 || c2.a !== 1;
+              colorPairs.push({ propName: `--theme-glow-${num}`, c1, c2, useAlpha });
+            }
+          });
+          // Accent pairs
+          const acc1c1 = hexToRgb(startVars.p4);
+          const acc1c2 = hexToRgb(endVars.p4);
+          const acc1Alpha = hasAlphaChannel(startVars.p4) || hasAlphaChannel(endVars.p4) || acc1c1.a !== 1 || acc1c2.a !== 1;
+          const acc2c1 = hexToRgb(startVars.p3);
+          const acc2c2 = hexToRgb(endVars.p3);
+          const acc2Alpha = hasAlphaChannel(startVars.p3) || hasAlphaChannel(endVars.p3) || acc2c1.a !== 1 || acc2c2.a !== 1;
+          
           function animate() {
             const elapsed = performance.now() - startTime;
             const progress = Math.min(elapsed / duration, 1);
             const eased = linearEase(progress);
             
-            // Interpolate each color variable
-            ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].forEach(key => {
-              if (startVars[key] !== endVars[key]) {
-                const num = key.slice(1);
-                const interpolated = interpolateColor(startVars[key], endVars[key], eased);
-                root.style.setProperty(`--theme-primary-${num}`, interpolated);
-              }
-            });
-            ['g1', 'g2', 'g3', 'g4'].forEach(key => {
-              if (startVars[key] !== endVars[key]) {
-                const num = key.slice(1);
-                const interpolated = interpolateColor(startVars[key], endVars[key], eased);
-                root.style.setProperty(`--theme-glow-${num}`, interpolated);
-              }
-            });
+            // Interpolate pre-computed color pairs (direct RGB interpolation, no parsing)
+            for (const pair of colorPairs) {
+              const r = pair.c1.r + (pair.c2.r - pair.c1.r) * eased;
+              const g = pair.c1.g + (pair.c2.g - pair.c1.g) * eased;
+              const b = pair.c1.b + (pair.c2.b - pair.c1.b) * eased;
+              const a = pair.useAlpha ? (pair.c1.a + (pair.c2.a - pair.c1.a) * eased) : 1;
+              const value = pair.useAlpha ? rgbaToString(r, g, b, a) : rgbToHex(r, g, b);
+              root.style.setProperty(pair.propName, value);
+            }
             // Interpolate accent pair
-            const acc = interpolateColor(startVars.p4, endVars.p4, eased);
-            const acc2 = interpolateColor(startVars.p3, endVars.p3, eased);
+            const r1 = acc1c1.r + (acc1c2.r - acc1c1.r) * eased;
+            const g1 = acc1c1.g + (acc1c2.g - acc1c1.g) * eased;
+            const b1 = acc1c1.b + (acc1c2.b - acc1c1.b) * eased;
+            const a1 = acc1Alpha ? (acc1c1.a + (acc1c2.a - acc1c1.a) * eased) : 1;
+            const acc = acc1Alpha ? rgbaToString(r1, g1, b1, a1) : rgbToHex(r1, g1, b1);
+            
+            const r2 = acc2c1.r + (acc2c2.r - acc2c1.r) * eased;
+            const g2 = acc2c1.g + (acc2c2.g - acc2c1.g) * eased;
+            const b2 = acc2c1.b + (acc2c2.b - acc2c1.b) * eased;
+            const a2 = acc2Alpha ? (acc2c1.a + (acc2c2.a - acc2c1.a) * eased) : 1;
+            const acc2 = acc2Alpha ? rgbaToString(r2, g2, b2, a2) : rgbToHex(r2, g2, b2);
+            
             root.style.setProperty('--accent', acc);
             root.style.setProperty('--accent-2', acc2);
             
