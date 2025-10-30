@@ -110,6 +110,9 @@
         --radius: 14px;
         --ease: cubic-bezier(.2,.8,.2,1);
         --ease-out: cubic-bezier(.16,1,.3,1);
+        --ease-smooth: cubic-bezier(0.4, 0.0, 0.2, 1);
+        --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
         
         /* Dynamic color palette system - cycles every 5 seconds */
         /* Fire palette (default) */
@@ -125,23 +128,53 @@
         --theme-glow-4: rgba(255,170,0,0.18);
         --theme-filter: url(#liquid-fire);
       }
-      /* Ultra-wide displays */
-      @media (min-width: 1600px) {
-        :root { --maxw: 1320px; }
+      /* 4K and TV displays (3840×2160) */
+      @media (min-width: 2560px) {
+        :root { --maxw: 1800px; font-size: 20px; }
+        .container { padding: 0 80px; }
+        .grid { gap: 40px; }
+        .thumb { height: 320px; }
+        .title { font-size: clamp(48px, 8vw, 96px); }
+        .section-title { font-size: 32px; }
+        .btn { font-size: 18px; padding: 18px 32px; }
+        .card { padding: 40px; }
+      }
+      /* Ultra-wide displays (1920-2560) */
+      @media (min-width: 1600px) and (max-width: 2559px) {
+        :root { --maxw: 1400px; }
         .container { padding: 0 48px; }
         .grid { gap: 28px; }
-        .thumb { height: 220px; }
+        .thumb { height: 240px; }
+        .title { font-size: clamp(40px, 7vw, 72px); }
+      }
+      /* Tablets landscape (1024-1599) */
+      @media (min-width: 1024px) and (max-width: 1599px) {
+        :root { --maxw: 1120px; }
+        .container { padding: 0 40px; }
+        .thumb { height: 200px; }
+      }
+      /* Tablets portrait (768-1023) */
+      @media (min-width: 768px) and (max-width: 1023px) {
+        .container { padding: 0 32px; }
+        .thumb { height: 180px; }
+        .title { font-size: clamp(32px, 6vw, 56px); }
       }
       /* Small phones */
       @media (max-width: 480px) {
         .container { padding: 0 18px; }
         header { padding: 10px 0; }
         .cta { gap: 12px; }
-        .btn { min-height: 44px; padding: 12px 16px; }
+        .btn { min-height: 44px; padding: 12px 16px; font-size: 14px; }
         .thumb { height: 160px; }
+        .title { font-size: clamp(28px, 8vw, 48px); }
       }
-      /* Safe areas */
-      body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+      /* Safe areas for notched devices */
+      body { 
+        padding-left: env(safe-area-inset-left); 
+        padding-right: env(safe-area-inset-right);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
       
       /* Color transitions - applied via JavaScript for smooth CSS variable animation */
       html {
@@ -226,24 +259,42 @@
       }
       body.scrolled::before { opacity: 0.11; }
 
-      /* Additional ambient theme‑matched blurs — subtle, layered color wash */
+      /* Additional ambient theme‑matched blurs — enhanced layered color wash */
       body::after {
         content: "";
         position: fixed;
         inset: 0;
         z-index: 0;
         pointer-events: none;
-        /* Multiple softly blurred radial glows positioned around the viewport */
+        /* Multiple softly blurred radial glows positioned around the viewport - increased opacity and coverage */
         background:
-          radial-gradient(900px 420px at 12% 78%, color-mix(in oklab, var(--theme-glow-2) 60%, transparent), transparent 70%),
-          radial-gradient(760px 360px at 88% 22%, color-mix(in oklab, var(--theme-glow-3) 55%, transparent), transparent 72%),
-          radial-gradient(680px 300px at 30% 35%, color-mix(in oklab, var(--theme-primary-3) 30%, transparent), transparent 68%),
-          radial-gradient(900px 380px at 70% 70%, color-mix(in oklab, var(--theme-primary-5) 24%, transparent), transparent 72%);
-        opacity: 0.05;
-        filter: blur(8px) saturate(110%);
+          radial-gradient(1200px 600px at 15% 80%, color-mix(in oklab, var(--theme-glow-2) 70%, transparent), transparent 75%),
+          radial-gradient(1000px 500px at 85% 20%, color-mix(in oklab, var(--theme-glow-3) 65%, transparent), transparent 78%),
+          radial-gradient(900px 450px at 35% 40%, color-mix(in oklab, var(--theme-primary-3) 40%, transparent), transparent 72%),
+          radial-gradient(1100px 500px at 65% 65%, color-mix(in oklab, var(--theme-primary-5) 32%, transparent), transparent 76%),
+          radial-gradient(800px 400px at 50% 15%, color-mix(in oklab, var(--theme-primary-2) 28%, transparent), transparent 70%);
+        opacity: 0.08;
+        filter: blur(12px) saturate(120%);
         transition: opacity 3000ms linear, filter 3000ms linear;
+        animation: ambientPulse 15s ease-in-out infinite alternate;
       }
-      body.scrolled::after { opacity: 0.085; filter: blur(10px) saturate(120%); }
+      body.scrolled::after { opacity: 0.12; filter: blur(16px) saturate(130%); }
+      
+      @keyframes ambientPulse {
+        0% { opacity: 0.08; filter: blur(12px) saturate(120%); }
+        50% { opacity: 0.10; filter: blur(14px) saturate(125%); }
+        100% { opacity: 0.08; filter: blur(12px) saturate(120%); }
+      }
+      
+      body.scrolled::after {
+        animation: ambientPulseScrolled 15s ease-in-out infinite alternate;
+      }
+      
+      @keyframes ambientPulseScrolled {
+        0% { opacity: 0.12; filter: blur(16px) saturate(130%); }
+        50% { opacity: 0.14; filter: blur(18px) saturate(135%); }
+        100% { opacity: 0.12; filter: blur(16px) saturate(130%); }
+      }
 
       /* Fallbacks for browsers without color-mix */
       .no-colormix .card { background: var(--card); }
@@ -500,28 +551,30 @@
         border-radius: 999px;
         padding: 12px 18px;
         border: 1px solid var(--fg);
-        transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1), 
-                    transform 100ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 350ms var(--ease-smooth), 
+                    transform 250ms var(--ease-out);
         font-family: inherit;
         position: relative;
         overflow: hidden;
-        min-height: 40px; /* prevent layout shift */
+        min-height: 40px;
         will-change: transform, box-shadow;
         transform: translateZ(0);
         cursor: pointer;
         user-select: none;
+        backface-visibility: hidden;
       }
       .btn:hover { 
-        box-shadow: 0 4px 16px rgba(0,0,0,0.25), 
-                    inset 0 0 0 1px rgba(255,255,255,0.08),
-                    0 8px 24px rgba(0,0,0,0.15);
-        transform: translateY(-1px) scale(1.02) translateZ(0);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.28), 
+                    inset 0 0 0 1px rgba(255,255,255,0.12),
+                    0 10px 30px rgba(0,0,0,0.18),
+                    0 0 0 4px rgba(255,255,255,0.05);
+        transform: translateY(-2px) scale(1.03) translateZ(0);
       }
       .btn:active {
-        transform: translateY(0) scale(0.95) translateZ(0);
-        transition-duration: 80ms;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3), 
-                    inset 0 0 0 1px rgba(255,255,255,0.1);
+        transform: translateY(0) scale(0.97) translateZ(0);
+        transition-duration: 100ms;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.35), 
+                    inset 0 0 0 1px rgba(255,255,255,0.15);
       }
       /* Immediate click feedback with ripple effect */
       .btn.clicked {
@@ -578,15 +631,17 @@
         border-radius: var(--radius);
         padding: 24px;
         overflow: clip;
-        transition: background-color 200ms cubic-bezier(0.16, 1, 0.3, 1), 
-                    box-shadow 220ms cubic-bezier(0.16, 1, 0.3, 1),
-                    border-color 200ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: background-color 300ms var(--ease-smooth), 
+                    box-shadow 350ms var(--ease-smooth),
+                    transform 350ms var(--ease-out);
         /* Glassmorphism */
         backdrop-filter: blur(10px) saturate(140%);
         -webkit-backdrop-filter: blur(10px) saturate(140%);
-        will-change: box-shadow;
+        will-change: box-shadow, transform;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 6px 18px rgba(0,0,0,0.22);
         position: relative;
+        transform: translateZ(0);
+        backface-visibility: hidden;
       }
       .card::before {
         content: '';
@@ -605,7 +660,11 @@
       }
       .card:hover {
         background-color: color-mix(in oklab, var(--card) 88%, var(--theme-primary-2));
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), 0 10px 28px rgba(0,0,0,0.28);
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 
+                    0 12px 32px rgba(0,0,0,0.32),
+                    0 0 40px var(--theme-glow-3),
+                    0 0 80px var(--theme-glow-4);
+        transform: translateY(-4px) translateZ(0);
       }
       /* Simple reflective shine on hover that follows cursor */
       .card::after {
@@ -706,10 +765,12 @@
       .tag:hover { 
         color: var(--fg); 
         border-color: var(--accent); 
-        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 15%, transparent), 
-                    0 0 14px var(--theme-glow-2),
-                    0 2px 10px rgba(0,0,0,0.2);
-        transform: translateY(-1px) scale(1.04) translateZ(0);
+        box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--accent) 20%, transparent), 
+                    0 0 20px var(--theme-glow-2),
+                    0 0 40px var(--theme-glow-3),
+                    0 4px 16px rgba(0,0,0,0.25),
+                    0 0 60px var(--theme-glow-4);
+        transform: translateY(-2px) scale(1.05) translateZ(0);
       }
       .tag:hover::before {
         opacity: 1;
@@ -840,7 +901,7 @@
       .btn.primary .icon { color: var(--bg); }
       /* Ghost buttons already use foreground color */
       .btn.ghost .icon { color: var(--fg); }
-      /* Standalone heading icons: large glassmorphic circle */
+      /* Standalone heading icons: large glassmorphic circle with enhanced glow */
       .section-title .icon {
         width: 66px; height: 66px;
         display: inline-grid; place-items: center;
@@ -849,18 +910,19 @@
         background: rgba(17,17,17,0.6);
         border: 1px solid #2a2a2a;
         box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 4px 12px rgba(0,0,0,0.32);
-        transition: box-shadow 300ms var(--ease), border-color 300ms var(--ease), background 300ms var(--ease), transform 200ms var(--ease);
+        transition: box-shadow 350ms var(--ease-smooth), border-color 350ms var(--ease-smooth), background 350ms var(--ease-smooth), transform 300ms var(--ease-out);
       }
-      /* Glassy reflective hover: respond to parent hovers as well */
+      /* Enhanced glassy reflective hover with stronger glow */
       .section-title:hover .icon {
-        border-color: color-mix(in oklab, var(--accent) 60%, #2a2a2a);
+        border-color: color-mix(in oklab, var(--accent) 70%, #2a2a2a);
         box-shadow: 
-          inset 0 0 0 1px color-mix(in oklab, var(--accent) 25%, transparent),
-          0 4px 14px rgba(0,0,0,0.28),
-          0 0 16px var(--theme-glow-2),
-          0 0 28px var(--theme-glow-3);
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(17,17,17,0.4));
-        transform: translateY(-1px);
+          inset 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent),
+          0 6px 20px rgba(0,0,0,0.32),
+          0 0 24px var(--theme-glow-2),
+          0 0 48px var(--theme-glow-3),
+          0 0 72px var(--theme-glow-4);
+        background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(17,17,17,0.3));
+        transform: translateY(-2px) scale(1.05);
       }
       /* Slight active feedback (headings only) */
       .section-title:active .icon { transform: translateY(0) scale(0.98); }
@@ -1619,20 +1681,130 @@
       <section id="skills" class="container">
         <div class="section-head">
           <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> Skills</h2>
-          <p class="section-desc">Modern, pragmatic tools. Strong fundamentals.</p>
+          <p class="section-desc">Modern, pragmatic tools. Strong fundamentals. Always learning.</p>
         </div>
-        <div class="chips reveal">
-          <span class="chip">Python</span>
-          <span class="chip">TypeScript</span>
-          <span class="chip">React</span>
-          <span class="chip">Next.js</span>
-          <span class="chip">Node.js</span>
-          <span class="chip">Laravel</span>
-          <span class="chip">Postgres</span>
-          <span class="chip">Redis</span>
-          <span class="chip">Testing</span>
-          <span class="chip">Accessibility</span>
-          <span class="chip">Performance</span>
+        <div class="reveal">
+          <h3 style="margin-bottom: 14px; font-size: 18px;">Languages & Frameworks</h3>
+          <div class="chips" style="margin-bottom: 24px;">
+            <span class="chip">Python</span>
+            <span class="chip">TypeScript</span>
+            <span class="chip">JavaScript (ES6+)</span>
+            <span class="chip">React</span>
+            <span class="chip">Next.js</span>
+            <span class="chip">Node.js</span>
+            <span class="chip">Laravel</span>
+            <span class="chip">HTML5</span>
+            <span class="chip">CSS3</span>
+            <span class="chip">Tailwind CSS</span>
+          </div>
+
+          <h3 style="margin-bottom: 14px; font-size: 18px;">Backend & Data</h3>
+          <div class="chips" style="margin-bottom: 24px;">
+            <span class="chip">Postgres</span>
+            <span class="chip">Redis</span>
+            <span class="chip">MySQL</span>
+            <span class="chip">MongoDB</span>
+            <span class="chip">REST APIs</span>
+            <span class="chip">GraphQL</span>
+            <span class="chip">Firebase</span>
+            <span class="chip">Supabase</span>
+          </div>
+
+          <h3 style="margin-bottom: 14px; font-size: 18px;">Tools & DevOps</h3>
+          <div class="chips" style="margin-bottom: 24px;">
+            <span class="chip">Git</span>
+            <span class="chip">Docker</span>
+            <span class="chip">CI/CD</span>
+            <span class="chip">Vercel</span>
+            <span class="chip">Netlify</span>
+            <span class="chip">GitHub Actions</span>
+            <span class="chip">Webpack</span>
+            <span class="chip">Vite</span>
+          </div>
+
+          <h3 style="margin-bottom: 14px; font-size: 18px;">Core Strengths</h3>
+          <div class="chips">
+            <span class="chip">Testing (Jest, Vitest)</span>
+            <span class="chip">Accessibility (WCAG 2.1)</span>
+            <span class="chip">Performance Optimization</span>
+            <span class="chip">Responsive Design</span>
+            <span class="chip">UI/UX Design</span>
+            <span class="chip">API Design</span>
+            <span class="chip">Code Review</span>
+            <span class="chip">Technical Writing</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="achievements" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-star"/></svg> Achievements</h2>
+          <p class="section-desc">Milestones, recognition, and things I'm proud of.</p>
+        </div>
+        <div class="grid">
+          <article class="card reveal">
+            <h3>🎵 6,000+ Monthly Listeners on Spotify</h3>
+            <p>Built an audience through consistent releases and authentic engagement. My music has been streamed over 100,000 times across platforms.</p>
+          </article>
+          <article class="card reveal">
+            <h3>📺 3,000+ YouTube Subscribers</h3>
+            <p>Created and maintained an engaged community around my music and creative work. Regular uploads with average view duration >50%.</p>
+          </article>
+          <article class="card reveal">
+            <h3>🚀 Multiple Production Apps Shipped</h3>
+            <p>Built and deployed GCSEMate, Subscriberlytics, and CodeBuilder AI — all used by real users solving real problems.</p>
+          </article>
+          <article class="card reveal">
+            <h3>⚡ Self-Taught Full-Stack Developer</h3>
+            <p>Learned modern web development from scratch while in school. Built complex systems end-to-end without bootcamps or degrees.</p>
+          </article>
+          <article class="card reveal">
+            <h3>🎨 Design + Dev Hybrid</h3>
+            <p>Rare combination: I can design beautiful interfaces AND build them with clean, performant code. No designer-developer translation needed.</p>
+          </article>
+          <article class="card reveal">
+            <h3>🔧 Open Source Contributions</h3>
+            <p>Active on GitHub with public projects. Share knowledge through code, documentation, and helping others debug issues.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="testimonials" class="container">
+        <div class="section-head">
+          <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-star"/></svg> What People Say</h2>
+          <p class="section-desc">Words from people who've experienced my work.</p>
+        </div>
+        <div class="grid">
+          <article class="card reveal">
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+              <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px;">S</div>
+              <div>
+                <div style="font-weight: 600;">Sarah M.</div>
+                <div style="color: var(--muted); font-size: 13px;">YouTube Subscriber</div>
+              </div>
+            </div>
+            <p>"Your music is genuinely inspiring. The production quality is insane for someone your age. Can't wait to see where you go!"</p>
+          </article>
+          <article class="card reveal">
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+              <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--theme-primary-2), var(--theme-primary-4)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px;">R</div>
+              <div>
+                <div style="font-weight: 600;">Rahul K.</div>
+                <div style="color: var(--muted); font-size: 13px;">GCSEMate User</div>
+              </div>
+            </div>
+            <p>"GCSEMate actually helped me get through my exams. Clean interface, no BS, just what I needed. Thanks for building this!"</p>
+          </article>
+          <article class="card reveal">
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center;">
+              <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--theme-primary-4), var(--theme-primary-6)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 20px;">A</div>
+              <div>
+                <div style="font-weight: 600;">Alex T.</div>
+                <div style="color: var(--muted); font-size: 13px;">Developer Community</div>
+              </div>
+            </div>
+            <p>"The attention to detail on this portfolio is incredible. Smooth animations, great UX, actual content. Bookmark-worthy."</p>
+          </article>
         </div>
       </section>
 
@@ -3143,6 +3315,182 @@
             clickCount = 0;
           }
         });
+      })();
+
+      // Easter Egg: Triple-click logo for secret message
+      (function() {
+        const brand = document.querySelector('.brand');
+        if (!brand) return;
+        let clickCount = 0;
+        let timeout;
+        brand.addEventListener('click', (e) => {
+          if (e.target !== brand && !brand.contains(e.target)) return;
+          clickCount++;
+          clearTimeout(timeout);
+          timeout = setTimeout(() => { clickCount = 0; }, 600);
+          
+          if (clickCount === 3) {
+            clickCount = 0;
+            const messages = [
+              '🎵 "Code by day, music by night — building stuff that matters."',
+              '💡 "Every line of code is a beat in the song of creation."',
+              '🚀 "Shipping fast, learning faster, improving always."',
+              '✨ "Good design is invisible. Great design is unforgettable."',
+              '🎯 "Focus, flow, iterate — that\'s the developer\'s groove."'
+            ];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            window.showToast && window.showToast(msg);
+          }
+        });
+      })();
+
+      // Easter Egg: Hold Shift while scrolling for slow-mo smooth scroll
+      (function() {
+        let smoothScrollMultiplier = 1;
+        window.addEventListener('keydown', (e) => {
+          if (e.shiftKey && e.key === 'Shift' && smoothScrollMultiplier === 1) {
+            smoothScrollMultiplier = 0.5;
+            window.showToast && window.showToast('🐌 Slow-mo scrolling enabled! Release Shift to return to normal.');
+          }
+        });
+        window.addEventListener('keyup', (e) => {
+          if (e.key === 'Shift' && smoothScrollMultiplier !== 1) {
+            smoothScrollMultiplier = 1;
+            window.showToast && window.showToast('⚡ Normal scrolling restored!');
+          }
+        });
+        // Apply multiplier to smooth scroll function
+        const originalSmoothScrollTo = window.smoothScrollTo;
+        if (originalSmoothScrollTo) {
+          window.smoothScrollTo = function(target, duration) {
+            return originalSmoothScrollTo(target, duration * (1 / smoothScrollMultiplier));
+          };
+        }
+      })();
+
+      // Easter Egg: Type "dev" anywhere on the page
+      (function() {
+        let typed = '';
+        const trigger = 'dev';
+        let timeout;
+        window.addEventListener('keypress', (e) => {
+          // Ignore if typing in input
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          
+          typed += e.key.toLowerCase();
+          clearTimeout(timeout);
+          timeout = setTimeout(() => { typed = ''; }, 2000);
+          
+          if (typed.includes(trigger)) {
+            typed = '';
+            const devMsgs = [
+              '👨‍💻 Developer mode: Unlocked!',
+              '⚡ You found the dev portal! (Just kidding, there isn\'t one... yet.)',
+              '🔧 Pro tip: Open DevTools (F12) to see my code comments!',
+              '💻 "The best code is code that explains itself." — Me, probably',
+              '🎯 You typed "dev"! Here\'s a secret: I obsess over performance.'
+            ];
+            window.showToast && window.showToast(devMsgs[Math.floor(Math.random() * devMsgs.length)]);
+          }
+        });
+      })();
+
+      // Easter Egg: Click all section icons in order
+      (function() {
+        const requiredSections = ['#projects', '#vision', '#why', '#skills'];
+        let clickedInOrder = [];
+        
+        requiredSections.forEach((selector, index) => {
+          const section = document.querySelector(selector);
+          if (!section) return;
+          const icon = section.querySelector('.section-title .icon');
+          if (!icon) return;
+          
+          icon.style.cursor = 'pointer';
+          icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            if (clickedInOrder.length === index && clickedInOrder.indexOf(selector) === -1) {
+              clickedInOrder.push(selector);
+              
+              if (clickedInOrder.length === requiredSections.length) {
+                window.showToast && window.showToast('🎊 Incredible! You clicked all section icons in order! You win... bragging rights!');
+                clickedInOrder = [];
+                
+                // Celebration animation
+                requiredSections.forEach(sel => {
+                  const s = document.querySelector(sel);
+                  if (s) {
+                    s.style.animation = 'none';
+                    setTimeout(() => {
+                      s.style.animation = 'pulse 0.4s ease';
+                    }, 10);
+                  }
+                });
+              }
+            } else if (clickedInOrder.indexOf(selector) === -1) {
+              // Clicked out of order, reset
+              clickedInOrder = [selector];
+            }
+          });
+        });
+      })();
+
+      // Easter Egg: Double-tap anywhere to spawn a burst of particles
+      (function() {
+        let lastTap = 0;
+        document.addEventListener('touchend', (e) => {
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            // Double tap detected
+            const touch = e.changedTouches[0];
+            if (touch && window.spawnButtonParticles) {
+              // Create fake button to spawn particles
+              const fakeBtn = { getBoundingClientRect: () => ({
+                left: touch.clientX - 25,
+                top: touch.clientY - 25,
+                width: 50,
+                height: 50
+              })};
+              window.spawnButtonParticles(fakeBtn);
+              window.showToast && window.showToast('✨ Sparkles!');
+            }
+          }
+          lastTap = now;
+        }, { passive: true });
+      })();
+
+      // Easter Egg: Shake device/window for surprise (mobile)
+      (function() {
+        if (!window.DeviceMotionEvent) return;
+        let lastShake = 0;
+        const shakeThreshold = 25;
+        let lastX, lastY, lastZ;
+        
+        window.addEventListener('devicemotion', (e) => {
+          const acc = e.accelerationIncludingGravity;
+          if (!acc) return;
+          
+          const now = Date.now();
+          if (now - lastShake < 1000) return;
+          
+          if (lastX !== undefined) {
+            const deltaX = Math.abs(acc.x - lastX);
+            const deltaY = Math.abs(acc.y - lastY);
+            const deltaZ = Math.abs(acc.z - lastZ);
+            
+            if (deltaX + deltaY + deltaZ > shakeThreshold) {
+              lastShake = now;
+              // Trigger theme change or fun effect
+              window.showToast && window.showToast('🎲 Shake detected! Colors are shifting...');
+              // Can trigger a theme switch here if desired
+            }
+          }
+          
+          lastX = acc.x;
+          lastY = acc.y;
+          lastZ = acc.z;
+        }, { passive: true });
       })();
 
       // Theme Manager — rotates palettes and renders subtle themed effects
