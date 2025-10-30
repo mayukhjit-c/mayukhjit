@@ -1,0 +1,2753 @@
+      // Loading screen handler - fade out when page is ready
+      (function() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (!loadingScreen) return;
+        
+        // Hide loading screen after DOM + critical assets loaded
+        function hideLoadingScreen() {
+          loadingScreen.classList.add('loaded');
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 600); // Match CSS transition duration
+        }
+        
+        // Check if already loaded
+        if (document.readyState === 'complete') {
+          setTimeout(hideLoadingScreen, 100);
+        } else {
+          window.addEventListener('load', () => {
+            setTimeout(hideLoadingScreen, 200);
+          });
+        }
+        
+        // Fallback: hide after 3 seconds regardless
+        setTimeout(hideLoadingScreen, 3000);
+      })();
+
+      // Scroll to top on page load/refresh — clean start, no animations
+      window.addEventListener('load', () => {
+        window.scrollTo(0, 0);
+      });
+      // Also handle refresh cases
+      if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', () => {
+          window.scrollTo(0, 0);
+        });
+      } else {
+        window.scrollTo(0, 0);
+      }
+
+      // Console Easter Egg — because developers deserve nice things too 🦄
+      // console hello (yes, this is definitely written by a human)
+      console.log('%cHello, curious developer.', 'font-size: 16px; font-weight: bold; color: #fff;');
+      console.log('%cYou\'re poking around the code? Nice. The command palette (Cmd/Ctrl+K) is worth a look.', 'font-size: 12px; color: #bbb;');
+      console.log('%cP.S. There are easter eggs hidden around. Keep exploring.', 'font-size: 11px; color: #999; font-style: italic;');
+
+      // Cross-browser rAF polyfill
+      window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(cb){ return setTimeout(function(){ cb(Date.now()); }, 16); };
+      window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout;
+
+      // Smooth nav active underline on scroll + smooth anchor easing
+      // This function makes the nav feel alive — active states that actually make sense!
+      // Pro tip: The offset calculation accounts for sticky header, because details matter.
+      (function() {
+        // Input-mode detection: coarse pointer (touch), or TV-like devices (no hover)
+        try {
+          if (window.matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('coarse');
+          const noHover = window.matchMedia('(hover: none)').matches;
+          const big = Math.max(window.innerWidth, window.innerHeight) >= 1800;
+          if (noHover && big) document.documentElement.classList.add('tv');
+        } catch (_) {}
+
+        const links = Array.from(document.querySelectorAll('nav a'));
+        const sections = links.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+        // add simple helpful tooltips for nav
+        links.forEach(a => {
+          if (!a.getAttribute('data-tooltip')) {
+            const txt = a.textContent && a.textContent.trim();
+            if (txt) a.setAttribute('data-tooltip', 'Go to ' + txt);
+          }
+        });
+        const setActive = () => {
+          const y = window.scrollY + 120; // header offset
+          let current = null;
+          for (const section of sections) {
+            if (section.offsetTop <= y) current = section;
+          }
+          links.forEach(a => a.classList.toggle('active', current && a.getAttribute('href') === '#' + current.id));
+        };
+        window.addEventListener('scroll', setActive, { passive: true });
+        window.addEventListener('load', setActive);
+
+        // Custom smooth anchor scrolling with ease
+        function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
+        let __scrollAnimId = 0;
+        let __scrollTimeout = null;
+        function smoothScrollTo(targetY, duration = 500) {
+          // Cancel any pending scroll to prevent overlapping animations
+          if (__scrollTimeout) clearTimeout(__scrollTimeout);
+          __scrollAnimId++;
+          const myId = __scrollAnimId;
+          const startY = window.scrollY;
+          const delta = targetY - startY;
+          
+          // If distance is very small, just jump instantly
+          if (Math.abs(delta) < 5) {
+            window.scrollTo(0, targetY);
+            return;
+          }
+          
+          const start = performance.now();
+          window.__isSmoothScrolling = true;
+          
+          const step = (now) => {
+            if (myId !== __scrollAnimId) {
+              window.__isSmoothScrolling = false;
+              return;
+            }
+            const p = Math.min(1, (now - start) / duration);
+            const eased = easeOutCubic(p);
+            window.scrollTo(0, startY + delta * eased);
+            
+            if (p < 1) {
+              requestAnimationFrame(step);
+            } else {
+              window.__isSmoothScrolling = false;
+            }
+          };
+          
+          requestAnimationFrame(step);
+          
+          // Cancel on user interaction
+          const cancel = () => { 
+            __scrollAnimId++; 
+            window.__isSmoothScrolling = false; 
+          };
+          window.addEventListener('wheel', cancel, { passive: true, once: true });
+          window.addEventListener('touchstart', cancel, { passive: true, once: true });
+        }
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+          // Skip buttons that have custom fire highlight handlers
+          if (a.classList.contains('btn') && 
+              (a.textContent.includes('work together') || 
+               a.textContent.includes('Collaborate') || 
+               a.textContent.includes('Projects'))) {
+            return; // These are handled by fire highlight function
+          }
+          
+          a.addEventListener('click', e => {
+            const href = a.getAttribute('href');
+            const el = href && document.querySelector(href);
+            if (el) {
+              e.preventDefault();
+              const y = Math.max(0, el.offsetTop - 70);
+              smoothScrollTo(y);
+            }
+          });
+        });
+      })();
+
+      // FAQ live search — instant filter with polite results updates
+      (function(){
+        const input = document.getElementById('faqSearch');
+        const counter = document.getElementById('faqSearchCount');
+        const container = document.querySelector('#faq .faq-list');
+        if (!input || !container) return;
+        const items = Array.from(container.querySelectorAll('.faq-item'));
+        function normalize(s){ return (s || '').toLowerCase().trim(); }
+        function filter(){
+          const q = normalize(input.value);
+          let shown = 0;
+          items.forEach(d => {
+            const text = normalize(d.textContent);
+            const match = q.length === 0 || text.includes(q);
+            d.style.display = match ? '' : 'none';
+            if (match) shown++;
+          });
+          if (counter) counter.textContent = q ? `${shown} result${shown===1?'':'s'} for “${input.value}”` : 'Type to filter. I’ll find it (probably).';
+        }
+        input.addEventListener('input', filter);
+        // Keyboard niceties
+        input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value=''; filter(); input.blur(); } });
+      })();
+
+      // Intersection reveal — because scroll animations should be smooth, not jarring
+      // Uses Intersection Observer because we're living in 2024, not 2010.
+      // Staggered delays make it feel organic, like content appearing naturally.
+      (function() {
+        const els = document.querySelectorAll('.reveal');
+        const io = new IntersectionObserver(entries => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              io.unobserve(entry.target);
+            }
+          }
+        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        els.forEach((el, i) => {
+          el.style.transitionDelay = (i * 40) + 'ms';
+          io.observe(el);
+        });
+      })();
+
+      // Hover parallax light on project thumbs with smooth cursor follow
+      // This creates that satisfying "follow your cursor" effect
+      // CSS custom properties make this performant — no forced reflows here!
+      // Added smooth interpolation for buttery smooth motion
+      (function() {
+        document.querySelectorAll('[data-thumb]').forEach(el => {
+          let targetX = 50, targetY = 50;
+          let currentX = 50, currentY = 50;
+          
+          const lerp = (a, b, t) => a + (b - a) * t;
+          
+          function updatePosition() {
+            currentX = lerp(currentX, targetX, 0.15);
+            currentY = lerp(currentY, targetY, 0.15);
+            el.style.setProperty('--mx', currentX + '%');
+            el.style.setProperty('--my', currentY + '%');
+            requestAnimationFrame(updatePosition);
+          }
+          updatePosition();
+          
+          el.addEventListener('pointermove', e => {
+            const rect = el.getBoundingClientRect();
+            targetX = ((e.clientX - rect.left) / rect.width) * 100;
+            targetY = ((e.clientY - rect.top) / rect.height) * 100;
+          });
+          
+          el.addEventListener('pointerleave', () => {
+            targetX = 50;
+            targetY = 50;
+          });
+        });
+        // Simple reflective follow for cards (no tilt)
+        document.querySelectorAll('.card').forEach(card => {
+          card.addEventListener('pointermove', e => {
+            const rect = card.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+            const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+            card.style.setProperty('--mx', x + '%');
+            card.style.setProperty('--my', y + '%');
+          }, { passive: true });
+          card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--mx', '50%');
+            card.style.setProperty('--my', '0%');
+          }, { passive: true });
+        });
+
+        // TV/keyboard navigation for project cards
+        (function(){
+          const grid = document.querySelector('#projects .grid');
+          if (!grid) return;
+          const items = Array.from(grid.querySelectorAll('.card'));
+          items.forEach((it, i) => {
+            it.setAttribute('tabindex', '0');
+            it.dataset.index = String(i);
+          });
+          function moveFocus(current, dx, dy){
+            if (!current) return;
+            const idx = Number(current.dataset.index || '0');
+            const cols = Math.max(1, Math.round(grid.clientWidth / (grid.firstElementChild?.clientWidth || 1)));
+            let next = idx;
+            if (dx) next = idx + dx; if (dy) next = idx + dy * cols;
+            next = Math.max(0, Math.min(items.length - 1, next));
+            const el = items[next];
+            if (el) { el.focus({ preventScroll: false }); }
+          }
+          grid.addEventListener('keydown', (e) => {
+            const cur = document.activeElement?.closest?.('.card');
+            if (!cur) return;
+            if (e.key === 'ArrowRight') { e.preventDefault(); moveFocus(cur, 1, 0); }
+            else if (e.key === 'ArrowLeft') { e.preventDefault(); moveFocus(cur, -1, 0); }
+            else if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(cur, 0, 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(cur, 0, -1); }
+            else if (e.key === 'Enter') {
+              const link = cur.querySelector('[data-open-modal]') || cur.querySelector('a');
+              if (link) { e.preventDefault(); (link instanceof HTMLElement) && link.click(); }
+            }
+          });
+        })();
+      })();
+
+      // Smooth button hover shine effect — tracks cursor position for that premium feel
+      (function() {
+        document.querySelectorAll('.btn').forEach(btn => {
+          btn.addEventListener('pointermove', e => {
+            const rect = btn.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            btn.style.setProperty('--hx', x + '%');
+            btn.style.setProperty('--hy', y + '%');
+          });
+        });
+      })();
+
+      // Background animated geometric grid — straight lines with smoothed hover highlights
+      // This is the silent hero of the page. Subtle enough to not distract,
+      // but adds depth when you notice it. The lerp smoothing makes it feel organic.
+      // Fun fact: The shimmer effect is synchronized with time, creating
+      // a very subtle "breathing" effect that humans notice subconsciously.
+      (function() {
+        const canvas = document.getElementById('bg-grid');
+        const ctx = canvas.getContext('2d');
+        let dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1));
+        let w = 0, h = 0, t = 0;
+        const spacing = 60; // grid spacing in css px
+        let pointer = { x: -9999, y: -9999, tx: -9999, ty: -9999, active: false };
+        const lerp = (a,b,p) => a + (b - a) * p;
+        let lastFrame = 0;
+        let hidden = document.hidden;
+        document.addEventListener('visibilitychange', () => { hidden = document.hidden; });
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // Cache theme colors to avoid expensive style queries per frame
+        let glow2 = 'rgba(255,255,255,0.25)';
+        let glow3 = 'rgba(255,255,255,0.18)';
+        let prim3 = 'rgba(255,255,255,0.2)';
+        let colorCacheAt = 0;
+        function refreshColors(now){
+          if (now - colorCacheAt < 400) return; // refresh at most ~2.5 Hz
+          const cs = getComputedStyle(document.documentElement);
+          glow2 = (cs.getPropertyValue('--theme-glow-2') || glow2).trim();
+          glow3 = (cs.getPropertyValue('--theme-glow-3') || glow3).trim();
+          prim3 = (cs.getPropertyValue('--theme-primary-3') || prim3).trim();
+          colorCacheAt = now;
+        }
+
+        let resizeTimer;
+        function resize() {
+          w = Math.ceil(window.innerWidth);
+          h = Math.ceil(window.innerHeight);
+          canvas.width = Math.floor(w * dpr);
+          canvas.height = Math.floor(h * dpr);
+          canvas.style.width = w + 'px';
+          canvas.style.height = h + 'px';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); }, { passive: true });
+        resize();
+
+        function drawGrid(time) {
+          if (hidden) { requestAnimationFrame(drawGrid); return; }
+          refreshColors(time);
+          const dt = Math.min(48, Math.max(0, time - (lastFrame || time)));
+          lastFrame = time;
+          t = time * 0.001; // seconds
+          ctx.clearRect(0, 0, w, h);
+          ctx.lineWidth = 1;
+
+          // shimmer factor for subtle motion along lines
+          const shimmer = prefersReduced ? 0 : (Math.sin(t * 1.2) + 1) * 0.03; // respect reduced motion
+
+          // use cached theme glow colors (avoid optional chaining for older browsers)
+
+          // base grid (offset by half-spacing so lines avoid common edges)
+          const offset = spacing / 2;
+          ctx.strokeStyle = `rgba(255,255,255,${0.08 + shimmer})`;
+          for (let y = offset; y <= h; y += spacing) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+            ctx.stroke();
+          }
+          for (let x = offset; x <= w; x += spacing) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+            ctx.stroke();
+          }
+
+          // highlight near pointer: skip heavy blending if we're smooth scrolling
+          if (pointer.active && !prefersReduced && !window.__isSmoothScrolling && !document.documentElement.classList.contains('tv')) {
+            // Smooth pointer position for buttery motion
+            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.12);
+            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.12);
+            const maxDist = 160; // larger radius for a more prominent aura
+            const band = 90; // width of colored intensity band around the pointer
+            // Pre-compute common gradient values to reduce redundant calculations
+            const cx = Math.max(0, Math.min(1, pointer.sx / w));
+            const cy = Math.max(0, Math.min(1, pointer.sy / h));
+            const bwH = Math.max(0.02, band / Math.max(1, w)); // band as fraction horizontal
+            const bwV = Math.max(0.02, band / Math.max(1, h)); // band as fraction vertical
+            const leftStop = Math.max(0, cx - bwH);
+            const rightStop = Math.min(1, cx + bwH);
+            const topStop = Math.max(0, cy - bwV);
+            const bottomStop = Math.min(1, cy + bwV);
+            
+            for (let y = offset; y <= h; y += spacing) {
+              const dy = Math.abs(pointer.sy - y);
+              if (dy <= maxDist) {
+                const a = Math.exp(-dy / 70) * 0.6; // stronger but still smooth
+                // horizontal gradient centered at pointer.sx
+                const grad = ctx.createLinearGradient(0, y, w, y);
+                grad.addColorStop(0, 'rgba(255,255,255,0)');
+                grad.addColorStop(leftStop, glow3);
+                grad.addColorStop(cx, prim3);
+                grad.addColorStop(rightStop, glow2);
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.save();
+                ctx.globalAlpha *= a;
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(w, y);
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+            for (let x = offset; x <= w; x += spacing) {
+              const dx = Math.abs(pointer.sx - x);
+              if (dx <= maxDist) {
+                const a = Math.exp(-dx / 70) * 0.6;
+                // vertical gradient centered at pointer.sy
+                const grad = ctx.createLinearGradient(x, 0, x, h);
+                grad.addColorStop(0, 'rgba(255,255,255,0)');
+                grad.addColorStop(topStop, glow3);
+                grad.addColorStop(cy, prim3);
+                grad.addColorStop(bottomStop, glow2);
+                grad.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.save();
+                ctx.globalAlpha *= a;
+                ctx.strokeStyle = grad;
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, h);
+                ctx.stroke();
+                ctx.restore();
+              }
+            }
+          }
+          requestAnimationFrame(drawGrid);
+        }
+        requestAnimationFrame(drawGrid);
+
+        function setPointer(e) {
+          const rect = canvas.getBoundingClientRect();
+          pointer.tx = e.clientX - rect.left;
+          pointer.ty = e.clientY - rect.top;
+          pointer.active = true;
+        }
+        window.addEventListener('pointermove', setPointer, { passive: true });
+        window.addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
+      })();
+
+      // Card tilt interaction — 3D effects that actually feel good with smooth interpolation
+      // The math here calculates tilt based on cursor position relative to card center.
+      // Negative values for X rotation because we want natural perspective.
+      // Pro tip: The 6-degree max tilt is a sweet spot — noticeable but not nauseating.
+      // Added smooth interpolation for buttery 3D effects
+      (function() {
+        const maxTilt = 6; // degrees
+        // Only enable tilt when opted in via data-tilt to keep cards basic
+        document.querySelectorAll('.card[data-tilt]').forEach(card => {
+          let targetRx = 0, targetRy = 0;
+          let currentRx = 0, currentRy = 0;
+          
+          const lerp = (a, b, t) => a + (b - a) * t;
+          
+          function updateTilt() {
+            currentRx = lerp(currentRx, targetRx, 0.12);
+            currentRy = lerp(currentRy, targetRy, 0.12);
+            card.style.setProperty('--rx', currentRx.toFixed(2) + 'deg');
+            card.style.setProperty('--ry', currentRy.toFixed(2) + 'deg');
+            requestAnimationFrame(updateTilt);
+          }
+          updateTilt();
+          
+          card.addEventListener('pointermove', e => {
+            const rect = card.getBoundingClientRect();
+            const px = (e.clientX - rect.left) / rect.width; // 0..1
+            const py = (e.clientY - rect.top) / rect.height; // 0..1
+            targetRy = (px - 0.5) * (maxTilt * 2);
+            targetRx = -(py - 0.5) * (maxTilt * 2);
+          });
+          
+          card.addEventListener('pointerleave', () => {
+            targetRx = 0;
+            targetRy = 0;
+          });
+        });
+      })();
+
+      // Scroll progress bar
+      (function() {
+        const bar = document.getElementById('scroll-progress');
+        if (!bar) return;
+        const update = () => {
+          const scrollTop = window.scrollY;
+          const docH = document.documentElement.scrollHeight - window.innerHeight;
+          const p = docH > 0 ? Math.min(1, scrollTop / docH) : 0;
+          bar.style.width = (p * 100) + '%';
+        };
+        window.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('load', update);
+      })();
+
+      // Show floating to-top button when user scrolls up
+      (function() {
+        const toTop = document.getElementById('toTop');
+        if (!toTop) return;
+        let lastY = window.scrollY;
+        let ticking = false;
+        function onScroll() {
+          const y = window.scrollY;
+          const goingUp = y < lastY;
+          if (y > 300 && goingUp) toTop.classList.add('visible'); else toTop.classList.remove('visible');
+          lastY = y;
+          ticking = false;
+        }
+        window.addEventListener('scroll', () => {
+          if (!ticking) { requestAnimationFrame(onScroll); ticking = true; }
+        }, { passive: true });
+      })();
+
+      // Hero typewriter with realistic timing, pause, backspace, shimmer and sparkles
+      // This is where personality meets code. Random delays make it feel human,
+      // not robotic. The sparkles? Pure joy. Because why not add a bit of magic?
+      // The reduced-motion check ensures we're respectful of user preferences.
+      // Inspiration: The terminal hackers from 80s movies, but make it modern.
+      (function() {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        let idx = 0;
+        let current = '';
+        let abort = false;
+        let textEl = null;
+        let wrapper = null;
+        let typerVersion = 0;
+        const pendingTimeouts = new Set();
+
+        // Default features; may be overridden by i18n if provided
+        let features = [
+          'clean',
+          'fast',
+          'human‑centered',
+          'accessible',
+          'reliable'
+        ];
+
+        function randomDelay(min, max) { return Math.floor(min + Math.random() * (max - min)); }
+
+        function safeSetTimeout(fn, ms) {
+          const id = setTimeout(() => {
+            pendingTimeouts.delete(id);
+            fn();
+          }, ms);
+          pendingTimeouts.add(id);
+          return id;
+        }
+        function clearPendingTimeouts() {
+          pendingTimeouts.forEach(id => clearTimeout(id));
+          pendingTimeouts.clear();
+        }
+
+        function queryElements() {
+          textEl = document.getElementById('typerText');
+          wrapper = document.getElementById('typer');
+          return textEl && wrapper;
+        }
+
+        function spawnSparkles() {
+          if (!wrapper) return;
+          const s = document.createElement('div');
+          s.className = 'sparkles';
+          for (let i = 0; i < 5; i++) {
+            const dot = document.createElement('i');
+            dot.style.left = (40 + Math.random() * 20) + '%';
+            dot.style.top = (20 + Math.random() * 60) + '%';
+            dot.style.animationDelay = (i * 60) + 'ms';
+            s.appendChild(dot);
+          }
+          wrapper.appendChild(s);
+          safeSetTimeout(() => s.remove(), 900);
+        }
+
+        async function typeText(text) {
+          const v = typerVersion;
+          for (let i = 0; i < text.length; i++) {
+            if (abort || !textEl || v !== typerVersion) return;
+            current += text[i];
+            await new Promise(r => { requestAnimationFrame(() => { if (textEl) textEl.textContent = current; r(); }); });
+            await new Promise(r => safeSetTimeout(r, randomDelay(45, 120)));
+          }
+        }
+        async function backspace(count) {
+          const v = typerVersion;
+          for (let i = 0; i < count; i++) {
+            if (abort || !textEl || v !== typerVersion) return;
+            current = current.slice(0, -1);
+            await new Promise(r => { requestAnimationFrame(() => { if (textEl) textEl.textContent = current; r(); }); });
+            await new Promise(r => safeSetTimeout(r, randomDelay(28, 70)));
+          }
+        }
+
+        async function loop() {
+          const v = typerVersion;
+          if (!wrapper) return;
+          wrapper.classList.add('typer-fire');
+          while (!abort) {
+            if (v !== typerVersion) break;
+            const word = features[idx % features.length];
+            wrapper.classList.remove('typer-shimmer', 'typer-glow');
+            await typeText(word);
+            if (!wrapper) break;
+            wrapper.classList.add('typer-glow', 'typer-shimmer');
+            if (!prefersReduced) spawnSparkles();
+            await new Promise(r => safeSetTimeout(r, 3000));
+            if (!wrapper) break;
+            wrapper.classList.remove('typer-glow', 'typer-shimmer');
+            await backspace(word.length);
+            await new Promise(r => safeSetTimeout(r, 100));
+            idx++;
+          }
+        }
+
+        function start() {
+          if (!queryElements()) return;
+          current = '';
+          if (textEl) textEl.textContent = '';
+          abort = false;
+          clearPendingTimeouts();
+          typerVersion++;
+          // Allow i18n to provide localized features
+          if (typeof window.getI18nFeatures === 'function') {
+            const localized = window.getI18nFeatures();
+            if (Array.isArray(localized) && localized.length > 0) features = localized;
+            else features = ['clean','fast','human‑centered','accessible','reliable'];
+          }
+          if (prefersReduced) {
+            if (textEl) textEl.textContent = features[0] || '';
+          } else {
+            loop();
+          }
+        }
+
+        function stop() { abort = true; clearPendingTimeouts(); typerVersion++; }
+
+        // Expose reinit so translations that replace DOM can restart the typer
+        window.typerReinit = function() {
+          stop();
+          // Give DOM a moment to update
+          safeSetTimeout(() => { idx = 0; start(); }, 30);
+        };
+
+        // Kick off
+        start();
+        window.addEventListener('beforeunload', () => { abort = true; });
+      })();
+
+      // Dynamic age calculation (DOB: 2010-08-23)
+      // Because updating your age manually every year is a pain,
+      // and we're developers. We automate the boring stuff.
+      // This calculates age properly accounting for birth month/day,
+      // because not all years are the same length (looking at you, leap years).
+      (function() {
+        const out = document.getElementById('age');
+        if (!out) return;
+        const dob = new Date('2010-08-23T00:00:00Z');
+        function computeAge() {
+          const now = new Date();
+          let age = now.getUTCFullYear() - dob.getUTCFullYear();
+          const m = now.getUTCMonth() - dob.getUTCMonth();
+          if (m < 0 || (m === 0 && now.getUTCDate() < dob.getUTCDate())) {
+            age--;
+          }
+          out.textContent = String(age);
+        }
+        computeAge();
+        // Update daily at midnight
+        const msUntilTomorrow = new Date(new Date().setHours(24,0,0,0)) - new Date();
+        setTimeout(() => { computeAge(); setInterval(computeAge, 24*60*60*1000); }, msUntilTomorrow);
+      })();
+
+      // Toast notification helper — because alerts are so 2010 😎
+      (function() {
+        const toast = document.getElementById('toast');
+        function showToast(message, duration = 2500) {
+          if (!toast) return;
+          toast.textContent = message;
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), duration);
+        }
+        window.showToast = showToast; // Global for other functions
+      })();
+
+      // Unified tooltip manager — prevents overlap and fits design language
+      (function(){
+        const layer = document.getElementById('tooltip');
+        if (!layer) return;
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        let activeEl = null;
+        let rafId = 0;
+        const margin = 10; // gap from element
+
+        function placeTooltip(target, text, mouseX, mouseY){
+          if (!text) return hide();
+          layer.textContent = text;
+          layer.setAttribute('aria-hidden', 'false');
+          layer.classList.add('show');
+          const rect = target.getBoundingClientRect();
+          const tt = layer.getBoundingClientRect();
+
+          // Preferred: above center
+          let x = Math.round(rect.left + rect.width/2 - tt.width/2);
+          let y = Math.round(rect.top - tt.height - margin);
+
+          // If above overflows, try below
+          if (y < 8) y = Math.round(rect.bottom + margin);
+
+          // Clamp horizontally to viewport
+          const vw = Math.max(0, window.innerWidth);
+          const vh = Math.max(0, window.innerHeight);
+          x = Math.min(vw - tt.width - 8, Math.max(8, x));
+
+          // If still overlapping with target, nudge sideways based on pointer
+          if (!(rect.bottom + margin <= y || y + tt.height + margin <= rect.top)) {
+            if (mouseX !== undefined) {
+              const preferLeft = mouseX > rect.left + rect.width/2;
+              x = preferLeft ? Math.max(8, rect.left - tt.width - margin)
+                             : Math.min(vw - tt.width - 8, rect.right + margin);
+              // Align vertically with mouse position if available
+              const ty = Math.round((mouseY ?? (rect.top + rect.height/2)) - tt.height/2);
+              y = Math.min(vh - tt.height - 8, Math.max(8, ty));
+            }
+          }
+
+          layer.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+        }
+
+        function hide(){
+          layer.classList.remove('show');
+          layer.setAttribute('aria-hidden', 'true');
+          layer.style.transform = 'translate(-9999px, -9999px)';
+          activeEl = null;
+        }
+
+        function onEnter(e){
+          const t = e.currentTarget;
+          const text = t.getAttribute('data-tooltip');
+          if (!text) return;
+          activeEl = t;
+          // Initial placement near pointer if available
+          placeTooltip(t, text, e.clientX, e.clientY);
+        }
+        function onMove(e){
+          if (!activeEl) return;
+          // Throttle with rAF
+          cancelAnimationFrame(rafId);
+          rafId = requestAnimationFrame(() => {
+            if (!activeEl) return;
+            const text = activeEl.getAttribute('data-tooltip');
+            if (text) {
+              placeTooltip(activeEl, text, e.clientX, e.clientY);
+            }
+          });
+        }
+        function onLeave(){ hide(); }
+
+        function bind(el){
+          el.addEventListener('mouseenter', onEnter);
+          el.addEventListener('mousemove', onMove, { passive: true });
+          el.addEventListener('mouseleave', onLeave);
+          // Keyboard focus support
+          el.addEventListener('focus', (e) => onEnter(e));
+          el.addEventListener('blur', onLeave);
+        }
+
+        function init(){
+          // Attach to anything with data-tooltip
+          document.querySelectorAll('[data-tooltip]').forEach(bind);
+          // Mutations: bind dynamically added nodes (e.g., language change updates)
+          const mo = new MutationObserver((muts) => {
+            for (const m of muts) {
+              m.addedNodes && m.addedNodes.forEach(node => {
+                if (!(node instanceof Element)) return;
+                if (node.hasAttribute && node.hasAttribute('data-tooltip')) bind(node);
+                node.querySelectorAll && node.querySelectorAll('[data-tooltip]').forEach(bind);
+              });
+            }
+          });
+          mo.observe(document.body, { childList: true, subtree: true });
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', init);
+        } else { init(); }
+
+        // Hide on Escape
+        window.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
+        // Respect reduced motion by not following mouse, only element center
+        if (prefersReduced) {
+          document.addEventListener('mousemove', () => {}); // no-op to keep listeners lightweight
+        }
+      })();
+
+      // Graceful global error handling — user-friendly overlay and toast
+      (function(){
+        const overlay = document.getElementById('errorOverlay');
+        if (!overlay) return;
+        function showError(msg, detail){
+          overlay.innerHTML = '';
+          overlay.style.display = 'block';
+          overlay.style.position = 'fixed'; overlay.style.inset = '10px'; overlay.style.zIndex = '1000';
+          overlay.style.background = 'rgba(30,30,30,0.8)'; overlay.style.border = '1px solid #333'; overlay.style.borderRadius = '12px';
+          overlay.style.backdropFilter = 'blur(6px) saturate(120%)'; overlay.style.padding = '16px';
+          const title = document.createElement('div'); title.style.fontWeight = '600'; title.style.marginBottom = '6px'; title.textContent = 'Something went wrong — but we handled it.';
+          const message = document.createElement('div'); message.style.color = '#ccc'; message.textContent = msg || 'An unexpected error occurred.';
+          const details = document.createElement('details'); details.style.marginTop = '8px';
+          const sum = document.createElement('summary'); sum.textContent = 'Details'; details.appendChild(sum);
+          const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.style.fontSize = '12px'; pre.style.color = '#aaa'; pre.textContent = detail || '';
+          details.appendChild(pre);
+          const btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Dismiss'; btn.style.marginTop = '12px';
+          btn.addEventListener('click', () => { overlay.style.display = 'none'; overlay.innerHTML = ''; });
+          overlay.append(title, message, details, btn);
+          window.showToast && window.showToast('An error occurred — details shown.');
+        }
+        window.addEventListener('error', (e) => { showError(e.message, (e.error && e.error.stack) || ''); });
+        window.addEventListener('unhandledrejection', (e) => { const reason = e.reason || {}; showError(reason.message || 'Unhandled promise rejection', reason.stack || JSON.stringify(reason)); });
+      })();
+
+      // Global copy toast — surface feedback whenever user copies text
+      (function(){
+        let lastToastAt = 0;
+        document.addEventListener('copy', () => {
+          const now = Date.now();
+          if (now - lastToastAt < 800) return; // avoid duplicate spam from programmatic copies
+          lastToastAt = now;
+          window.showToast && window.showToast('Copied to clipboard.');
+        });
+      })();
+
+      // Particle effects system — adds delightful sparkles to buttons and text
+      // Creates a sense of magic and responsiveness throughout the site
+      (function() {
+        function createParticle(x, y, spread = 40) {
+          const particle = document.createElement('div');
+          particle.className = 'particle';
+          
+          // Random trajectory with spread
+          const angle = (Math.random() - 0.5) * Math.PI * 0.8; // Slightly upward bias
+          const distance = 20 + Math.random() * spread;
+          const tx = Math.cos(angle) * distance;
+          const ty = Math.sin(angle) * distance - Math.abs(Math.sin(angle)) * 10; // More upward
+          
+          particle.style.left = x + 'px';
+          particle.style.top = y + 'px';
+          particle.style.setProperty('--tx', tx + 'px');
+          particle.style.setProperty('--ty', ty + 'px');
+          
+          // Random size variation
+          const size = 3 + Math.random() * 2;
+          particle.style.width = size + 'px';
+          particle.style.height = size + 'px';
+          
+          // Random animation delay for staggered effect
+          particle.style.animationDelay = (Math.random() * 100) + 'ms';
+          
+          document.body.appendChild(particle);
+          setTimeout(() => particle.remove(), 1200);
+        }
+        
+        function spawnButtonParticles(btn) {
+          const rect = btn.getBoundingClientRect();
+          const centerX = rect.left + rect.width / 2;
+          const centerY = rect.top + rect.height / 2;
+          
+          // Spawn cluster of particles from button center
+          const count = 6 + Math.floor(Math.random() * 4);
+          for (let i = 0; i < count; i++) {
+            const offsetX = (Math.random() - 0.5) * rect.width * 0.6;
+            const offsetY = (Math.random() - 0.5) * rect.height * 0.6;
+            setTimeout(() => {
+              createParticle(centerX + offsetX, centerY + offsetY, 50);
+            }, i * 15);
+          }
+        }
+        
+        function spawnTextParticles(el, e) {
+          const rect = el.getBoundingClientRect();
+          const x = e.clientX || (rect.left + rect.width / 2);
+          const y = e.clientY || (rect.top + rect.height / 2);
+          
+          // Fewer, more subtle particles for text
+          const count = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < count; i++) {
+            setTimeout(() => {
+              createParticle(x, y, 30);
+            }, i * 40);
+          }
+        }
+        
+        window.spawnButtonParticles = spawnButtonParticles;
+        
+        // Add particles to buttons on click
+        document.addEventListener('DOMContentLoaded', () => {
+          // Buttons get particles on click (already handled in setupButtonFeedback)
+          
+          // Add particles to text elements on hover/click
+          document.querySelectorAll('.particle-target, h1, h2, h3, .section-title, .chip, .tag').forEach(el => {
+            let lastHover = 0;
+            el.addEventListener('mouseenter', (e) => {
+              const now = Date.now();
+              if (now - lastHover > 300) { // Throttle to avoid spam
+                spawnTextParticles(el, e);
+                lastHover = now;
+              }
+            });
+            
+            el.addEventListener('click', (e) => {
+              spawnTextParticles(el, e);
+            });
+          });
+          
+          // Add particles to section titles on interaction
+          document.querySelectorAll('.section-title').forEach(el => {
+            el.addEventListener('mouseenter', (e) => spawnTextParticles(el, e));
+          });
+          
+          // More particles for tags/chips on hover
+          document.querySelectorAll('.chip, .tag').forEach(el => {
+            el.addEventListener('mouseenter', (e) => {
+              const rect = el.getBoundingClientRect();
+              const x = rect.left + rect.width / 2;
+              const y = rect.top + rect.height / 2;
+              const count = 4 + Math.floor(Math.random() * 3);
+              for (let i = 0; i < count; i++) {
+                setTimeout(() => createParticle(x, y, 25), i * 30);
+              }
+            });
+          });
+        });
+      })();
+
+      // Fire highlight utility — creates clean fiery glow animation
+      // Immediate response with smooth animations
+      (function() {
+        function highlightElement(selector, scrollDelay = 0) {
+          const el = document.querySelector(selector);
+          if (!el) return;
+          
+          // Add fire-highlight class immediately if not present
+          if (!el.classList.contains('fire-highlight')) {
+            el.classList.add('fire-highlight');
+          }
+          
+          // Start scroll immediately (non-blocking)
+          const scrollY = Math.max(0, el.offsetTop - 100);
+          smoothScrollTo(scrollY, 600);
+          
+          // Start highlight immediately - don't wait for scroll
+          requestAnimationFrame(() => {
+            el.classList.add('active');
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              el.classList.remove('active');
+            }, 3000);
+          });
+        }
+        
+        window.highlightElement = highlightElement; // Global for other functions
+      })();
+
+      // Copy email helpers with toast notification and fire highlight (spelling is hard sometimes)
+      // Immediate response with visual feedback
+      (function() {
+        const email = 'mayukhjit.chakraborty@gmail.com';
+        const copy = async (btn) => {
+          // Immediate visual feedback
+          if (btn) {
+            btn.classList.add('clicked');
+            btn.classList.add('clicked-shake');
+            setTimeout(() => btn.classList.remove('clicked'), 200);
+            setTimeout(() => btn.classList.remove('clicked-shake'), 260);
+          }
+          window.playUiPop && window.playUiPop({ frequency: 420 });
+          
+          try {
+            await navigator.clipboard.writeText(email);
+            window.showToast && window.showToast('Email copied to clipboard.');
+            // Highlight email immediately
+            requestAnimationFrame(() => {
+              window.highlightElement && window.highlightElement('#emailLink', 0);
+            });
+          } catch (e) {
+            // Fallback for older browsers (yes this will look old school)
+            const ta = document.createElement('textarea');
+            ta.value = email; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            window.showToast && window.showToast('Email copied to clipboard.');
+            requestAnimationFrame(() => {
+              window.highlightElement && window.highlightElement('#emailLink', 0);
+            });
+          }
+        };
+        const b1 = document.getElementById('copyEmail');
+        const b2 = document.getElementById('copyEmailFooter');
+        b1 && b1.addEventListener('click', () => copy(b1));
+        b2 && b2.addEventListener('click', () => copy(b2));
+      })();
+
+      // Button fire highlights — immediate response with smooth animations
+      (function() {
+        // Immediate button click feedback for all action buttons
+        function setupButtonFeedback(btn) {
+          btn.addEventListener('click', function(e) {
+            // Immediate visual feedback - no delay
+            this.classList.add('clicked');
+            this.classList.add('clicked-shake');
+            setTimeout(() => this.classList.remove('clicked'), 200);
+            setTimeout(() => this.classList.remove('clicked-shake'), 260);
+            // Particle effect on click
+            spawnButtonParticles(this);
+          }, { passive: true });
+        }
+        
+        // Wait for DOM to be fully loaded
+        setTimeout(() => {
+          // "Let's work together" button → highlight email
+          document.querySelectorAll('a.btn[href="#contact"]').forEach(btn => {
+            if (btn.textContent.includes('work together') || btn.textContent.includes('Collaborate')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Immediate action - no delay
+                requestAnimationFrame(() => {
+                  window.highlightElement && window.highlightElement('#emailLink', 0);
+                });
+              });
+            }
+          });
+          
+          // "View Projects" button → highlight projects section
+          document.querySelectorAll('a.btn[href="#projects"]').forEach(btn => {
+            if (btn.textContent.includes('Projects')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const projectsSection = document.querySelector('#projects');
+                if (projectsSection) {
+                  // Start immediately - no delays
+                  projectsSection.classList.add('fire-highlight');
+                  smoothScrollTo(Math.max(0, projectsSection.offsetTop - 100), 600);
+                  // Activate highlight immediately
+                  requestAnimationFrame(() => {
+                    projectsSection.classList.add('active');
+                    setTimeout(() => {
+                      projectsSection.classList.remove('active');
+                    }, 3000);
+                  });
+                }
+              });
+            }
+          });
+          
+          // "Collaborate" button in vision section → highlight email
+          document.querySelectorAll('.card .btn[href="#contact"]').forEach(btn => {
+            if (btn.textContent.includes('Collaborate')) {
+              setupButtonFeedback(btn);
+              btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                requestAnimationFrame(() => {
+                  window.highlightElement && window.highlightElement('#emailLink', 0);
+                });
+              });
+            }
+          });
+          
+          // Setup feedback for all other buttons too
+          document.querySelectorAll('.btn').forEach(btn => {
+            if (!btn.classList.contains('clicked')) {
+              setupButtonFeedback(btn);
+            }
+          });
+        }, 100);
+      })();
+
+      // Command Palette — the Swiss Army knife of navigation
+      // Pro tip: This is where the magic happens. Press Cmd+K (or Ctrl+K) to open.
+      (function() {
+        const cmdk = document.getElementById('cmdk');
+        const cmdkInput = document.getElementById('cmdkInput');
+        const cmdkList = document.getElementById('cmdkList');
+        if (!cmdk || !cmdkInput || !cmdkList) return;
+
+        // Command definitions — each action is a delightful little function
+        const commands = [
+          {
+            id: 'projects',
+            title: 'Go to Projects',
+            keywords: ['project', 'work', 'portfolio'],
+            action: () => {
+              const el = document.querySelector('#projects');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'vision',
+            title: 'Go to Vision',
+            keywords: ['vision', 'future', 'music', 'ai'],
+            action: () => {
+              const el = document.querySelector('#vision');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'why',
+            title: 'Why me?',
+            keywords: ['why', 'hire', 'about'],
+            action: () => {
+              const el = document.querySelector('#why');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'faq',
+            title: 'Go to FAQ',
+            keywords: ['faq', 'question', 'answer', 'help'],
+            action: () => {
+              const el = document.querySelector('#faq');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'skills',
+            title: 'View Skills',
+            keywords: ['skill', 'tech', 'stack'],
+            action: () => {
+              const el = document.querySelector('#skills');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'contact',
+            title: 'Go to Contact',
+            keywords: ['contact', 'email', 'reach'],
+            action: () => {
+              const el = document.querySelector('#contact');
+              if (el) {
+                smoothScrollTo(Math.max(0, el.offsetTop - 70), 600);
+                cmdk.classList.remove('open');
+              }
+            }
+          },
+          {
+            id: 'copy-email',
+            title: 'Copy Email Address',
+            keywords: ['email', 'copy', 'contact'],
+            action: () => {
+              const email = 'mayukhjit.chakraborty@gmail.com';
+              navigator.clipboard.writeText(email).then(() => {
+                window.showToast && window.showToast('✓ Email copied to clipboard');
+                cmdk.classList.remove('open');
+              }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = email; document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+                window.showToast && window.showToast('✓ Email copied to clipboard');
+                cmdk.classList.remove('open');
+              });
+            }
+          },
+          {
+            id: 'github',
+            title: 'Open GitHub Profile',
+            keywords: ['github', 'code', 'repo'],
+            action: () => {
+              window.open('https://github.com/mayukhjit-c', '_blank');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'top',
+            title: 'Scroll to Top',
+            keywords: ['top', 'home', 'beginning'],
+            action: () => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'easter-egg',
+            title: 'Easter Egg 🥚',
+            keywords: ['easter', 'egg', 'secret', 'konami'],
+            action: () => {
+              window.showToast && window.showToast('🎉 You found an easter egg! Keep exploring...');
+              // Add a subtle celebration effect
+              document.body.style.animation = 'none';
+              setTimeout(() => {
+                document.body.style.animation = 'rainbowPulse 0.6s ease';
+              }, 10);
+              cmdk.classList.remove('open');
+            }
+          }
+        ];
+
+        // Customization commands
+        let ambientStrength = 1.0;
+        let gridHighlight = 1.0;
+        let effectsPaused = false;
+        function setAmbientStrength(val){ ambientStrength = Math.max(0.5, Math.min(1.5, val)); document.body.style.setProperty('--ambient-scale', String(ambientStrength)); }
+        function setGridHighlight(val){ gridHighlight = Math.max(0.6, Math.min(1.6, val)); document.documentElement.style.setProperty('--grid-highlight-scale', String(gridHighlight)); }
+        function toggleEffects(){ effectsPaused = !effectsPaused; if (effectsPaused) { window.__isSmoothScrolling = true; } else { window.__isSmoothScrolling = false; } }
+
+        commands.push(
+          { id: 'ambient-up', title: 'Ambient glow: stronger', keywords: ['ambient','background','glow','color'], action: () => setAmbientStrength(ambientStrength + 0.1) },
+          { id: 'ambient-down', title: 'Ambient glow: softer', keywords: ['ambient','background','glow','color'], action: () => setAmbientStrength(ambientStrength - 0.1) },
+          { id: 'grid-strong', title: 'Grid highlight: stronger', keywords: ['grid','highlight','hover'], action: () => setGridHighlight(gridHighlight + 0.1) },
+          { id: 'grid-soft', title: 'Grid highlight: softer', keywords: ['grid','highlight','hover'], action: () => setGridHighlight(gridHighlight - 0.1) },
+          { id: 'effects-toggle', title: 'Toggle visual effects', keywords: ['effects','particles','background'], action: () => { toggleEffects(); window.showToast && window.showToast(effectsPaused ? 'Effects paused' : 'Effects resumed'); } },
+          { id: 'themes-slow', title: 'Theme rotation: slow', keywords: ['theme','palette','rotation','slow'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(true); window.showToast && window.showToast('Theme rotation slowed'); } },
+          { id: 'themes-normal', title: 'Theme rotation: normal', keywords: ['theme','palette','rotation','normal'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(false); window.showToast && window.showToast('Theme rotation normal'); } }
+        );
+
+        let selectedIndex = 0;
+        let filteredCommands = commands;
+
+        function renderCommands() {
+          cmdkList.innerHTML = '';
+          filteredCommands.forEach((cmd, idx) => {
+            const item = document.createElement('div');
+            item.className = 'cmdk-item';
+            item.setAttribute('role', 'option');
+            item.setAttribute('aria-selected', idx === selectedIndex);
+            item.innerHTML = `
+              <span>${cmd.title}</span>
+              ${idx === selectedIndex ? '<span class="cmdk-kbd">↵</span>' : ''}
+            `;
+            item.addEventListener('click', () => cmd.action());
+            cmdkList.appendChild(item);
+          });
+          // Update aria-selected for all items
+          cmdkList.querySelectorAll('.cmdk-item').forEach((item, idx) => {
+            item.setAttribute('aria-selected', idx === selectedIndex);
+          });
+        }
+
+        function filterCommands(query) {
+          const q = query.toLowerCase().trim();
+          if (!q) {
+            filteredCommands = commands;
+            selectedIndex = 0;
+            renderCommands();
+            return;
+          }
+          filteredCommands = commands.filter(cmd => {
+            return cmd.title.toLowerCase().includes(q) ||
+                   cmd.keywords.some(kw => kw.toLowerCase().includes(q));
+          });
+          selectedIndex = Math.max(0, Math.min(selectedIndex, filteredCommands.length - 1));
+          renderCommands();
+        }
+
+        function openPalette() {
+          cmdk.classList.add('open');
+          cmdkInput.focus();
+          cmdkInput.value = '';
+          filteredCommands = commands;
+          selectedIndex = 0;
+          renderCommands();
+        }
+
+        function closePalette() {
+          cmdk.classList.remove('open');
+          cmdkInput.blur();
+        }
+
+        // Keyboard shortcuts: Cmd+K or Ctrl+K to open
+        window.addEventListener('keydown', (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            if (cmdk.classList.contains('open')) {
+              closePalette();
+            } else {
+              openPalette();
+            }
+          }
+          if (e.key === 'Escape' && cmdk.classList.contains('open')) {
+            closePalette();
+          }
+        });
+
+        // Handle input filtering
+        cmdkInput.addEventListener('input', (e) => {
+          filterCommands(e.target.value);
+        });
+
+        // Handle keyboard navigation
+        cmdkInput.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = (selectedIndex + 1) % filteredCommands.length;
+            renderCommands();
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = selectedIndex === 0 ? filteredCommands.length - 1 : selectedIndex - 1;
+            renderCommands();
+          } else if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
+            e.preventDefault();
+            filteredCommands[selectedIndex].action();
+          }
+        });
+
+        // Close on backdrop click
+        cmdk.addEventListener('click', (e) => {
+          if (e.target === cmdk) closePalette();
+        });
+      })();
+
+      // Modal functionality — because details matter
+      (function() {
+        const modal = document.getElementById('modal');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalMedia = document.getElementById('modalMedia');
+        if (!modal || !modalClose) return;
+
+        // Project data — each project gets its moment in the spotlight
+        const projectData = {
+          gcsemate: {
+            title: 'GCSEMate',
+            description: 'GCSE revision companion offering structured subjects, notes, and past papers for focused study.',
+            details: 'Built with a focus on clarity and accessibility, GCSEMate helps students navigate their revision journey with structured content and intuitive navigation. The platform combines clean UI with performant backend architecture.',
+            tech: ['Web App', 'Education', 'UX', 'React', 'Node.js'],
+            url: 'https://gcsemate.com'
+          },
+          codebuilder: {
+            title: 'CodeBuilder AI',
+            description: 'Autonomous web app that generates startup ideas, analyzes profitability, considers marketing & branding, then fully implements working webapps using Gemini 2.5 Pro.',
+            details: 'An autonomous AI system that demonstrates end-to-end product development. CodeBuilder AI generates innovative startup concepts, performs deep market analysis including profitability assessment, develops comprehensive marketing strategies and branding guidelines, identifies improvement areas, and then autonomously builds fully functional web applications using Google\'s Gemini 2.5 Pro. This project showcases advanced AI orchestration, full-stack development automation, and intelligent decision-making systems.',
+            tech: ['AI', 'Autonomous Systems', 'Gemini 2.5 Pro', 'Full-stack', 'Machine Learning'],
+            url: null
+          },
+          studio: {
+            title: 'Subscriberlytics',
+            description: 'Track and analyze your subscriptions with real‑time currency conversion, comprehensive insights, and offline PWA support.',
+            details: 'Subscriberlytics is a privacy‑first subscription manager. It offers advanced analytics (cost breakdowns, value analysis, visual charts), export/import, keyboard shortcuts, 30+ currencies with automatic conversion, and installs as a PWA for offline use. Clean, accessible UI with smooth animations and responsive design.',
+            tech: ['Analytics', 'PWA', 'Vanilla JS', 'CSS', 'Currency', 'Accessibility'],
+            url: 'https://github.com/mayukhjit-c/subscriberlytics'
+          }
+        };
+
+        function openModal(projectId) {
+          const data = projectData[projectId];
+          if (!data) return;
+          modalTitle.textContent = data.title;
+          modalBody.innerHTML = `
+            <p class="subtitle">${data.description}</p>
+            <p>${data.details}</p>
+            <div class="badges" style="margin-top: 16px;">
+              ${data.tech.map(t => `<span class="badge-tech">${t}</span>`).join('')}
+            </div>
+            ${data.url ? `<div style="margin-top: 20px;"><a class="btn primary" href="${data.url}" target="_blank" rel="noopener">Visit ${data.title} <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg></a></div>` : ''}
+          `;
+          modalMedia.innerHTML = ''; // Clear media for now
+          modal.classList.add('open');
+          modalClose.focus();
+        }
+
+        function closeModal() {
+          modal.classList.remove('open');
+        }
+
+        // Bind modal triggers
+        document.querySelectorAll('[data-open-modal]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const projectId = btn.getAttribute('data-open-modal');
+            openModal(projectId);
+          });
+        });
+
+        modalClose.addEventListener('click', closeModal);
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeModal();
+        });
+        window.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape' && modal.classList.contains('open')) {
+            closeModal();
+          }
+        });
+      })();
+
+      // Easter Egg: Konami Code — classic sequence, slightly more useful now
+      // Try: ↑ ↑ ↓ ↓ ← → ← → B A (or just mash keys in sequence)
+      (function() {
+        const konamiCode = [
+          'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+          'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+          'KeyB', 'KeyA'
+        ];
+        let konamiIndex = 0;
+        window.addEventListener('keydown', (e) => {
+          if (e.key === konamiCode[konamiIndex]) {
+            konamiIndex++;
+            if (konamiIndex === konamiCode.length) {
+              konamiIndex = 0;
+              // Open command palette as a practical easter surprise
+              const cmdk = document.getElementById('cmdk');
+              if (cmdk && !cmdk.classList.contains('open')) {
+                cmdk.classList.add('open');
+                const input = document.getElementById('cmdkInput');
+                input && input.focus();
+              }
+              // Also toggle a slower theme rotation for a bit of calm
+              if (typeof window.__toggleSlowThemes === 'function') {
+                window.__toggleSlowThemes(true);
+                setTimeout(() => window.__toggleSlowThemes(false), 120000); // 2 mins
+              }
+              window.showToast && window.showToast('Secret mode enabled. Press Esc to close.');
+            }
+          } else {
+            konamiIndex = 0;
+          }
+        });
+      })();
+
+      // Easter Egg: Brand dot click counter — click the dot 7 times for a surprise
+      (function() {
+        const brandDot = document.querySelector('.brand .dot');
+        if (!brandDot) return;
+        let clickCount = 0;
+        let lastClickTime = 0;
+        brandDot.style.cursor = 'pointer';
+        brandDot.addEventListener('click', () => {
+          const now = Date.now();
+          if (now - lastClickTime > 2000) clickCount = 0; // Reset if too slow
+          clickCount++;
+          lastClickTime = now;
+          if (clickCount === 7) {
+            window.showToast && window.showToast('7 clicks! You discovered the secret dot. Impressive persistence!');
+            // Make it dance
+            brandDot.style.animation = 'none';
+            setTimeout(() => {
+              brandDot.style.animation = 'pulse 0.5s ease 3';
+            }, 10);
+            clickCount = 0;
+          }
+        });
+      })();
+
+      // Easter Egg: Triple-click logo for secret message
+      (function() {
+        const brand = document.querySelector('.brand');
+        if (!brand) return;
+        let clickCount = 0;
+        let timeout;
+        brand.addEventListener('click', (e) => {
+          if (e.target !== brand && !brand.contains(e.target)) return;
+          clickCount++;
+          clearTimeout(timeout);
+          timeout = setTimeout(() => { clickCount = 0; }, 600);
+          
+          if (clickCount === 3) {
+            clickCount = 0;
+            const messages = [
+              '🎵 "Code by day, music by night — building stuff that matters."',
+              '💡 "Every line of code is a beat in the song of creation."',
+              '"Shipping fast, learning faster, improving always."',
+              '"Good design is invisible. Great design is unforgettable."',
+              '"Focus, flow, iterate — that\'s the developer\'s groove."'
+            ];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+            window.showToast && window.showToast(msg);
+          }
+        });
+      })();
+
+      // Easter Egg: Hold Shift while scrolling for slow-mo smooth scroll
+      (function() {
+        let smoothScrollMultiplier = 1;
+        window.addEventListener('keydown', (e) => {
+          if (e.shiftKey && e.key === 'Shift' && smoothScrollMultiplier === 1) {
+            smoothScrollMultiplier = 0.5;
+            window.showToast && window.showToast('🐌 Slow-mo scrolling enabled! Release Shift to return to normal.');
+          }
+        });
+        window.addEventListener('keyup', (e) => {
+          if (e.key === 'Shift' && smoothScrollMultiplier !== 1) {
+            smoothScrollMultiplier = 1;
+            window.showToast && window.showToast('Normal scrolling restored!');
+          }
+        });
+        // Apply multiplier to smooth scroll function
+        const originalSmoothScrollTo = window.smoothScrollTo;
+        if (originalSmoothScrollTo) {
+          window.smoothScrollTo = function(target, duration) {
+            return originalSmoothScrollTo(target, duration * (1 / smoothScrollMultiplier));
+          };
+        }
+      })();
+
+      // Easter Egg: Type "dev" anywhere on the page
+      (function() {
+        let typed = '';
+        const trigger = 'dev';
+        let timeout;
+        window.addEventListener('keypress', (e) => {
+          // Ignore if typing in input
+          if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+          
+          typed += e.key.toLowerCase();
+          clearTimeout(timeout);
+          timeout = setTimeout(() => { typed = ''; }, 2000);
+          
+          if (typed.includes(trigger)) {
+            typed = '';
+            const devMsgs = [
+              'Developer mode: Unlocked!',
+              'You found the dev portal! (Just kidding, there isn\'t one... yet.)',
+              'Pro tip: Open DevTools (F12) to see my code comments!',
+              '"The best code is code that explains itself." — Me, probably',
+              'You typed "dev"! Here\'s a secret: I obsess over performance.'
+            ];
+            window.showToast && window.showToast(devMsgs[Math.floor(Math.random() * devMsgs.length)]);
+          }
+        });
+      })();
+
+      // Easter Egg: Click all section icons in order
+      (function() {
+        const requiredSections = ['#projects', '#vision', '#why', '#skills'];
+        let clickedInOrder = [];
+        
+        requiredSections.forEach((selector, index) => {
+          const section = document.querySelector(selector);
+          if (!section) return;
+          const icon = section.querySelector('.section-title .icon');
+          if (!icon) return;
+          
+          icon.style.cursor = 'pointer';
+          icon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            if (clickedInOrder.length === index && clickedInOrder.indexOf(selector) === -1) {
+              clickedInOrder.push(selector);
+              
+              if (clickedInOrder.length === requiredSections.length) {
+                window.showToast && window.showToast('🎊 Incredible! You clicked all section icons in order! You win... bragging rights!');
+                clickedInOrder = [];
+                
+                // Celebration animation
+                requiredSections.forEach(sel => {
+                  const s = document.querySelector(sel);
+                  if (s) {
+                    s.style.animation = 'none';
+                    setTimeout(() => {
+                      s.style.animation = 'pulse 0.4s ease';
+                    }, 10);
+                  }
+                });
+              }
+            } else if (clickedInOrder.indexOf(selector) === -1) {
+              // Clicked out of order, reset
+              clickedInOrder = [selector];
+            }
+          });
+        });
+      })();
+
+      // Haptic feedback helper for touch devices
+      (function() {
+        // Check if haptic feedback is supported
+        const supportsHaptics = 'vibrate' in navigator;
+        
+        window.triggerHaptic = function(type = 'light') {
+          if (!supportsHaptics) return;
+          
+          // Different vibration patterns for different feedback types
+          const patterns = {
+            light: [10],
+            medium: [20],
+            heavy: [30],
+            success: [10, 20, 10],
+            error: [50, 20, 50]
+          };
+          
+          const pattern = patterns[type] || patterns.light;
+          navigator.vibrate(pattern);
+        };
+        
+        // Add haptic feedback to interactive elements on touch devices
+        // Consolidated single listener for better performance
+        if (supportsHaptics) {
+          document.addEventListener('touchstart', (e) => {
+            // Check in priority order: buttons, then tags/chips, then cards
+            if (e.target.closest('.btn')) {
+              window.triggerHaptic('light');
+            } else if (e.target.closest('.tag, .chip')) {
+              window.triggerHaptic('light');
+            } else if (e.target.closest('.card')) {
+              window.triggerHaptic('light');
+            }
+          }, { passive: true });
+        }
+      })();
+
+      // Easter Egg: Double-tap anywhere to spawn a burst of particles
+      (function() {
+        let lastTap = 0;
+        document.addEventListener('touchend', (e) => {
+          const now = Date.now();
+          if (now - lastTap < 300) {
+            // Double tap detected
+            const touch = e.changedTouches[0];
+            if (touch && window.spawnButtonParticles) {
+              // Create fake button to spawn particles
+              const fakeBtn = { getBoundingClientRect: () => ({
+                left: touch.clientX - 25,
+                top: touch.clientY - 25,
+                width: 50,
+                height: 50
+              })};
+              window.spawnButtonParticles(fakeBtn);
+              window.showToast && window.showToast('Sparkles!');
+              // Trigger haptic feedback
+              window.triggerHaptic && window.triggerHaptic('success');
+            }
+          }
+          lastTap = now;
+        }, { passive: true });
+      })();
+
+      // Easter Egg: Shake device/window for surprise (mobile)
+      (function() {
+        if (!window.DeviceMotionEvent) return;
+        let lastShake = 0;
+        const shakeThreshold = 25;
+        let lastX, lastY, lastZ;
+        
+        window.addEventListener('devicemotion', (e) => {
+          const acc = e.accelerationIncludingGravity;
+          if (!acc) return;
+          
+          const now = Date.now();
+          if (now - lastShake < 1000) return;
+          
+          if (lastX !== undefined) {
+            const deltaX = Math.abs(acc.x - lastX);
+            const deltaY = Math.abs(acc.y - lastY);
+            const deltaZ = Math.abs(acc.z - lastZ);
+            
+            if (deltaX + deltaY + deltaZ > shakeThreshold) {
+              lastShake = now;
+              // Trigger theme change or fun effect
+              window.showToast && window.showToast('🎲 Shake detected! Colors are shifting...');
+              // Can trigger a theme switch here if desired
+            }
+          }
+          
+          lastX = acc.x;
+          lastY = acc.y;
+          lastZ = acc.z;
+        }, { passive: true });
+      })();
+
+      // Theme Manager — rotates palettes and renders subtle themed effects
+      // Themes: fire (smoke + crackle), ice (snow blizzard), forest (branches + sub-branches), lilac (bubbles), fog (fog layer)
+      (function() {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const root = document.documentElement;
+        // Feature detect color-mix and mark fallback class
+        try { if (!CSS.supports('background: color-mix(in oklab, #fff 10%, #000)')) { document.documentElement.classList.add('no-colormix'); } } catch(_) {}
+        // Coarse pointer scale for effects and hover bands
+        const pointerCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+        const themes = [
+          {
+            id: 'fire',
+            vars: {
+              p1: '#fff8', p2: '#ffd166', p3: '#ff9f1c', p4: '#ff6a00', p5: '#e85d04', p6: '#9d0208',
+              g1: 'rgba(255,200,100,0.75)', g2: 'rgba(255,120,0,0.35)', g3: 'rgba(255,90,0,0.25)', g4: 'rgba(255,170,0,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'ice',
+            vars: {
+              p1: '#f8ffff', p2: '#90d5ff', p3: '#5bb3ff', p4: '#0084ff', p5: '#0066cc', p6: '#004499',
+              g1: 'rgba(144,213,255,0.75)', g2: 'rgba(91,179,255,0.35)', g3: 'rgba(0,132,255,0.25)', g4: 'rgba(144,213,255,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'forest',
+            vars: {
+              p1: '#f6fff6', p2: '#a8e6a1', p3: '#6edb7a', p4: '#37b24d', p5: '#2f9e44', p6: '#1b7a32',
+              g1: 'rgba(104, 220, 130, 0.75)', g2: 'rgba(55, 178, 77, 0.35)', g3: 'rgba(31, 124, 54, 0.25)', g4: 'rgba(168, 230, 161, 0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'lilac',
+            vars: {
+              p1: '#fff8ff', p2: '#d9aaff', p3: '#b885ff', p4: '#9966ff', p5: '#7a33ff', p6: '#5c00cc',
+              g1: 'rgba(217,170,255,0.75)', g2: 'rgba(184,133,255,0.35)', g3: 'rgba(153,102,255,0.25)', g4: 'rgba(217,170,255,0.18)',
+              filter: 'none'
+            }
+          },
+          {
+            id: 'fog',
+            vars: {
+              p1: '#ffffff', p2: '#dcdcdc', p3: '#bfbfbf', p4: '#9a9a9a', p5: '#7d7d7d', p6: '#5f5f5f',
+              g1: 'rgba(230,230,230,0.75)', g2: 'rgba(200,200,200,0.35)', g3: 'rgba(160,160,160,0.25)', g4: 'rgba(220,220,220,0.18)',
+              filter: 'none'
+            }
+          }
+        ];
+
+        // Color interpolation utilities for smooth transitions
+        // Memoization cache for color parsing - significant performance improvement
+        const colorCache = new Map();
+        function hexToRgb(hex) {
+          // Check cache first for O(1) lookup
+          if (colorCache.has(hex)) {
+            return colorCache.get(hex);
+          }
+          
+          let result;
+          // Handle rgba strings like rgba(255,200,100,0.75)
+          if (hex.startsWith('rgba') || hex.startsWith('rgb')) {
+            const match = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+            if (match) {
+              result = {
+                r: parseInt(match[1]),
+                g: parseInt(match[2]),
+                b: parseInt(match[3]),
+                a: match[4] ? parseFloat(match[4]) : 1
+              };
+            }
+          }
+          // Handle 4-digit hex with alpha shorthand (e.g., #fff8 -> rgba(255,255,255,0.533))
+          if (!result) {
+            const hex4Match = /^#?([a-f\d]{3})([a-f\d])$/i.exec(hex);
+            if (hex4Match) {
+              const s = hex4Match[1];
+              result = {
+                r: parseInt(s[0] + s[0], 16),
+                g: parseInt(s[1] + s[1], 16),
+                b: parseInt(s[2] + s[2], 16),
+                a: parseInt(hex4Match[2] + hex4Match[2], 16) / 255
+              };
+            }
+          }
+          // Handle short hex (e.g., #fff -> #ffffff)
+          if (!result && /^#?[a-f\d]{3}$/i.test(hex)) {
+            const shorthand = hex.replace('#', '');
+            result = {
+              r: parseInt(shorthand[0] + shorthand[0], 16),
+              g: parseInt(shorthand[1] + shorthand[1], 16),
+              b: parseInt(shorthand[2] + shorthand[2], 16),
+              a: 1
+            };
+          }
+          // Handle 8-digit hex with alpha (e.g., #ffffff88)
+          if (!result) {
+            const hex8Match = /^#?([a-f\d]{6})([a-f\d]{2})$/i.exec(hex);
+            if (hex8Match) {
+              result = {
+                r: parseInt(hex8Match[1].substring(0, 2), 16),
+                g: parseInt(hex8Match[1].substring(2, 4), 16),
+                b: parseInt(hex8Match[1].substring(4, 6), 16),
+                a: parseInt(hex8Match[2], 16) / 255
+              };
+            }
+          }
+          // Handle standard 6-digit hex colors
+          if (!result) {
+            const match = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            result = match ? {
+              r: parseInt(match[1], 16),
+              g: parseInt(match[2], 16),
+              b: parseInt(match[3], 16),
+              a: 1
+            } : { r: 255, g: 255, b: 255, a: 1 };
+          }
+          
+          // Cache the result for future lookups
+          colorCache.set(hex, result);
+          return result;
+        }
+        
+        function rgbToHex(r, g, b) {
+          return "#" + ((1 << 24) + (Math.round(r) << 16) + (Math.round(g) << 8) + Math.round(b)).toString(16).slice(1);
+        }
+        
+        function rgbaToString(r, g, b, a) {
+          return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${a})`;
+        }
+        
+        // Cache for alpha channel detection to avoid repeated regex tests
+        const alphaCache = new Map();
+        function hasAlphaChannel(color) {
+          if (alphaCache.has(color)) {
+            return alphaCache.get(color);
+          }
+          const result = color.startsWith('rgba') || /#?[a-f\d]{4}$/i.test(color) || /#?[a-f\d]{8}$/i.test(color);
+          alphaCache.set(color, result);
+          return result;
+        }
+        
+        function interpolateColor(color1, color2, t) {
+          const c1 = hexToRgb(color1);
+          const c2 = hexToRgb(color2);
+          const hasAlpha1 = hasAlphaChannel(color1);
+          const hasAlpha2 = hasAlphaChannel(color2);
+          const useAlpha = hasAlpha1 || hasAlpha2 || c1.a !== 1 || c2.a !== 1;
+          
+          const r = c1.r + (c2.r - c1.r) * t;
+          const g = c1.g + (c2.g - c1.g) * t;
+          const b = c1.b + (c2.b - c1.b) * t;
+          const a = useAlpha ? (c1.a + (c2.a - c1.a) * t) : 1;
+          
+          return useAlpha ? rgbaToString(r, g, b, a) : rgbToHex(r, g, b);
+        }
+        
+        // Linear easing for perfectly even-rate crossfades (less "surprise" than cubic)
+        function linearEase(t) { return t; }
+        
+        let currentThemeVars = {};
+        let isTransitioning = false;
+        
+        function applyTheme(theme, instant = false) {
+          root.classList.remove('theme-fire','theme-ice','theme-forest','theme-lilac','theme-fog');
+          root.classList.add(`theme-${theme.id}`);
+          const v = theme.vars;
+          
+          if (instant || Object.keys(currentThemeVars).length === 0) {
+            // Apply instantly on first load
+            currentThemeVars = { ...v };
+            root.style.setProperty('--theme-primary-1', v.p1);
+            root.style.setProperty('--theme-primary-2', v.p2);
+            root.style.setProperty('--theme-primary-3', v.p3);
+            root.style.setProperty('--theme-primary-4', v.p4);
+            root.style.setProperty('--theme-primary-5', v.p5);
+            root.style.setProperty('--theme-primary-6', v.p6);
+            root.style.setProperty('--theme-glow-1', v.g1);
+            root.style.setProperty('--theme-glow-2', v.g2);
+            root.style.setProperty('--theme-glow-3', v.g3);
+            root.style.setProperty('--theme-glow-4', v.g4);
+            root.style.setProperty('--theme-filter', v.filter);
+            // Also sync accent variables immediately
+            root.style.setProperty('--accent', v.p4);
+            root.style.setProperty('--accent-2', v.p3);
+            return;
+          }
+          
+          // Smooth transition over 3 seconds
+          if (isTransitioning) return; // Don't start a new transition if one is in progress
+          isTransitioning = true;
+          
+          const startVars = { ...currentThemeVars };
+          const endVars = { ...v };
+          const duration = 4500; // smoother 4.5 seconds
+          const startTime = performance.now();
+          
+          // Pre-compute color pairs and RGB values to avoid redundant parsing
+          const colorPairs = [];
+          ['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].forEach(key => {
+            if (startVars[key] !== endVars[key]) {
+              const num = key.slice(1);
+              const c1 = hexToRgb(startVars[key]);
+              const c2 = hexToRgb(endVars[key]);
+              const useAlpha = hasAlphaChannel(startVars[key]) || hasAlphaChannel(endVars[key]) || c1.a !== 1 || c2.a !== 1;
+              colorPairs.push({ propName: `--theme-primary-${num}`, c1, c2, useAlpha });
+            }
+          });
+          ['g1', 'g2', 'g3', 'g4'].forEach(key => {
+            if (startVars[key] !== endVars[key]) {
+              const num = key.slice(1);
+              const c1 = hexToRgb(startVars[key]);
+              const c2 = hexToRgb(endVars[key]);
+              const useAlpha = hasAlphaChannel(startVars[key]) || hasAlphaChannel(endVars[key]) || c1.a !== 1 || c2.a !== 1;
+              colorPairs.push({ propName: `--theme-glow-${num}`, c1, c2, useAlpha });
+            }
+          });
+          // Accent pairs
+          const acc1c1 = hexToRgb(startVars.p4);
+          const acc1c2 = hexToRgb(endVars.p4);
+          const acc1Alpha = hasAlphaChannel(startVars.p4) || hasAlphaChannel(endVars.p4) || acc1c1.a !== 1 || acc1c2.a !== 1;
+          const acc2c1 = hexToRgb(startVars.p3);
+          const acc2c2 = hexToRgb(endVars.p3);
+          const acc2Alpha = hasAlphaChannel(startVars.p3) || hasAlphaChannel(endVars.p3) || acc2c1.a !== 1 || acc2c2.a !== 1;
+          
+          function animate() {
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = linearEase(progress);
+            
+            // Interpolate pre-computed color pairs (direct RGB interpolation, no parsing)
+            for (const pair of colorPairs) {
+              const r = pair.c1.r + (pair.c2.r - pair.c1.r) * eased;
+              const g = pair.c1.g + (pair.c2.g - pair.c1.g) * eased;
+              const b = pair.c1.b + (pair.c2.b - pair.c1.b) * eased;
+              const a = pair.useAlpha ? (pair.c1.a + (pair.c2.a - pair.c1.a) * eased) : 1;
+              const value = pair.useAlpha ? rgbaToString(r, g, b, a) : rgbToHex(r, g, b);
+              root.style.setProperty(pair.propName, value);
+            }
+            // Interpolate accent pair
+            const r1 = acc1c1.r + (acc1c2.r - acc1c1.r) * eased;
+            const g1 = acc1c1.g + (acc1c2.g - acc1c1.g) * eased;
+            const b1 = acc1c1.b + (acc1c2.b - acc1c1.b) * eased;
+            const a1 = acc1Alpha ? (acc1c1.a + (acc1c2.a - acc1c1.a) * eased) : 1;
+            const acc = acc1Alpha ? rgbaToString(r1, g1, b1, a1) : rgbToHex(r1, g1, b1);
+            
+            const r2 = acc2c1.r + (acc2c2.r - acc2c1.r) * eased;
+            const g2 = acc2c1.g + (acc2c2.g - acc2c1.g) * eased;
+            const b2 = acc2c1.b + (acc2c2.b - acc2c1.b) * eased;
+            const a2 = acc2Alpha ? (acc2c1.a + (acc2c2.a - acc2c1.a) * eased) : 1;
+            const acc2 = acc2Alpha ? rgbaToString(r2, g2, b2, a2) : rgbToHex(r2, g2, b2);
+            
+            root.style.setProperty('--accent', acc);
+            root.style.setProperty('--accent-2', acc2);
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              currentThemeVars = { ...endVars };
+              isTransitioning = false;
+              // Set final values to ensure accuracy
+              root.style.setProperty('--theme-primary-1', endVars.p1);
+              root.style.setProperty('--theme-primary-2', endVars.p2);
+              root.style.setProperty('--theme-primary-3', endVars.p3);
+              root.style.setProperty('--theme-primary-4', endVars.p4);
+              root.style.setProperty('--theme-primary-5', endVars.p5);
+              root.style.setProperty('--theme-primary-6', endVars.p6);
+              root.style.setProperty('--theme-glow-1', endVars.g1);
+              root.style.setProperty('--theme-glow-2', endVars.g2);
+              root.style.setProperty('--theme-glow-3', endVars.g3);
+              root.style.setProperty('--theme-glow-4', endVars.g4);
+              root.style.setProperty('--theme-filter', endVars.filter);
+              root.style.setProperty('--accent', endVars.p4);
+              root.style.setProperty('--accent-2', endVars.p3);
+            }
+          }
+          
+          requestAnimationFrame(animate);
+        }
+
+        // Themed overlay effects on a lightweight canvas
+        let fx, ctx, w = 0, h = 0, dpr = Math.min(1.5, window.devicePixelRatio || 1);
+        // Defer visual effects until after initial view or first interaction
+        let effectsEnabled = false;
+        let effectsAlpha = 0;
+        let perfMode = false; // enable when FPS is low
+        let lastTick = 0, fpsEMA = 60;
+        function animateEffectsAlpha() {
+          if (!effectsEnabled) return;
+          effectsAlpha = Math.min(1, effectsAlpha + 0.045);
+          if (effectsAlpha < 1) requestAnimationFrame(animateEffectsAlpha);
+        }
+        const enableEffects = () => {
+          if (effectsEnabled) return;
+          effectsEnabled = true;
+          effectsAlpha = 0;
+          // Reseed particles now that effects are enabled
+          resetFor(themes[themeIndex].id);
+          requestAnimationFrame(animateEffectsAlpha);
+        };
+        // Enable after 4s or on first interaction (whichever comes first)
+        setTimeout(enableEffects, 4000);
+        const firstInteraction = () => { enableEffects(); window.removeEventListener('scroll', firstInteraction); window.removeEventListener('pointermove', firstInteraction); };
+        window.addEventListener('scroll', firstInteraction, { passive: true });
+        window.addEventListener('pointermove', firstInteraction, { passive: true });
+        let resizeId;
+        function ensureCanvas() {
+          if (!fx) {
+            fx = document.createElement('canvas');
+            fx.id = 'fx-layer';
+            Object.assign(fx.style, {
+              position: 'fixed', inset: '0', zIndex: '0', pointerEvents: 'none'
+            });
+            document.body.prepend(fx);
+            ctx = fx.getContext('2d');
+          }
+          const nw = Math.ceil(window.innerWidth);
+          const nh = Math.ceil(window.innerHeight);
+          if (nw !== w || nh !== h) {
+            w = nw; h = nh; fx.width = Math.floor(w * dpr); fx.height = Math.floor(h * dpr);
+            fx.style.width = w + 'px'; fx.style.height = h + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          }
+        }
+        window.addEventListener('resize', () => { cancelAnimationFrame(resizeId); resizeId = requestAnimationFrame(ensureCanvas); }, { passive: true });
+        // Interactive background clicks — tailored per theme (small but fun)
+        function spawnBurst(x, y, themeId) {
+          if (prefersReduced) return;
+          const burst = { x, y, themeId, life: 0, max: 1200, items: [] };
+          const add = (o) => burst.items.push(o);
+          if (themeId === 'fire') {
+            for (let i = 0; i < 26; i++) {
+              const a = Math.random() * Math.PI * 2; const s = 0.8 + Math.random()*1.6;
+              add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.4, r: 0.8 + Math.random()*1.6, life: 0, max: 700 + Math.random()*500 });
+            }
+          } else if (themeId === 'ice') {
+            for (let i = 0; i < 3; i++) add({ x, y, ring: true, r: 2, vr: 1.6 + i*0.3, life: 0, max: 900 });
+          } else if (themeId === 'forest') {
+            const petals = 8; for (let i = 0; i < petals; i++) add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr: 0.9, life: 0, max: 1000 });
+          } else if (themeId === 'lilac') {
+            for (let i = 0; i < 14; i++) { const a = Math.random()*Math.PI*2; const s = 0.9 + Math.random()*1.4; add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, r: 1.2 + Math.random()*1.8, life: 0, max: 800 }); }
+          } else if (themeId === 'fog') {
+            for (let i = 0; i < 10; i++) add({ x, y, smoke: true, r: 4 + Math.random()*6, vr: 0.3 + Math.random()*0.4, life: 0, max: 1400, ox: (Math.random()-0.5)*8, oy: (Math.random()-0.5)*8 });
+          }
+          (state.bursts || (state.bursts = [])).push(burst);
+        }
+        window.addEventListener('pointerdown', (e) => {
+          const themeId = themes[themeIndex].id;
+          spawnBurst(e.clientX, e.clientY, themeId);
+        }, { passive: true });
+
+        // Particles for effects
+        const state = { t: 0, parts: [], sparks: [], cross: null };
+        const branchState = { branches: [], exit: null };
+        let fogPhase = 0; // 0..1 smoothed alpha for fog
+        let fogTarget = 0;
+        function resetFor(themeId, prevThemeId) {
+          // Snapshot current parts BEFORE clearing, so crossfade always has something to draw
+          const prevSnapshot = (state.parts && state.parts.length) ? state.parts.map(p => ({ ...p })) : (state.partsPrev || []);
+          state.parts.length = 0;
+          state.sparks.length = 0;
+          // Crossfade: keep a fading copy of old parts
+          if (prevThemeId && !prefersReduced) {
+            // Limit old parts for performance during crossfade, especially for ice
+            const prevCopy = prevSnapshot.map(p => ({ ...p }));
+            let dur = 2600;
+            let limited = prevCopy;
+            if (prevThemeId === 'ice') {
+              dur = 3200; // slightly longer for a calmer fade-out
+              const cap = 100; // cap fading flakes to avoid jitter/lag
+              if (prevCopy.length > cap) limited = prevCopy.slice(0, cap);
+            }
+            state.cross = {
+              oldTheme: prevThemeId,
+              oldParts: limited,
+              t: 0, dur
+            };
+            // Ensure effects layer is visible during crossfade
+            effectsEnabled = true;
+            effectsAlpha = Math.max(effectsAlpha, 0.9);
+          } else {
+            state.cross = null;
+          }
+          // Seed a small number of elements per theme
+          const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : 28);
+          const coarseScale = pointerCoarse ? 0.7 : 1;
+          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale);
+          for (let i = 0; i < count; i++) {
+            if (themeId === 'ice') {
+              // Snowflake
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 1 + Math.random() * 2.6,
+                vx: -0.15 + Math.random() * 0.3,
+                vy: 0.25 + Math.random() * 0.55,
+                sway: Math.random() * Math.PI * 2,
+                swayAmp: 0.6 + Math.random() * 1.2,
+                life: 0, max: 12000 + Math.random() * 8000,
+                data: Math.random()
+              });
+            } else if (themeId === 'forest') {
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
+                life: 0, max: 4000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            } else if (themeId === 'fire') {
+              state.parts.push({
+                x: Math.random() * w, y: h * (0.55 + Math.random() * 0.45),
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.15,
+                vy: -0.1 - Math.random() * 0.1,
+                life: 0, max: 5000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            } else {
+              state.parts.push({
+                x: Math.random() * w, y: Math.random() * h,
+                r: 2 + Math.random() * 6,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: (Math.random() - 0.5) * 0.2,
+                life: 0, max: 4000 + Math.random() * 4000,
+                data: Math.random()
+              });
+            }
+          }
+          if (themeId === 'forest') {
+            initBranches();
+          } else {
+            // If leaving forest, capture an exit animation snapshot that rolls back
+            if (prevThemeId === 'forest' && branchState.branches.length) {
+              branchState.exit = {
+                branches: branchState.branches.map(b => ({ ...b, points: b.points.map(pt => ({...pt})) })),
+                phase: 1.0
+              };
+            }
+            branchState.branches = [];
+          }
+          if (themeId === 'fog') { fogTarget = 1; } else { fogTarget = 0; }
+          // Preserve current parts for next crossfade
+          state.partsPrev = state.parts.map(p => ({ ...p }));
+        }
+
+        let themeIndex = 0; applyTheme(themes[themeIndex], true);
+        ensureCanvas(); resetFor(themes[themeIndex].id);
+        // Initialize enter fade for first theme
+        state.enter = { t: 1200, dur: 1200 };
+
+        // Dynamic favicon based on theme colors
+        function generateFavicon(){
+          try {
+            const cs = getComputedStyle(document.documentElement);
+            const p3 = cs.getPropertyValue('--theme-primary-3').trim() || '#ffffff';
+            const p5 = cs.getPropertyValue('--theme-primary-5').trim() || '#999999';
+            const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+            const c = canvas.getContext('2d');
+            const g = c.createLinearGradient(0,0,64,64); g.addColorStop(0, p3); g.addColorStop(1, p5);
+            c.fillStyle = g; c.fillRect(0,0,64,64);
+            c.fillStyle = 'rgba(0,0,0,0.2)'; c.fillRect(0,48,64,16);
+            c.fillStyle = '#000'; c.font = 'bold 36px system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+            c.fillText('M', 32, 30);
+            const url = canvas.toDataURL('image/png');
+            let link = document.querySelector('link[rel="icon"][data-gen="1"]');
+            if (!link) { link = document.createElement('link'); link.setAttribute('rel','icon'); link.setAttribute('data-gen','1'); document.head.appendChild(link); }
+            link.setAttribute('href', url);
+          } catch (_) { /* ignore */ }
+        }
+        generateFavicon();
+
+        function drawFireSmoke(p) {
+          ctx.fillStyle = 'rgba(255, 180, 120, 0.04)';
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 1.4, 0, Math.PI * 2); ctx.fill();
+          p.vx *= 0.99; p.vy = -0.12 - p.data * 0.08; // drift upward
+        }
+        function spawnFireSpark() {
+          if (state.sparks.length > 220) return;
+          state.sparks.push({
+            x: Math.random() * w,
+            y: h * (0.65 + Math.random() * 0.35),
+            vx: (Math.random() - 0.5) * 0.25,
+            vy: -0.35 - Math.random() * 0.35,
+            life: 0,
+            max: 700 + Math.random() * 700,
+            r: 0.8 + Math.random() * 1.4,
+            hue: 20 + Math.random() * 40
+          });
+        }
+        function drawFireSpark(s) {
+          const a = 1 - (s.life / s.max);
+          ctx.fillStyle = `rgba(255, ${160 + Math.random()*60|0}, 60, ${0.25 * a})`;
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
+          s.vx *= 0.995; s.vy *= 0.99; s.vx += (Math.random() - 0.5) * 0.02;
+        }
+        function drawBurst(b) {
+          const k = b.life / b.max; const alpha = Math.max(0, 1 - k);
+          if (b.themeId === 'fire') {
+            for (const it of b.items) {
+              const a = 1 - (it.life / it.max);
+              ctx.fillStyle = `rgba(255,170,60,${0.35 * a * alpha})`;
+              ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill();
+              it.x += it.vx; it.y += it.vy; it.vy += 0.006; it.life += 16;
+            }
+          } else if (b.themeId === 'ice') {
+            ctx.strokeStyle = `rgba(200,230,255,${0.45*alpha})`; ctx.lineWidth = 1;
+            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.stroke(); }
+          } else if (b.themeId === 'forest') {
+            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.a); ctx.fillStyle = `rgba(104,220,130,${0.25*alpha})`; ctx.beginPath(); ctx.ellipse(it.r*1.2, 0, 8, 5, 0, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = `rgba(60,160,90,${0.5*alpha})`; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(it.r*1.2, -3); ctx.lineTo(it.r*1.2, 3); ctx.stroke(); ctx.restore(); }
+          } else if (b.themeId === 'lilac') {
+            for (const it of b.items) { const a = 1 - (it.life/it.max); ctx.fillStyle = `rgba(255,255,255,${0.28*a*alpha})`; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill(); it.x += it.vx; it.y += it.vy; it.life += 16; }
+          } else if (b.themeId === 'fog') {
+            for (const it of b.items) { ctx.fillStyle = `rgba(255,60,60,${0.08*alpha})`; ctx.beginPath(); ctx.arc(it.x + it.ox, it.y + it.oy, it.r, 0, Math.PI*2); ctx.fill(); it.r += it.vr; it.ox *= 0.99; it.oy *= 0.99; it.life += 16; }
+          }
+          b.life += 16;
+        }
+        function drawSnowflake(p) {
+          // Fade in/out envelope over life (roll in/out)
+          const lifeT = (p.life % p.max) / p.max; // 0..1 looping
+          const sIn = Math.min(1, lifeT / 0.25);
+          const sOut = Math.min(1, (1 - lifeT) / 0.3);
+          const a = Math.max(0, (sIn*sIn*(3 - 2*sIn)) * (sOut*sOut*(3 - 2*sOut)));
+          // wind sway + gentle spin (roll)
+          p.vx = Math.sin(state.t * 0.001 + p.sway) * (0.08 * p.swayAmp);
+          p.rot = (p.rot || 0) + (p.spin || 0.002 + Math.random()*0.002);
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          if (p._crossScale) { ctx.scale(p._crossScale, p._crossScale); }
+          ctx.globalAlpha *= a;
+          ctx.strokeStyle = 'rgba(220,240,255,0.45)';
+          ctx.lineWidth = 0.6;
+          ctx.beginPath();
+          ctx.moveTo(-p.r, 0);
+          ctx.lineTo(p.r, 0);
+          ctx.moveTo(0, -p.r);
+          ctx.lineTo(0, p.r);
+          ctx.stroke();
+          // glow
+          ctx.fillStyle = 'rgba(220,240,255,0.15)';
+          ctx.beginPath(); ctx.arc(0, 0, p.r * 1.6, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        }
+        function drawLeaves(p) {
+          // Better leaf shape with vein
+          ctx.fillStyle = 'rgba(80, 200, 120, 0.12)';
+          ctx.strokeStyle = 'rgba(60, 160, 90, 0.15)';
+          ctx.lineWidth = 0.5;
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.data * Math.PI * 2);
+          // Leaf shape (teardrop)
+          ctx.beginPath();
+          ctx.ellipse(0, 0, p.r * 1.5, p.r * 0.8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // Vein
+          ctx.beginPath();
+          ctx.moveTo(0, -p.r * 0.8);
+          ctx.lineTo(0, p.r * 0.8);
+          ctx.stroke();
+          ctx.restore();
+          p.vy = 0.06 + p.data * 0.1; p.vx += (Math.sin(state.t * 0.001 + p.data * 6) * 0.015);
+        }
+        
+        // Brown branches growing from edges with recursive sub-branches
+        function initBranches() {
+          branchState.branches = [];
+          // Create branches from edges, with precomputed curved paths (no wiggle)
+          const edgePoints = [
+            {x: 0, y: h * 0.3, angle: 0},
+            {x: 0, y: h * 0.7, angle: 0},
+            {x: w, y: h * 0.2, angle: Math.PI},
+            {x: w, y: h * 0.8, angle: Math.PI},
+            {x: w * 0.2, y: 0, angle: -Math.PI/2},
+            {x: w * 0.8, y: 0, angle: -Math.PI/2},
+            {x: w * 0.3, y: h, angle: Math.PI/2},
+            {x: w * 0.7, y: h, angle: Math.PI/2}
+          ];
+          const branchCount = 6;
+          for (let i = 0; i < branchCount; i++) {
+            const ep = edgePoints[Math.floor(Math.random() * edgePoints.length)];
+            const baseAngle = ep.angle + (Math.random() - 0.5) * 0.4;
+            const totalLength = 80 + Math.random() * 120;
+            const segments = 8 + Math.floor(Math.random() * 6);
+            const thickness = 1.5 + Math.random() * 2.5;
+            // Precompute a gentle, organic curve with small, fixed deviations
+            const points = [{ x: ep.x, y: ep.y }];
+            let cx = ep.x, cy = ep.y, ca = baseAngle;
+            const segLen = totalLength / segments;
+            for (let s = 0; s < segments; s++) {
+              // small fixed curvature
+              ca += (Math.random() - 0.5) * 0.15;
+              cx += Math.cos(ca) * segLen;
+              cy += Math.sin(ca) * segLen;
+              points.push({ x: cx, y: cy });
+            }
+            // generate sub-branches from mid segments
+            const subs = [];
+            for (let s = 2; s < points.length - 2; s += 2 + (Math.random()*2|0)) {
+              const from = points[s];
+              const ang = baseAngle + (Math.random() - 0.5) * 1.4;
+              const len = totalLength * (0.25 + Math.random() * 0.35);
+              const segs = 5 + Math.floor(Math.random() * 4);
+              const subPts = [{ x: from.x, y: from.y }];
+              let sca = ang; let sx = from.x; let sy = from.y;
+              for (let k = 0; k < segs; k++) {
+                sca += (Math.random() - 0.5) * 0.25;
+                sx += Math.cos(sca) * (len / segs);
+                sy += Math.sin(sca) * (len / segs);
+                subPts.push({ x: sx, y: sy });
+              }
+              subs.push({ points: subPts, thickness: Math.max(0.5, thickness * 0.6), growth: 0, totalLength: len, segments: segs });
+            }
+            branchState.branches.push({ points, thickness, growth: 0, totalLength, segments, subs });
+          }
+        }
+        
+        function drawBranches(now) {
+          ctx.strokeStyle = 'rgba(101, 67, 33, 0.28)';
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          function drawTinyLeaf(x, y, angle, scale, alpha) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.scale(scale, scale);
+            ctx.globalAlpha *= alpha;
+            // leaf body
+            ctx.fillStyle = 'rgba(80, 200, 120, 0.28)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // veins
+            ctx.strokeStyle = 'rgba(50, 140, 85, 0.6)';
+            ctx.lineWidth = 0.6;
+            ctx.beginPath();
+            ctx.moveTo(0, -3);
+            ctx.lineTo(0, 3);
+            ctx.moveTo(0, -1.5);
+            ctx.lineTo(2.2, -0.5);
+            ctx.moveTo(0, 1.5);
+            ctx.lineTo(-2.2, 0.5);
+            ctx.stroke();
+            ctx.restore();
+          }
+          for (const branch of branchState.branches) {
+            // Timelapse growth: accelerate early, slow later
+            branch.growth = Math.min(1, branch.growth + 0.0035);
+            const targetLength = branch.totalLength * branch.growth;
+            let drawn = 0;
+            ctx.lineWidth = Math.max(0.6, branch.thickness * (0.6 + 0.4 * branch.growth));
+            ctx.beginPath();
+            const pts = branch.points;
+            ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+              const px = pts[i - 1];
+              const py = pts[i];
+              const seg = Math.hypot(py.x - px.x, py.y - px.y);
+              if (drawn + seg <= targetLength) {
+                ctx.lineTo(py.x, py.y);
+                drawn += seg;
+              } else {
+                const remain = Math.max(0, targetLength - drawn);
+                if (remain > 0) {
+                  const t = remain / seg;
+                  ctx.lineTo(px.x + (py.x - px.x) * t, px.y + (py.y - px.y) * t);
+                }
+                break;
+              }
+            }
+            ctx.stroke();
+            // add small green leaves along grown segments
+            const pts2 = branch.points;
+            const leavesCount = Math.floor(pts2.length * Math.max(0, branch.growth - 0.2));
+            for (let i = 2; i < leavesCount; i += 2) {
+              const a = pts2[i - 1];
+              const b = pts2[i];
+              const ang = Math.atan2(b.y - a.y, b.x - a.x);
+              const midx = (a.x + b.x) / 2;
+              const midy = (a.y + b.y) / 2;
+              drawTinyLeaf(midx, midy, ang + Math.PI/2, 1, 0.9);
+            }
+            // draw sub-branches with slightly delayed growth
+            if (branch.subs) {
+              ctx.save();
+              ctx.strokeStyle = 'rgba(101, 67, 33, 0.22)';
+              for (const sb of branch.subs) {
+                sb.growth = Math.min(1, sb.growth + 0.003);
+                const tgt = sb.totalLength * Math.max(0, branch.growth - 0.15) * sb.growth;
+                let d2 = 0;
+                ctx.lineWidth = Math.max(0.45, sb.thickness * (0.5 + 0.4 * sb.growth));
+                ctx.beginPath();
+                const sp = sb.points;
+                ctx.moveTo(sp[0].x, sp[0].y);
+                for (let i = 1; i < sp.length; i++) {
+                  const a = sp[i - 1]; const b = sp[i];
+                  const seg = Math.hypot(b.x - a.x, b.y - a.y);
+                  if (d2 + seg <= tgt) { ctx.lineTo(b.x, b.y); d2 += seg; }
+                  else { const rm = Math.max(0, tgt - d2); if (rm > 0) { const t = rm / seg; ctx.lineTo(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); } break; }
+                }
+                ctx.stroke();
+                // leaves on sub-branches
+                const sp2 = sb.points;
+                const cnt = Math.floor(sp2.length * Math.max(0, sb.growth - 0.2));
+                for (let j = 2; j < cnt; j += 2) {
+                  const a2 = sp2[j - 1];
+                  const b2 = sp2[j];
+                  const ang2 = Math.atan2(b2.y - a2.y, b2.x - a2.x);
+                  const mx = (a2.x + b2.x) / 2;
+                  const my = (a2.y + b2.y) / 2;
+                  drawTinyLeaf(mx, my, ang2 + Math.PI/2, 0.9, 0.85);
+                }
+              }
+              ctx.restore();
+            }
+          }
+        }
+        function drawBranchesExit() {
+          if (!branchState.exit) return;
+          const ex = branchState.exit;
+          ctx.save();
+          ctx.globalAlpha *= Math.max(0, ex.phase);
+          ctx.strokeStyle = 'rgba(101, 67, 33, 0.24)';
+          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+          for (const b of ex.branches) {
+            const target = b.totalLength * Math.max(0, ex.phase);
+            let drawn = 0; ctx.lineWidth = Math.max(0.5, b.thickness * ex.phase);
+            ctx.beginPath(); const pts = b.points; ctx.moveTo(pts[0].x, pts[0].y);
+            for (let i = 1; i < pts.length; i++) {
+              const p0 = pts[i-1], p1 = pts[i]; const seg = Math.hypot(p1.x-p0.x, p1.y-p0.y);
+              if (drawn + seg <= target) { ctx.lineTo(p1.x, p1.y); drawn += seg; }
+              else { const rm = Math.max(0, target - drawn); if (rm > 0) { const t = rm/seg; ctx.lineTo(p0.x + (p1.x-p0.x)*t, p0.y + (p1.y-p0.y)*t);} break; }
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+          ex.phase -= 0.02;
+          if (ex.phase <= 0) branchState.exit = null;
+        }
+        function drawBubbles(p) {
+          // Glassmorphic purple bubbles with gradient and highlight
+          // Add soft fade/scale envelope for silky enter/crossfade
+          const k = Math.min(1, Math.max(0, p.life / (p.max || 1000)));
+          const fadeIn = Math.min(1, k / 0.25);
+          const fadeOut = Math.min(1, (1 - k) / 0.25);
+          const env = (fadeIn * fadeIn * (3 - 2 * fadeIn)) * (fadeOut * fadeOut * (3 - 2 * fadeOut));
+          const scale = (p._crossScale !== undefined) ? p._crossScale : (0.9 + 0.1 * env);
+          ctx.save();
+          ctx.globalAlpha *= env;
+          ctx.translate(p.x, p.y);
+          ctx.scale(scale, scale);
+          const grad = ctx.createRadialGradient(
+            p.x - p.r * 0.3, p.y - p.r * 0.3, 0,
+            p.x, p.y, p.r * 1.2
+          );
+          grad.addColorStop(0, 'rgba(217, 180, 255, 0.25)');
+          grad.addColorStop(0.5, 'rgba(184, 133, 255, 0.15)');
+          grad.addColorStop(1, 'rgba(153, 102, 255, 0.05)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.fill();
+          // Highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          ctx.beginPath();
+          ctx.ellipse(- p.r * 0.3, - p.r * 0.3, p.r * 0.4, p.r * 0.25, -0.5, 0, Math.PI * 2);
+          ctx.fill();
+          // Outer ring
+          ctx.strokeStyle = 'rgba(217, 170, 255, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+          // gentle drift with slight damping for stability
+          p.vy = -0.06 - p.data * 0.08; p.vx *= 0.992;
+        }
+        function drawFog(now) {
+          // Smooth fog using a phase that eases to target
+          const envelope = 0.85 * fogPhase; // max density scaled
+          for (let layer = 0; layer < 3; layer++) {
+            const offset = layer * 200 + Math.sin(now * 0.0003 + layer) * 50;
+            const g = ctx.createRadialGradient(
+              w*0.4 + offset, h*0.5 + layer * 100, 30,
+              w*0.4 + offset, h*0.5 + layer * 100, Math.max(w,h)*0.7
+            );
+            const base = (0.08 - layer * 0.02) * envelope;
+            g.addColorStop(0, `rgba(240,240,250,${base})`);
+            g.addColorStop(0.5, `rgba(220,220,230,${base * 0.6})`);
+            g.addColorStop(1, 'rgba(200,200,210,0)');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, w, h);
+          }
+        }
+
+        function tick(now) {
+          ensureCanvas();
+          // Frame-accurate delta to make crossfades consistent across devices
+          const dt = Math.max(0, Math.min(48, now - (state._lastTick || now)));
+          state._lastTick = now;
+          state.t = now;
+          ctx.clearRect(0,0,w,h);
+          const themeId = themes[themeIndex].id;
+
+          // Perf monitor: exponential moving average of FPS
+          const fps = dt > 0 ? 1000 / dt : 60;
+          fpsEMA = fpsEMA * 0.9 + fps * 0.1;
+          const shouldPerf = fpsEMA < 50; // threshold
+          if (shouldPerf && !perfMode) {
+            perfMode = true; dpr = 1; ensureCanvas();
+          } else if (!shouldPerf && perfMode && dpr < 1.5) {
+            perfMode = false; dpr = Math.min(1.5, window.devicePixelRatio || 1); ensureCanvas();
+          }
+
+          if (effectsEnabled) {
+            ctx.save();
+            ctx.globalAlpha = effectsAlpha;
+            // Ease fog phase toward target
+            fogPhase += (fogTarget - fogPhase) * 0.04;
+            // Draw forest exit rollback if present
+            drawBranchesExit();
+            // Crossfade old parts
+            if (!window.__isSmoothScrolling && state.cross && state.cross.oldParts && state.cross.t < state.cross.dur) {
+              const ratio = state.cross.t / state.cross.dur;
+              // Smoothstep easing for even, soft fades
+              const eased = (ratio * ratio * (3 - 2 * ratio));
+              const a = 1 - eased;
+              ctx.save(); ctx.globalAlpha *= a;
+              if (state.cross.oldTheme === 'fire') {
+                for (const p of state.cross.oldParts) { drawFireSmoke(p); }
+              } else if (state.cross.oldTheme === 'ice') {
+                // animate old snow during crossfade for natural exit
+                for (const p of state.cross.oldParts) {
+                  const localRatio = state.cross.t / state.cross.dur;
+                  const localEased = (localRatio * localRatio * (3 - 2 * localRatio));
+                  // progressively damp velocities and sway to avoid jitter
+                  p.vx = (p.vx || 0) * 0.96;
+                  p.vy = (p.vy || 0.4) * 0.96;
+                  p.swayAmp = (p.swayAmp || 1) * 0.98;
+                  // gentle motion without edge wrapping to prevent teleports during fade
+                  p.x += (Math.sin(state.t * 0.001 + (p.sway||0)) * (0.08 * (p.swayAmp||1))) + (p.vx||0);
+                  p.y += (p.vy||0.4);
+                  p.life = (p.life||0) + 16;
+                  // shrink over crossfade for clearer fade-out, slightly stronger toward end
+                  p._crossScale = Math.max(0.3, 1 - localEased * 0.85);
+                  drawSnowflake(p);
+                }
+              } else if (state.cross.oldTheme === 'forest') {
+                // slight leaf fade
+                for (const p of state.cross.oldParts) { drawLeaves(p); }
+              } else if (state.cross.oldTheme === 'lilac') {
+                for (const p of state.cross.oldParts) {
+                  // Damp movement, scale down smoothly, avoid jitter
+                  p.vx = (p.vx || 0) * 0.97;
+                  p.vy = (p.vy || -0.05) * 0.97;
+                  p.x += p.vx;
+                  p.y += p.vy;
+                  p.life = (p.life||0) + dt;
+                  p._crossScale = Math.max(0.4, 1 - eased * 0.8);
+                  drawBubbles(p);
+                }
+              }
+              ctx.restore();
+              state.cross.t += dt;
+            }
+            // Draw current theme with eased enter fade-in (lighter during scroll)
+            let enterAlpha = 1;
+            if (state.enter) {
+              const ep = Math.min(1, state.enter.t / state.enter.dur);
+              // smoothstep for soft, perceptually even fade-in
+              enterAlpha = ep * ep * (3 - 2 * ep);
+            }
+            if (themeId === 'fire') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawFireSmoke(state.parts[i]); }
+              ctx.restore();
+              // occasional sparks
+              if (!perfMode && !window.__isSmoothScrolling && Math.random() < 0.5) spawnFireSpark();
+              // draw and advance sparks
+              for (let i = state.sparks.length - 1; i >= 0; i--) {
+                const s = state.sparks[i]; drawFireSpark(s);
+                s.x += s.vx; s.y += s.vy; s.life += 16;
+                if (s.life > s.max || s.y < -10) state.sparks.splice(i,1);
+              }
+            } else if (themeId === 'ice') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawSnowflake(state.parts[i]); }
+              ctx.restore();
+            } else if (themeId === 'forest') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              if (!window.__isSmoothScrolling) drawBranches(now);
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawLeaves(state.parts[i]); }
+              ctx.restore();
+            } else if (themeId === 'lilac') {
+              ctx.save(); ctx.globalAlpha *= enterAlpha;
+              const step = window.__isSmoothScrolling ? 2 : 1;
+              for (let i = 0; i < state.parts.length; i += step) { drawBubbles(state.parts[i]); }
+              ctx.restore();
+            }
+            // Draw fog if current theme is fog or while fading out
+            if (themeId === 'fog' || fogPhase > 0.001) { drawFog(now); }
+            // Draw interactive bursts
+            if (state.bursts && state.bursts.length) {
+              for (let i = state.bursts.length - 1; i >= 0; i--) {
+                const b = state.bursts[i];
+                drawBurst(b);
+                if (b.life >= b.max) state.bursts.splice(i, 1);
+              }
+            }
+            ctx.restore();
+          }
+
+          // Integrate particles
+          for (const p of state.parts) {
+            p.x += p.vx; p.y += p.vy; p.life += 16;
+            if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
+            if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
+            // Loop life for snowflakes to keep fade cycling
+            if (themeId === 'ice' && p.life > p.max) p.life = 0;
+          }
+          // Advance enter fade
+          if (state.enter && state.enter.t < state.enter.dur) state.enter.t += dt;
+          if (!prefersReduced) requestAnimationFrame(tick);
+        }
+        if (!prefersReduced) requestAnimationFrame(tick);
+
+        // Rotate theme at a configurable interval with smooth crossfade and safe re-entry
+        let nextThemeTimeout;
+        let themeIntervalMs = 5000;
+        window.__toggleSlowThemes = function(slow){ themeIntervalMs = slow ? 9000 : 5000; };
+        function scheduleNextTheme() {
+          clearTimeout(nextThemeTimeout);
+          nextThemeTimeout = setTimeout(() => {
+            const prev = themes[themeIndex].id;
+            themeIndex = (themeIndex + 1) % themes.length;
+            const newTheme = themes[themeIndex];
+            applyTheme(newTheme);
+            // Make sure visual effects are enabled for visible crossfades
+            enableEffects();
+            resetFor(newTheme.id, prev);
+            scheduleNextTheme();
+          }, themeIntervalMs);
+        }
+        scheduleNextTheme();
+      })();
+
+      // i18n: simple native UI translations with RTL support
+      (function(){
+        const htmlEl = document.documentElement;
+        const langSelect = document.getElementById('langSelect');
+        if (!langSelect) return;
+        const RTL_LANGS = new Set(['ar', 'he', 'fa', 'ur']);
+        const DICT = {
+          en: {
+            'nav.projects': 'Projects', 'nav.vision': 'Vision', 'nav.why': 'Why me?', 'nav.faq': 'FAQ', 'nav.skills': 'Skills', 'nav.contact': 'Contact',
+            'kicker.role': 'Full‑stack Web Developer & Designer', 'kicker.loc': 'Based in London, UK', 'kicker.age': 'Age', 'kicker.status': 'Currently seeking experience',
+            'hero.title': 'I design and build <span id="typer" class="typer" data-tooltip="Watch the colors flow"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.',
+            'hero.subtitle': 'I focus on clarity, performance, and maintainability. I enjoy shipping polished user experiences and robust backend systems with a pragmatic, modern stack. I built this website myself from scratch.',
+            'hero.availability': 'Open to internships / part‑time',
+            'cta.projects': 'View Projects <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copy Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Résumé'
+          },
+          ar: {
+            'nav.projects': 'المشاريع', 'nav.vision': 'الرؤية', 'nav.why': 'لماذا أنا؟', 'nav.faq': 'الأسئلة الشائعة', 'nav.skills': 'المهارات', 'nav.contact': 'تواصل',
+            'kicker.role': 'مطوّر ويب متكامل ومصمم', 'kicker.loc': 'مقيم في لندن، المملكة المتحدة', 'kicker.age': 'العمر', 'kicker.status': 'أبحث عن خبرة عملية',
+            'hero.title': 'أصمّم وأبني <span id="typer" class="typer" data-tooltip="شاهد الألوان تتدفق"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> برمجيات.',
+            'hero.subtitle': 'أركّز على الوضوح والأداء وقابلية الصيانة. أحب تقديم تجارب مستخدم مصقولة وأنظمة خلفية قوية بمنهج عملي حديث.',
+            'hero.availability': 'متاح لتدريبات أو عمل جزئي',
+            'cta.projects': 'عرض المشاريع <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'نسخ البريد الإلكتروني <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'السيرة الذاتية'
+          },
+          es: {
+            'nav.projects': 'Proyectos', 'nav.vision': 'Visión', 'nav.why': '¿Por qué yo?', 'nav.faq': 'FAQ', 'nav.skills': 'Habilidades', 'nav.contact': 'Contacto',
+            'kicker.role': 'Desarrollador Full‑stack y Diseñador', 'kicker.loc': 'Con base en Londres, Reino Unido', 'kicker.age': 'Edad', 'kicker.status': 'Buscando experiencia',
+            'hero.title': 'Diseño y construyo software <span id="typer" class="typer" data-tooltip="Mira fluir los colores"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span>.',
+            'hero.subtitle': 'Me centro en claridad, rendimiento y mantenibilidad. Disfruto de experiencias pulidas y backend robusto con un stack moderno.',
+            'hero.availability': 'Abierto a prácticas / medio tiempo',
+            'cta.projects': 'Ver Proyectos <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copiar Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Currículum'
+          },
+          fr: {
+            'nav.projects': 'Projets', 'nav.vision': 'Vision', 'nav.why': 'Pourquoi moi ?', 'nav.faq': 'FAQ', 'nav.skills': 'Compétences', 'nav.contact': 'Contact',
+            'kicker.role': 'Développeur Full‑stack & Designer', 'kicker.loc': 'Basé à Londres, Royaume‑Uni', 'kicker.age': 'Âge', 'kicker.status': 'À la recherche d\'expérience',
+            'hero.title': 'Je conçois et construis des <span id="typer" class="typer" data-tooltip="Regardez les couleurs s\'écouler"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> logiciels.',
+            'hero.subtitle': 'Je privilégie clarté, performance et maintenabilité. J\'aime livrer des expériences soignées et des backends robustes.',
+            'hero.availability': 'Ouvert aux stages / temps partiel',
+            'cta.projects': 'Voir les Projets <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'Copier l\'email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'CV'
+          },
+          de: {
+            'nav.projects': 'Projekte', 'nav.vision': 'Vision', 'nav.why': 'Warum ich?', 'nav.faq': 'FAQ', 'nav.skills': 'Fähigkeiten', 'nav.contact': 'Kontakt',
+            'kicker.role': 'Full‑stack Webentwickler & Designer', 'kicker.loc': 'Mit Sitz in London, UK', 'kicker.age': 'Alter', 'kicker.status': 'Suche Erfahrung',
+            'hero.title': 'Ich entwerfe und baue <span id="typer" class="typer" data-tooltip="Sieh den Farbenfluss"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> Software.',
+            'hero.subtitle': 'Fokus auf Klarheit, Performance und Wartbarkeit. Polierte UX und robuste Backends.',
+            'hero.availability': 'Offen für Praktika / Teilzeit',
+            'cta.projects': 'Projekte ansehen <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>',
+            'cta.copy': 'E-Mail kopieren <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>',
+            'cta.resume': 'Lebenslauf'
+          },
+          pt: { 'nav.projects':'Projetos','nav.vision':'Visão','nav.why':'Por que eu?','nav.faq':'FAQ','nav.skills':'Habilidades','nav.contact':'Contato',
+                'kicker.role':'Desenvolvedor Full‑stack & Designer','kicker.loc':'Baseado em Londres, Reino Unido','kicker.age':'Idade','kicker.status':'Buscando experiência',
+                'hero.title':'Eu projeto e construo <span id="typer" class="typer" data-tooltip="Veja as cores fluírem"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> software.',
+                'hero.subtitle':'Foco em clareza, desempenho e manutenção. UX polida e backends robustos.',
+                'hero.availability':'Aberto a estágios / meio período',
+                'cta.projects':'Ver Projetos <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'Copiar Email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'Currículo' },
+          ru: { 'nav.projects':'Проекты','nav.vision':'Видение','nav.why':'Почему я?','nav.faq':'FAQ','nav.skills':'Навыки','nav.contact':'Контакты',
+                'kicker.role':'Фул‑стек разработчик и дизайнер','kicker.loc':'Лондон, Великобритания','kicker.age':'Возраст','kicker.status':'Ищу опыт',
+                'hero.title':'Я проектирую и создаю <span id="typer" class="typer" data-tooltip="Смотрите, как текут цвета"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> софт.',
+                'hero.subtitle':'Фокус на ясности, производительности и поддерживаемости. Аккуратный UX и надёжный бэкенд.',
+                'hero.availability':'Открыт к стажировкам / part‑time',
+                'cta.projects':'Смотреть проекты <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'Скопировать email <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'Резюме' },
+          hi: { 'nav.projects':'प्रोजेक्ट्स','nav.vision':'विजन','nav.why':'क्यों मैं?','nav.faq':'FAQ','nav.skills':'स्किल्स','nav.contact':'संपर्क',
+                'kicker.role':'फुल‑स्टैक वेब डेवलपर और डिज़ाइनर','kicker.loc':'लंदन, यूके','kicker.age':'उम्र','kicker.status':'अनुभव की तलाश में',
+                'hero.title':'मैं <span id="typer" class="typer" data-tooltip="रंगों का प्रवाह देखें"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> सॉफ़्टवेयर डिज़ाइन और बनाता हूँ.',
+                'hero.subtitle':'स्पष्टता, प्रदर्शन और अनुरक्षण पर ध्यान। परिष्कृत UX और मज़बूत बैकएंड।',
+                'hero.availability':'इंटर्नशिप / पार्ट‑टाइम के लिए उपलब्ध',
+                'cta.projects':'प्रोजेक्ट्स देखें <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'ईमेल कॉपी करें <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'रिज़्यूमे' },
+          bn: { 'nav.projects':'প্রজেক্ট','nav.vision':'ভিশন','nav.why':'আমাকেই কেন?','nav.faq':'FAQ','nav.skills':'স্কিলস','nav.contact':'যোগাযোগ',
+                'kicker.role':'ফুল‑স্ট্যাক ওয়েব ডেভেলপার ও ডিজাইনার','kicker.loc':'লন্ডন, যুক্তরাজ্য','kicker.age':'বয়স','kicker.status':'অভিজ্ঞতা খুঁজছি',
+                'hero.title':'আমি <span id="typer" class="typer" data-tooltip="রঙের প্রবাহ দেখুন"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> সফটওয়্যার ডিজাইন ও তৈরি করি।',
+                'hero.subtitle':'স্বচ্ছতা, পারফরম্যান্স ও মেইনটেনেবিলিটিতে ফোকাস।',
+                'hero.availability':'ইন্টার্নশিপ / পার্ট‑টাইমের জন্য উন্মুক্ত',
+                'cta.projects':'প্রজেক্ট দেখুন <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'ইমেল কপি <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'রেজিউমে' },
+          zh: { 'nav.projects':'项目','nav.vision':'愿景','nav.why':'为什么选择我？','nav.faq':'常见问题','nav.skills':'技能','nav.contact':'联系',
+                'kicker.role':'全栈网页开发者与设计师','kicker.loc':'常驻英国伦敦','kicker.age':'年龄','kicker.status':'寻求实践经验',
+                'hero.title':'我设计并构建 <span id="typer" class="typer" data-tooltip="欣赏流动的色彩"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> 软件。',
+                'hero.subtitle':'专注清晰、性能与可维护性。追求精致体验与可靠后端。',
+                'hero.availability':'可参与实习 / 兼职',
+                'cta.projects':'查看项目 <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'复制邮箱 <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'简历' },
+          ja: { 'nav.projects':'プロジェクト','nav.vision':'ビジョン','nav.why':'私を選ぶ理由','nav.faq':'FAQ','nav.skills':'スキル','nav.contact':'連絡先',
+                'kicker.role':'フルスタック開発者・デザイナー','kicker.loc':'英国ロンドン拠点','kicker.age':'年齢','kicker.status':'経験を募集中',
+                'hero.title':'私は <span id="typer" class="typer" data-tooltip="色の流れを見て"><span class="smoke" aria-hidden="true"></span><span id="typerText" class="typer-text"></span><span class="caret" aria-hidden="true"></span></span> ソフトウェアを設計・構築します。',
+                'hero.subtitle':'明快さ、性能、保守性を重視。洗練されたUXと堅牢なバックエンド。',
+                'hero.availability':'インターン / パートタイム可',
+                'cta.projects':'プロジェクトを見る <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'メールをコピー <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'履歴書' }
+        };
+
+        function applyLang(lang){
+          const dict = DICT[lang] || DICT.en;
+          document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerHTML = dict[key];
+          });
+          htmlEl.setAttribute('lang', lang);
+          const isRtl = RTL_LANGS.has(lang);
+          htmlEl.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+          // After DOM updates, re-init the typewriter safely
+          if (typeof window.typerReinit === 'function') {
+            window.typerReinit();
+          }
+        }
+
+        // Persist selection
+        const stored = localStorage.getItem('lang');
+        if (stored && DICT[stored]) {
+          langSelect.value = stored;
+          applyLang(stored);
+        }
+        langSelect.addEventListener('change', () => {
+          const lang = langSelect.value;
+          localStorage.setItem('lang', lang);
+          applyLang(lang);
+        });
+
+        // Optionally allow localized feature list for the typewriter
+        window.getI18nFeatures = function() {
+          const lang = htmlEl.getAttribute('lang') || 'en';
+          const dict = DICT[lang] || DICT.en;
+          // If a localized list exists, return it; else undefined
+          return Array.isArray(dict.features) ? dict.features : undefined;
+        };
+      })();
+      // Header state: add subtle style when scrolled
+      (function(){
+        const onScroll = () => {
+          document.body.classList.toggle('scrolled', window.scrollY > 8);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
