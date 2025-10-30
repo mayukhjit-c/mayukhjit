@@ -1,6 +1,6 @@
 # Mayukhjit Chakraborty — Portfolio
 
-Live site: https://mayukhjitchakraborty.tech/
+Live site: https://mayukhjitchakraborty.is-a.dev/
 
 ## Overview
 
