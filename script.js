@@ -2131,7 +2131,17 @@
           { id: 'theme-fire', title: 'Switch to Fire theme', category: 'Themes', keywords: ['fire','red','orange','hot','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fire'); window.showToast && window.showToast('Fire theme activated (or press T for visual picker)'); } },
           { id: 'theme-ice', title: 'Switch to Ice theme', category: 'Themes', keywords: ['ice','blue','cold','frozen','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('ice'); window.showToast && window.showToast('Ice theme activated'); } },
           { id: 'theme-forest', title: 'Switch to Forest theme', category: 'Themes', keywords: ['forest','green','tree','nature','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('forest'); window.showToast && window.showToast('Forest theme activated'); } },
-          { id: 'theme-lilac', title: 'Switch to Lilac theme', category: 'Themes', keywords: ['lilac','purple','bubble','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('lilac'); window.showToast && window.showToast('Lilac theme activated'); } },
+          { id: 'theme-lilac', title: 'Switch to Lilac theme', category: 'Themes', keywords: ['lilac','purple','bubble','theme'], action: () => { 
+            if (!bubblePopState.canManuallyActivate) {
+              window.showToast && window.showToast('⏳ Wait for auto-rotation cycle to complete first!', 3000);
+              return;
+            }
+            if (window.__forceTheme) {
+              bubblePopState.manualLilacActivation = true;
+              window.__forceTheme('lilac');
+              window.showToast && window.showToast('🎮 I see you\'ve chosen to resume the game!', 3000);
+            }
+          } },
           { id: 'theme-fog', title: 'Switch to Fog theme', category: 'Themes', keywords: ['fog','gray','grey','mist','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fog'); window.showToast && window.showToast('Fog theme activated'); } },
           { id: 'theme-auto', title: 'Resume automatic theme rotation', category: 'Themes', keywords: ['auto','automatic','rotate','theme'], action: () => { if(window.__forceTheme) window.__forceTheme(null); window.showToast && window.showToast('Automatic theme rotation resumed'); } },
           { id: 'party-mode', title: 'Party Mode (rapid theme changes)', category: 'Fun', keywords: ['party','fun','fast','rapid'], action: () => { if(window.__partyMode) window.__partyMode(); window.showToast && window.showToast('Party mode activated'); } },
@@ -3476,12 +3486,23 @@
         const bubblePopState = {
           pops: [], // active bubble pops with splash particles
           lastPop: 0,
-          score: parseInt(localStorage.getItem('bubbleScore') || '0'),
+          score: 0,
+          sessionScore: 0,
           highScore: parseInt(localStorage.getItem('bubbleHighScore') || '0'),
           combo: 0,
           comboTimer: 0,
           totalPopped: parseInt(localStorage.getItem('bubbleTotalPopped') || '0'),
-          sessionScore: 0
+          gameActive: false,
+          gameStartTime: 0,
+          gameEndTime: 0,
+          countdown: 0,
+          countdownActive: false,
+          manualLilacActivation: false,
+          canManuallyActivate: true,
+          cyclesSinceManual: 0,
+          totalBubblesInSession: 0,
+          bubblesPopped: 0,
+          gameCompleted: false
         };
         
         function checkBubbleClick(x, y) {
@@ -3504,47 +3525,51 @@
           return false;
         }
         
-        function popBubble(bubble, index) {
+        function popBubble(bubble, index, isAutoPop = false) {
           // remove the bubble
           state.parts.splice(index, 1);
           
-          // update score and combo
-          const now = Date.now();
-          if (now - bubblePopState.lastPop < 1000) {
-            bubblePopState.combo++;
-          } else {
-            bubblePopState.combo = 1;
+          if (!isAutoPop) {
+            bubblePopState.bubblesPopped++;
+            
+            // update score and combo
+            const now = Date.now();
+            if (now - bubblePopState.lastPop < 1000) {
+              bubblePopState.combo++;
+            } else {
+              bubblePopState.combo = 1;
+            }
+            bubblePopState.lastPop = now;
+            bubblePopState.comboTimer = now + 1500;
+            
+            // calculate points - smaller bubbles = more points (they're harder to click)
+            const sizeMultiplier = bubble.r < 25 ? 3 : bubble.r < 35 ? 2 : 1.5;
+            const basePoints = Math.floor(bubble.r * 2 * sizeMultiplier);
+            const comboMultiplier = 1 + (bubblePopState.combo - 1) * 0.5;
+            const points = Math.floor(basePoints * comboMultiplier);
+            
+            bubblePopState.score += points;
+            bubblePopState.sessionScore += points;
+            bubblePopState.totalPopped++;
+            
+            // update high score
+            if (bubblePopState.score > bubblePopState.highScore) {
+              bubblePopState.highScore = bubblePopState.score;
+              localStorage.setItem('bubbleHighScore', bubblePopState.highScore);
+            }
+            
+            // save progress
+            localStorage.setItem('bubbleTotalPopped', bubblePopState.totalPopped);
+            
+            // update ui
+            updateBubbleScoreUI();
+            
+            // show floating score
+            showFloatingScore(bubble.x, bubble.y, points, bubblePopState.combo);
           }
-          bubblePopState.lastPop = now;
-          bubblePopState.comboTimer = now + 1500;
           
-          // calculate points with combo multiplier
-          const basePoints = Math.floor(bubble.r * 2);
-          const comboMultiplier = 1 + (bubblePopState.combo - 1) * 0.5;
-          const points = Math.floor(basePoints * comboMultiplier);
-          
-          bubblePopState.score += points;
-          bubblePopState.sessionScore += points;
-          bubblePopState.totalPopped++;
-          
-          // update high score
-          if (bubblePopState.score > bubblePopState.highScore) {
-            bubblePopState.highScore = bubblePopState.score;
-            localStorage.setItem('bubbleHighScore', bubblePopState.highScore);
-          }
-          
-          // save progress
-          localStorage.setItem('bubbleScore', bubblePopState.score);
-          localStorage.setItem('bubbleTotalPopped', bubblePopState.totalPopped);
-          
-          // update ui
-          updateBubbleScoreUI();
-          
-          // show floating score
-          showFloatingScore(bubble.x, bubble.y, points, bubblePopState.combo);
-          
-          // create epic pop effect
-          const hue = 260 + (bubble.colorShift || 0);
+          // create epic pop effect with color based on pop type
+          const hue = isAutoPop ? 0 : (260 + (bubble.colorShift || 0));
           const pop = {
             x: bubble.x,
             y: bubble.y,
@@ -3669,31 +3694,49 @@
           scoreUIElement.id = 'bubbleScoreUI';
           scoreUIElement.style.cssText = `
             position: fixed;
-            top: 80px;
-            right: 20px;
-            background: rgba(17, 17, 17, 0.85);
-            backdrop-filter: blur(12px) saturate(120%);
-            -webkit-backdrop-filter: blur(12px) saturate(120%);
-            border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line));
-            border-radius: 16px;
-            padding: 16px 20px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(17, 17, 17, 0.92);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border: 2px solid;
+            border-image: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)) 1;
+            border-radius: 24px;
+            padding: 32px 40px;
             color: var(--fg);
             font-family: "OpenAI Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-            z-index: 100;
-            min-width: 220px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 10000;
+            min-width: 320px;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             opacity: 0;
-            transform: translateY(-10px);
+            text-align: center;
           `;
           
           scoreUIElement.innerHTML = `
-            <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Bubble Popper</div>
-            <div style="font-size: 36px; font-weight: 700; background: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 8px; line-height: 1;" id="bubbleScore">0</div>
-            <div style="font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 12px; font-weight: 500;">High Score: <span id="bubbleHighScore" style="color: rgba(255,255,255,0.65); font-weight: 600;">0</span></div>
-            <div style="font-size: 15px; color: #ffd700; font-weight: 700; height: 22px; text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);" id="bubbleCombo"></div>
-            <div style="font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-weight: 500;">
-              Total Popped: <span id="bubbleTotalPopped" style="color: rgba(255,255,255,0.5); font-weight: 600;">0</span>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">🫧 Bubble Popper</div>
+            <div id="gameTimer" style="font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 20px; font-weight: 600; height: 24px;"></div>
+            <div id="countdownDisplay" style="font-size: 72px; font-weight: 900; color: #ff4444; margin: 20px 0; line-height: 1; text-shadow: 0 4px 20px rgba(255,68,68,0.5); display: none;"></div>
+            <div style="font-size: 56px; font-weight: 900; background: linear-gradient(135deg, var(--theme-primary-2), var(--theme-primary-4), var(--theme-primary-6)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 12px; line-height: 1; text-shadow: 0 4px 20px var(--theme-glow-2);" id="bubbleScore">0</div>
+            <div style="font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; font-weight: 500;">SCORE</div>
+            <div style="display: flex; justify-content: space-between; gap: 24px; margin-bottom: 16px;">
+              <div style="flex: 1;">
+                <div style="font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.85);" id="bubbleHighScore">0</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">High Score</div>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.85);" id="bubblesRemaining">0</div>
+                <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Remaining</div>
+              </div>
+            </div>
+            <div style="font-size: 18px; color: #ffd700; font-weight: 800; height: 28px; text-shadow: 0 2px 12px rgba(255, 215, 0, 0.4); margin: 16px 0;" id="bubbleCombo"></div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-weight: 500;">
+              <span style="color: rgba(255,255,255,0.5);">Total Lifetime: </span><span id="bubbleTotalPopped" style="color: var(--theme-primary-4); font-weight: 700;">0</span>
+            </div>
+            <div id="gameInstructions" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 16px; line-height: 1.6; font-weight: 500;">
+              Pop bubbles to score! Smaller = more points.<br>Red bubbles = auto-popped (no points)
             </div>
           `;
           
@@ -3702,7 +3745,7 @@
           // fade in
           setTimeout(() => {
             scoreUIElement.style.opacity = '1';
-            scoreUIElement.style.transform = 'translateY(0)';
+            scoreUIElement.style.transform = 'translate(-50%, -50%) scale(1)';
           }, 100);
           
           updateBubbleScoreUI();
@@ -3715,16 +3758,51 @@
           const highScoreEl = document.getElementById('bubbleHighScore');
           const comboEl = document.getElementById('bubbleCombo');
           const totalEl = document.getElementById('bubbleTotalPopped');
+          const timerEl = document.getElementById('gameTimer');
+          const countdownEl = document.getElementById('countdownDisplay');
+          const remainingEl = document.getElementById('bubblesRemaining');
           
           if (scoreEl) scoreEl.textContent = bubblePopState.score;
           if (highScoreEl) highScoreEl.textContent = bubblePopState.highScore;
           if (totalEl) totalEl.textContent = bubblePopState.totalPopped;
           
-          // update combo display
+          // update remaining bubbles count
+          const themeId = themes[themeIndex].id;
+          if (remainingEl && themeId === 'lilac') {
+            remainingEl.textContent = state.parts.length;
+          }
+          
+          // update timer
           const now = Date.now();
+          if (timerEl && bubblePopState.gameActive) {
+            const timeLeft = Math.max(0, bubblePopState.gameEndTime - now);
+            const seconds = Math.ceil(timeLeft / 1000);
+            
+            if (bubblePopState.countdownActive && seconds <= 3) {
+              timerEl.style.display = 'none';
+              if (countdownEl) {
+                countdownEl.style.display = 'block';
+                countdownEl.textContent = seconds || 'GO!';
+                countdownEl.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                  if (countdownEl) countdownEl.style.transform = 'scale(1)';
+                }, 100);
+              }
+            } else {
+              timerEl.style.display = 'block';
+              if (countdownEl) countdownEl.style.display = 'none';
+              timerEl.textContent = `⏱️ ${seconds}s remaining`;
+              timerEl.style.color = seconds <= 10 ? '#ff4444' : 'rgba(255,255,255,0.7)';
+            }
+          } else if (timerEl) {
+            timerEl.style.display = 'none';
+            if (countdownEl) countdownEl.style.display = 'none';
+          }
+          
+          // update combo display
           if (comboEl) {
             if (bubblePopState.combo > 1 && now < bubblePopState.comboTimer) {
-              comboEl.textContent = `${bubblePopState.combo}x COMBO!`;
+              comboEl.textContent = `🔥 ${bubblePopState.combo}×  COMBO!`;
               comboEl.style.opacity = '1';
             } else {
               comboEl.style.opacity = '0';
@@ -3737,6 +3815,7 @@
           // pulse effect on score change
           if (scoreEl && bubblePopState.sessionScore > 0) {
             scoreEl.style.transform = 'scale(1.1)';
+            scoreEl.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
             setTimeout(() => {
               scoreEl.style.transform = 'scale(1)';
             }, 200);
@@ -3746,13 +3825,71 @@
         function removeBubbleScoreUI() {
           if (scoreUIElement) {
             scoreUIElement.style.opacity = '0';
-            scoreUIElement.style.transform = 'translateY(-10px)';
+            scoreUIElement.style.transform = 'translate(-50%, -50%) scale(0.9)';
             setTimeout(() => {
               if (scoreUIElement && scoreUIElement.parentNode) {
                 scoreUIElement.parentNode.removeChild(scoreUIElement);
               }
               scoreUIElement = null;
             }, 300);
+          }
+        }
+        
+        function startBubbleGame(manualActivation = false) {
+          bubblePopState.gameActive = true;
+          bubblePopState.gameStartTime = Date.now();
+          bubblePopState.gameEndTime = Date.now() + 60000; // 60 seconds
+          bubblePopState.score = 0;
+          bubblePopState.sessionScore = 0;
+          bubblePopState.bubblesPopped = 0;
+          bubblePopState.combo = 0;
+          bubblePopState.countdownActive = false;
+          bubblePopState.manualLilacActivation = manualActivation;
+          bubblePopState.totalBubblesInSession = state.parts.length;
+          
+          // start countdown warning at 3 seconds
+          setTimeout(() => {
+            bubblePopState.countdownActive = true;
+          }, 57000);
+          
+          if (manualActivation) {
+            window.showToast && window.showToast('🫧 Game resumed! Pop those bubbles!', 3000);
+          }
+        }
+        
+        function endBubbleGame(reason = 'timeout') {
+          if (!bubblePopState.gameActive) return;
+          
+          bubblePopState.gameActive = false;
+          bubblePopState.countdownActive = false;
+          
+          const finalScore = bubblePopState.score;
+          const bubblesPopped = bubblePopState.bubblesPopped;
+          const remaining = state.parts.length;
+          
+          // check if all bubbles were popped
+          if (remaining === 0 && !bubblePopState.gameCompleted) {
+            bubblePopState.gameCompleted = true;
+            window.showToast && window.showToast('🎉 Perfect! All bubbles popped! Find the other easter eggs...', 5000);
+          } else {
+            // show end game summary
+            const message = `Game Over! Score: ${finalScore} | Popped: ${bubblesPopped}`;
+            window.showToast && window.showToast(message, 4000);
+          }
+          
+          // if manual activation, re-enable auto mode after showing score
+          if (bubblePopState.manualLilacActivation) {
+            bubblePopState.manualLilacActivation = false;
+            bubblePopState.canManuallyActivate = false;
+            bubblePopState.cyclesSinceManual = 0;
+            
+            // re-enable auto theme rotation after 2 seconds
+            setTimeout(() => {
+              if (window.__themeAutoRotate === false) {
+                window.__themeAutoRotate = true;
+                window.showToast && window.showToast('Auto theme rotation resumed', 2000);
+              }
+            }, 2000);
           }
         }
         
@@ -3896,10 +4033,30 @@
         let fogPhase = 0; // 0..1 smoothed alpha for fog
         let fogTarget = 0;
         function resetFor(themeId, prevThemeId) {
-          // show/hide score UI based on theme
+          // game management for lilac theme
           if (themeId === 'lilac') {
             createBubbleScoreUI();
+            
+            // check if this is auto or manual activation
+            const isManual = bubblePopState.manualLilacActivation;
+            
+            // only start game if not already active or if manual
+            if (!bubblePopState.gameActive || isManual) {
+              startBubbleGame(isManual);
+            }
+            
+            // track cycles for manual activation cooldown
+            if (!isManual && !bubblePopState.canManuallyActivate) {
+              bubblePopState.cyclesSinceManual++;
+              if (bubblePopState.cyclesSinceManual >= themes.length) {
+                bubblePopState.canManuallyActivate = true;
+              }
+            }
           } else {
+            // ending lilac theme - end game if active
+            if (bubblePopState.gameActive) {
+              endBubbleGame('theme_change');
+            }
             removeBubbleScoreUI();
           }
           
@@ -4579,8 +4736,22 @@
           // update wave phase for liquid motion (wobble intensity affects speed)
           p.wavePhase += 0.02 * p.wobbleIntensity;
           
-          // Bubbles never die, they cycle instead
-          if (!p.max || p.life >= p.max) {
+          // bubble lifecycle management
+          if (!p.life) p.life = 0;
+          p.life += 16;
+          
+          // some bubbles pop on their own after their lifetime
+          if (p.max && p.life >= p.max) {
+            // find this bubble's index and auto-pop it
+            const themeId = themes[themeIndex].id;
+            if (themeId === 'lilac' && bubblePopState.gameActive) {
+              const idx = state.parts.findIndex(b => b === p);
+              if (idx !== -1) {
+                popBubble(p, idx, true); // auto-pop with red splash
+                return; // skip rendering this bubble
+              }
+            }
+            // if game not active, just reset the bubble
             p.life = 0;
             p.y = h + 50;
             p.x = Math.random() * w;
@@ -4827,6 +4998,13 @@
           state.t = now;
           ctx.clearRect(0, 0, w, h);
           const themeId = themes[themeIndex].id;
+          
+          // check game timer for lilac theme
+          if (themeId === 'lilac' && bubblePopState.gameActive) {
+            if (now >= bubblePopState.gameEndTime) {
+              endBubbleGame('timeout');
+            }
+          }
 
           updatePerfMode(dt);
 
