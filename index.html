@@ -128,9 +128,25 @@
     <div id="cmdk" aria-modal="true" role="dialog" aria-label="Command palette">
       <div class="cmdk-panel">
         <div class="cmdk-head">
-          <input class="cmdk-input" id="cmdkInput" type="text" placeholder="Type a command... (e.g., Projects, Copy email, GitHub, Toggle reactive)" aria-label="Command input" />
+          <input class="cmdk-input" id="cmdkInput" type="text" placeholder="Search commands..." aria-label="Command input" />
         </div>
         <div class="cmdk-list" id="cmdkList"></div>
+        <div class="cmdk-footer">
+          <div class="cmdk-footer-shortcuts">
+            <div class="cmdk-footer-shortcut">
+              <kbd>↑↓</kbd> Navigate
+            </div>
+            <div class="cmdk-footer-shortcut">
+              <kbd>↵</kbd> Select
+            </div>
+            <div class="cmdk-footer-shortcut">
+              <kbd>Esc</kbd> Close
+            </div>
+          </div>
+          <div>
+            <kbd>?</kbd> for shortcuts
+          </div>
+        </div>
       </div>
     </div>
     <div id="modal" aria-modal="true" role="dialog" aria-label="Project details">
@@ -367,42 +383,42 @@
         <div class="faq-list reveal">
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">What's your availability?</span>
+              <span class="particle-target">What is your current availability for new projects?</span>
             </summary>
             <div class="faq-answer">
-              <p>I'm a student, so yes — I have time. But I'm not desperate. I code daily, ship fast, and only commit to projects that actually matter. If you want someone who'll grind through boring CRUD work without questioning it, maybe look elsewhere? But if you want someone who'll call out bad UX and suggest better solutions, hello 👋</p>
+              <p>I'm currently open to new opportunities and can start immediately. As a student, I have flexible scheduling and can dedicate significant time to projects that align with my interests in AI, full-stack development, and creative tools. I'm particularly excited about roles that allow me to work on innovative solutions with modern technologies.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">What technologies do you focus on?</span>
+              <span class="particle-target">What technologies and frameworks do you specialize in?</span>
             </summary>
             <div class="faq-answer">
-              <p>Python, TypeScript, React, Next.js, Laravel, Postgres — the usual suspects. But honestly? Tech stacks are less important than writing code that doesn't make future you (or me) want to throw up. I'll learn whatever if it solves the problem better. If you're hiring purely based on "knows X framework," that's a red flag and we probably shouldn't work together.</p>
+              <p>My core stack includes Python, TypeScript, React, Next.js, and Laravel for full-stack development. I have extensive experience with modern web technologies including Node.js, PostgreSQL, and various cloud platforms. I'm also proficient in AI/ML tools and have worked with frameworks like TensorFlow and various LLM APIs. I continuously learn new technologies and adapt quickly to project requirements.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">Can I see examples of your work?</span>
+              <span class="particle-target">Can I see examples of your recent work?</span>
             </summary>
             <div class="faq-answer">
-              <p>Scroll up, maybe? The <a href="#projects" class="link-underline">Projects</a> section is right there. I also have code on <a href="https://github.com/mayukhjit-c" target="_blank" rel="noopener" class="link-underline">GitHub</a>. Some work is private (because clients exist). Email me if you want access. If you're going to judge my skills based on one repo without understanding context, though, that says more about you than me.</p>
+              <p>Absolutely! Check out the Projects section above for my featured work including GCSEMate (an educational platform), Subscriberlytics (a PWA subscription tracker), and CodeBuilder AI (an autonomous web app generator). I also have public repositories on GitHub showcasing various projects. Some client work is private, but I'm happy to discuss technical details and provide references upon request.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">What's your approach to learning?</span>
+              <span class="particle-target">How do you approach problem-solving and development?</span>
             </summary>
             <div class="faq-answer">
-              <p>I read docs, ship features, break things, fix them, ask "why does this suck?" a lot, then make it better. I'm not interested in cargo-culting Stack Overflow answers. If I don't understand something, I'll figure it out. If that bothers you because you want me to just "copy this code and don't ask questions," we're gonna have a bad time.</p>
+              <p>I follow a structured approach: research and planning, rapid prototyping, iterative development with user feedback, and thorough testing. I prioritize clean, maintainable code and focus on user experience. I'm comfortable working in agile environments and believe in regular communication to ensure projects stay on track. I also emphasize accessibility and performance optimization from the start.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">Do you work remotely?</span>
+              <span class="particle-target">Do you work remotely or require office presence?</span>
             </summary>
             <div class="faq-answer">
-              <p>Yes. London-based, but I'm not commuting two hours for meetings that could've been Slack messages. Remote or hybrid works. If you need me in-person occasionally and it makes sense (actually makes sense, not "culture" hand-waving), I'm down. But if you're one of those "office culture" types who thinks creativity happens in open-plan hellscapes... hard pass.</p>
+              <p>I work entirely remotely and have experience collaborating with distributed teams across different time zones. I'm based in London, UK, and use tools like Slack, Discord, Figma, and GitHub for seamless communication. I'm productive in async environments and can adapt to various collaboration styles. Occasional in-person meetings are fine if they're truly necessary and valuable.</p>
             </div>
           </details>
           <details class="faq-item reveal">
@@ -415,42 +431,42 @@
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">Do you write tests and docs?</span>
+              <span class="particle-target">What are your testing and documentation practices?</span>
             </summary>
             <div class="faq-answer">
-              <p>Yes. Tests keep future-me from swearing at past-me. Docs stop teammates from swearing at me. If you think both are a waste of time, I fear your codebase — respectfully, but also a little bit judgmentally.</p>
+              <p>I follow comprehensive testing strategies including unit tests, integration tests, and end-to-end testing using frameworks like Jest, Vitest, and Cypress. For documentation, I create clear README files, API documentation, and inline code comments. I believe both are essential for maintainable, scalable codebases and long-term project success.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">Will you tell me if my idea is bad?</span>
+              <span class="particle-target">How do you handle feedback and project direction?</span>
             </summary>
             <div class="faq-answer">
-              <p>Kindly, yes. I'd rather save you months than ship something nobody wants. I'll bring data, run tiny tests, and suggest better angles. If you only want yes‑people, I am tragically not your person.</p>
+              <p>I provide constructive, data-driven feedback based on user research, technical feasibility, and market analysis. If an idea needs refinement, I'll suggest alternatives with clear reasoning and potential solutions. My goal is to help you build the best possible product, not just execute on initial concepts.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">How fast do you ship?</span>
+              <span class="particle-target">What are your development timelines and methodology?</span>
             </summary>
             <div class="faq-answer">
-              <p>Small features: days. Polished flows: weeks. Big bets: scoped into shippable slices so we don’t suffer through never‑ending “almost there.” I optimize for momentum without trashing quality — no feature graveyards here.</p>
+              <p>I work in agile sprints with regular deliverables and feedback cycles. Small features typically ship within 1-2 weeks, while complex systems are broken into iterative releases. I prioritize quality over speed, ensuring each release is thoroughly tested and production-ready before deployment.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">What’s your communication style?</span>
+              <span class="particle-target">How do you prefer to communicate during projects?</span>
             </summary>
             <div class="faq-answer">
-              <p>Short, direct, a bit funny, occasionally spicy. I’ll over‑communicate unknowns and decisions, under‑communicate fluff. If something’s unclear, I’ll ask instead of guessing and breaking prod. You’re welcome.</p>
+              <p>I maintain clear, regular communication through preferred channels like Slack or Discord, with weekly progress updates and immediate notifications for blockers. I prefer async communication for routine updates but am available for sync calls when needed. I believe in transparent communication about progress, challenges, and timelines.</p>
             </div>
           </details>
           <details class="faq-item reveal">
             <summary class="faq-question">
-              <span class="particle-target">Will you work on legacy code?</span>
+              <span class="particle-target">Do you have experience with legacy codebases?</span>
             </summary>
             <div class="faq-answer">
-              <p>Happily — if I can improve it. I refactor incrementally with tests, feature flags, and zero‑drama rollouts. If “legacy” means “no tests, no code review, just vibes,” then I’ll need danger pay (or a strong coffee budget).</p>
+              <p>Yes, I have extensive experience refactoring and maintaining legacy systems. I approach legacy code with careful analysis, incremental improvements, and comprehensive testing to ensure stability. Whether modernizing outdated frameworks or optimizing performance bottlenecks, I can help bring legacy systems up to current standards.</p>
             </div>
           </details>
         </div>
@@ -461,9 +477,10 @@
           <h2 class="section-title"><svg class="icon" aria-hidden="true"><use href="#icon-code"/></svg> Skills</h2>
           <p class="section-desc">Modern, pragmatic tools. Strong fundamentals. Always learning.</p>
         </div>
-        <div class="reveal">
-          <h3 class="skills-category-title">Languages & Frameworks</h3>
-          <div class="chips skills-category-chips">
+        <div class="skills-container">
+          <div class="skill-category reveal" data-animate="slide-in-up">
+            <h3 class="skills-category-title">Languages & Frameworks</h3>
+            <div class="chips skills-category-chips">
             <span class="chip">Python</span>
             <span class="chip">TypeScript</span>
             <span class="chip">JavaScript (ES6+)</span>
@@ -474,10 +491,12 @@
             <span class="chip">HTML5</span>
             <span class="chip">CSS3</span>
             <span class="chip">Tailwind CSS</span>
+            </div>
           </div>
 
-          <h3 class="skills-category-title">Backend & Data</h3>
-          <div class="chips skills-category-chips">
+          <div class="skill-category reveal" data-animate="slide-in-up">
+            <h3 class="skills-category-title">Backend & Data</h3>
+            <div class="chips skills-category-chips">
             <span class="chip">Postgres</span>
             <span class="chip">Redis</span>
             <span class="chip">MySQL</span>
@@ -486,10 +505,12 @@
             <span class="chip">GraphQL</span>
             <span class="chip">Firebase</span>
             <span class="chip">Supabase</span>
+            </div>
           </div>
 
-          <h3 class="skills-category-title">Tools & DevOps</h3>
-          <div class="chips skills-category-chips">
+          <div class="skill-category reveal" data-animate="slide-in-up">
+            <h3 class="skills-category-title">Tools & DevOps</h3>
+            <div class="chips skills-category-chips">
             <span class="chip">Git</span>
             <span class="chip">Docker</span>
             <span class="chip">CI/CD</span>
@@ -498,10 +519,12 @@
             <span class="chip">GitHub Actions</span>
             <span class="chip">Webpack</span>
             <span class="chip">Vite</span>
+            </div>
           </div>
 
-          <h3 class="skills-category-title">Core Strengths</h3>
-          <div class="chips">
+          <div class="skill-category reveal" data-animate="slide-in-up">
+            <h3 class="skills-category-title">Core Strengths</h3>
+            <div class="chips">
             <span class="chip">Testing (Jest, Vitest)</span>
             <span class="chip">Accessibility (WCAG 2.1)</span>
             <span class="chip">Performance Optimization</span>
@@ -510,6 +533,7 @@
             <span class="chip">API Design</span>
             <span class="chip">Code Review</span>
             <span class="chip">Technical Writing</span>
+            </div>
           </div>
         </div>
       </section>

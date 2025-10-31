@@ -43,6 +43,7 @@
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
         const isTablet = /(iPad|tablet|playbook|silk)|(android(?!.*mobile))/i.test(ua);
         const isLowEndDevice = /Android ([1-4]\.|5\.[0-1])|MSIE [6-9]|Windows Phone|Trident\/[4-7]/i.test(ua);
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         
         // Estimate device tier based on available metrics
         function estimateDeviceTier() {
@@ -109,6 +110,7 @@
           isMobile,
           isTablet,
           isLowEndDevice,
+          isTouchDevice,
           tier,
           connectionSpeed,
           cores: navigator.hardwareConcurrency || 2,
@@ -137,6 +139,52 @@
             if (tier === 'low') return 0.5;
             if (isMobile) return 0.75;
             return 1;
+          },
+          
+          // Viewport-based scaling for responsive effects
+          getViewportScale() {
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const baseWidth = 1920; // Desktop baseline
+            const baseHeight = 1080;
+            
+            // Scale based on smaller dimension for consistent sizing
+            const widthScale = vw / baseWidth;
+            const heightScale = vh / baseHeight;
+            const scale = Math.min(widthScale, heightScale);
+            
+            // Clamp between 0.3 and 1.2 for reasonable bounds
+            return Math.max(0.3, Math.min(1.2, scale));
+          },
+          
+          // Device-specific burst particle count multiplier
+          getBurstScale() {
+            if (tier === 'low' || isMobile) return 0.4;
+            if (tier === 'medium' || isTablet) return 0.65;
+            return 1;
+          }
+        };
+      })();
+
+      // Global Animation Throttling System for low-end devices
+      const AnimationThrottle = (function() {
+        let lastFrameTime = 0;
+        const targetFPS = DeviceCapabilities.getTargetFPS();
+        const frameInterval = 1000 / targetFPS;
+        
+        return {
+          shouldSkipFrame: function(currentTime) {
+            if (DeviceCapabilities.tier === 'high') return false; // No throttling for high-end devices
+            
+            if (currentTime - lastFrameTime < frameInterval) {
+              return true; // Skip this frame
+            }
+            lastFrameTime = currentTime;
+            return false;
+          },
+          
+          getTargetFPS: function() {
+            return targetFPS;
           }
         };
       })();
@@ -219,10 +267,10 @@
         window.addEventListener('scroll', setActive, { passive: true });
         window.addEventListener('load', setActive);
 
-        // Custom smooth anchor scrolling with ease
+        // Custom smooth anchor scrolling with ease - optimized for performance
         function easeOutCubic(x){ return 1 - Math.pow(1 - x, 3); }
         let __scrollAnimId = 0;
-        function smoothScrollTo(targetY, duration = 300) {
+        function smoothScrollTo(targetY, duration = 350) {
           if (userPrefersReducedMotion() || duration <= 0) {
             window.__isSmoothScrolling = false;
             window.scrollTo({ top: targetY, behavior: 'auto' });
@@ -234,13 +282,16 @@
           const delta = targetY - startY;
           
           // If distance is very small, just jump instantly
-          if (Math.abs(delta) < 5) {
+          if (Math.abs(delta) < 15) {
             window.scrollTo(0, targetY);
+            window.__isSmoothScrolling = false;
             return;
           }
           
           const start = performance.now();
           window.__isSmoothScrolling = true;
+          let rafId;
+          let lastScroll = startY;
           
           const step = (now) => {
             if (myId !== __scrollAnimId) {
@@ -249,24 +300,32 @@
             }
             const p = Math.min(1, (now - start) / duration);
             const eased = easeOutCubic(p);
-            window.scrollTo(0, startY + delta * eased);
+            const newScroll = Math.round(startY + delta * eased);
+            
+            // Only scroll if position actually changed
+            if (newScroll !== lastScroll) {
+              window.scrollTo(0, newScroll);
+              lastScroll = newScroll;
+            }
             
             if (p < 1) {
-              requestAnimationFrame(step);
+              rafId = requestAnimationFrame(step);
             } else {
               window.__isSmoothScrolling = false;
             }
           };
           
-          requestAnimationFrame(step);
+          rafId = requestAnimationFrame(step);
           
           // Cancel on user interaction
           const cancel = () => { 
-            __scrollAnimId++; 
-            window.__isSmoothScrolling = false; 
+            __scrollAnimId++;
+            window.__isSmoothScrolling = false;
+            if (rafId) cancelAnimationFrame(rafId);
           };
           window.addEventListener('wheel', cancel, { passive: true, once: true });
           window.addEventListener('touchstart', cancel, { passive: true, once: true });
+          window.addEventListener('keydown', cancel, { passive: true, once: true });
         }
         document.querySelectorAll('a[href^="#"]').forEach(a => {
           // Skip buttons that have custom fire highlight handlers
@@ -315,6 +374,38 @@
         input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { input.value=''; filter(); input.blur(); } });
       })();
 
+      // FAQ particle effects — enhance interactions with sparkles when opening items
+      (function(){
+        const container = document.querySelector('#faq .faq-list');
+        if (!container) return;
+
+        // Listen for FAQ item toggle events
+        container.addEventListener('toggle', (e) => {
+          if (!(e.target instanceof HTMLDetailsElement)) return;
+
+          // Only spawn particles when opening (not closing) and respecting device capabilities
+          if (e.target.open && typeof window.spawnButtonParticles === 'function') {
+            // Skip particle effects on low-end devices or when performance is critical
+            if (DeviceCapabilities.tier === 'low' || window.__isSmoothScrolling) return;
+            
+            // Create a fake button element at the question position for particle spawning
+            const summary = e.target.querySelector('.faq-question');
+            if (summary) {
+              const rect = summary.getBoundingClientRect();
+              const fakeBtn = {
+                getBoundingClientRect: () => ({
+                  left: rect.left + rect.width / 2 - 30,
+                  top: rect.top + rect.height / 2 - 15,
+                  width: 60,
+                  height: 30
+                })
+              };
+              window.spawnButtonParticles(fakeBtn);
+            }
+          }
+        });
+      })();
+
       // Intersection reveal — because scroll animations should be smooth, not jarring
       // Uses Intersection Observer because we're living in 2024, not 2010.
       // Staggered delays make it feel organic, like content appearing naturally.
@@ -323,13 +414,16 @@
         const io = new IntersectionObserver(entries => {
           for (const entry of entries) {
             if (entry.isIntersecting) {
-              entry.target.classList.add('visible');
+              // Use requestAnimationFrame for smoother reveal
+              requestAnimationFrame(() => {
+                entry.target.classList.add('visible');
+              });
               io.unobserve(entry.target);
             }
           }
-        }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+        }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
         els.forEach((el, i) => {
-          el.style.transitionDelay = (i * 40) + 'ms';
+          el.style.transitionDelay = (i * 30) + 'ms'; // Reduced stagger for faster feel
           io.observe(el);
         });
       })();
@@ -339,6 +433,10 @@
       (function() {
         const thumbs = document.querySelectorAll('[data-thumb]');
         if (!thumbs.length) return;
+        
+        // Skip parallax effects on low-end and medium devices for better performance
+        if (DeviceCapabilities.tier === 'low' || DeviceCapabilities.tier === 'medium') return;
+        
         if (userPrefersReducedMotion()) {
           thumbs.forEach(el => {
             el.style.setProperty('--mx', '50%');
@@ -352,19 +450,19 @@
             const state = states.get(el);
             if (!state || state.rafId) return;
             const tick = () => {
-              const nextX = lerp(state.currentX, state.targetX, 0.18);
-              const nextY = lerp(state.currentY, state.targetY, 0.18);
+              const nextX = lerp(state.currentX, state.targetX, 0.3); // Snappier response
+              const nextY = lerp(state.currentY, state.targetY, 0.3);
               state.currentX = nextX;
               state.currentY = nextY;
-              el.style.setProperty('--mx', nextX + '%');
-              el.style.setProperty('--my', nextY + '%');
+              el.style.setProperty('--mx', nextX.toFixed(0) + '%'); // Round to reduce repaints
+              el.style.setProperty('--my', nextY.toFixed(0) + '%');
 
-              const done = Math.abs(nextX - state.targetX) < 0.2 && Math.abs(nextY - state.targetY) < 0.2 && !state.active;
+              const done = Math.abs(nextX - state.targetX) < 1 && Math.abs(nextY - state.targetY) < 1 && !state.active;
               if (done) {
                 state.currentX = state.targetX;
                 state.currentY = state.targetY;
-                el.style.setProperty('--mx', state.targetX + '%');
-                el.style.setProperty('--my', state.targetY + '%');
+                el.style.setProperty('--mx', state.targetX.toFixed(0) + '%');
+                el.style.setProperty('--my', state.targetY.toFixed(0) + '%');
                 state.rafId = null;
                 return;
               }
@@ -393,13 +491,24 @@
               state.targetY = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
               ensureLoop(el);
             });
+            // Use RAF for smooth, non-blocking updates
+            let rafId = null;
             el.addEventListener('pointermove', e => {
+              if (rafId) return; // Skip if update already queued
               const rect = el.getBoundingClientRect();
-              state.targetX = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
-              state.targetY = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
-              ensureLoop(el);
+              const newX = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
+              const newY = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
+              // Only update if significantly different
+              if (Math.abs(newX - state.targetX) < 3 && Math.abs(newY - state.targetY) < 3) return;
+              rafId = requestAnimationFrame(() => {
+                state.targetX = newX;
+                state.targetY = newY;
+                ensureLoop(el);
+                rafId = null;
+              });
             }, { passive: true });
             el.addEventListener('pointerleave', () => {
+              if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
               state.active = false;
               state.targetX = 50;
               state.targetY = 50;
@@ -409,21 +518,34 @@
         }
 
         const interactiveCards = document.querySelectorAll('.card');
-        const enableCardFollow = !userPrefersReducedMotion() && !userHasCoarsePointer();
+        const enableCardFollow = !userPrefersReducedMotion() && !userHasCoarsePointer() && DeviceCapabilities.tier === 'high';
         interactiveCards.forEach(card => {
           card.style.setProperty('--mx', '50%');
           card.style.setProperty('--my', '0%');
           if (!enableCardFollow) return;
+          
+          // Throttle card pointer movement for performance - use RAF for smooth updates
+          let rafId = null;
+          let lastX = 50, lastY = 0;
           card.addEventListener('pointermove', e => {
+            if (rafId) return; // Skip if already scheduled
             const rect = card.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
             const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
-            card.style.setProperty('--mx', x + '%');
-            card.style.setProperty('--my', y + '%');
+            // Only update if moved significantly (reduces jitter)
+            if (Math.abs(x - lastX) < 2 && Math.abs(y - lastY) < 2) return;
+            lastX = x; lastY = y;
+            rafId = requestAnimationFrame(() => {
+              card.style.setProperty('--mx', x.toFixed(0) + '%');
+              card.style.setProperty('--my', y.toFixed(0) + '%');
+              rafId = null;
+            });
           }, { passive: true });
           card.addEventListener('pointerleave', () => {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
             card.style.setProperty('--mx', '50%');
             card.style.setProperty('--my', '0%');
+            lastX = 50; lastY = 0;
           }, { passive: true });
         });
 
@@ -464,14 +586,219 @@
       // Smooth button hover shine effect — tracks cursor position for that premium feel
       (function() {
         document.querySelectorAll('.btn').forEach(btn => {
+          let rafId = null;
+          let lastX = 50, lastY = 50;
           btn.addEventListener('pointermove', e => {
+            if (rafId) return; // Skip if already scheduled
             const rect = btn.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
-            btn.style.setProperty('--hx', x + '%');
-            btn.style.setProperty('--hy', y + '%');
-          });
+            // Only update if moved significantly
+            if (Math.abs(x - lastX) < 3 && Math.abs(y - lastY) < 3) return;
+            lastX = x; lastY = y;
+            rafId = requestAnimationFrame(() => {
+              btn.style.setProperty('--hx', x.toFixed(0) + '%');
+              btn.style.setProperty('--hy', y.toFixed(0) + '%');
+              rafId = null;
+            });
+          }, { passive: true });
+          btn.addEventListener('pointerleave', () => {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+            lastX = 50; lastY = 50;
+          }, { passive: true });
         });
+      })();
+
+      // Lava lamp liquid background effect — subtle, theme-aware, performance-optimized
+      // Creates organic blob movement with cursor distortion for dynamic depth
+      (function() {
+        const canvas = document.getElementById('bg-grid');
+        if (!canvas) return;
+        
+        // Skip on low-tier devices or if user prefers reduced motion
+        if (DeviceCapabilities.tier === 'low' || userPrefersReducedMotion()) return;
+        
+        // Create offscreen canvas for lava lamp effect (renders behind grid)
+        const lavaCanvas = document.createElement('canvas');
+        lavaCanvas.id = 'bg-lava';
+        lavaCanvas.style.cssText = 'position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:0.35;';
+        canvas.parentNode.insertBefore(lavaCanvas, canvas);
+        const lavaCtx = lavaCanvas.getContext('2d', { alpha: true, desynchronized: true });
+        
+        const canvasScale = DeviceCapabilities.getCanvasScale();
+        const dpr = Math.max(0.75, Math.min(1, window.devicePixelRatio || 1)) * canvasScale * 0.6; // Lower res for performance
+        let w = 0, h = 0;
+        
+        // Lava blob configuration - reduce count on mobile for performance
+        const blobCount = DeviceCapabilities.isMobile ? 3 : DeviceCapabilities.tier === 'high' ? 6 : 4;
+        const blobs = [];
+        
+        class LavaBlob {
+          constructor(index) {
+            this.x = Math.random() * w;
+            this.y = Math.random() * h;
+            this.vx = (Math.random() - 0.5) * 0.5;
+            this.vy = (Math.random() - 0.5) * 0.5;
+            this.baseRadius = 140 + Math.random() * 180;
+            this.radius = this.baseRadius;
+            this.phase = Math.random() * Math.PI * 2;
+            this.frequency = 0.35 + Math.random() * 0.5;
+            this.distortX = 0;
+            this.distortY = 0;
+          }
+          
+          update(t, pointer) {
+            // Organic motion with slight drift
+            const drift = Math.sin(t * 0.25 + this.phase) * 0.2;
+            this.x += this.vx + drift;
+            this.y += this.vy + Math.cos(t * 0.2 + this.phase) * 0.2;
+            
+            // Bounce off edges with slight randomization
+            if (this.x < -this.radius * 0.3 || this.x > w + this.radius * 0.3) {
+              this.vx *= -0.9;
+              this.vx += (Math.random() - 0.5) * 0.15;
+            }
+            if (this.y < -this.radius * 0.3 || this.y > h + this.radius * 0.3) {
+              this.vy *= -0.9;
+              this.vy += (Math.random() - 0.5) * 0.15;
+            }
+            
+            // Contain within bounds
+            this.x = Math.max(-this.radius * 0.3, Math.min(w + this.radius * 0.3, this.x));
+            this.y = Math.max(-this.radius * 0.3, Math.min(h + this.radius * 0.3, this.y));
+            
+            // Smooth out distortion with faster decay
+            this.distortX *= 0.8;
+            this.distortY *= 0.8;
+            
+            // Cursor distortion - like finger disrupting water surface
+            if (pointer.active) {
+              const dx = this.x - pointer.x;
+              const dy = this.y - pointer.y;
+              const dist = Math.sqrt(dx * dx + dy * dy);
+              const influence = 400;
+              
+              if (dist < influence && dist > 0) {
+                // Push away from cursor with smooth falloff
+                const falloff = Math.pow(1 - dist / influence, 1.8);
+                const force = falloff * 8;
+                this.distortX += (dx / dist) * force;
+                this.distortY += (dy / dist) * force;
+                
+                // Apply distortion with snappier response
+                this.x += this.distortX * 0.4;
+                this.y += this.distortY * 0.4;
+                
+                // Ripple effect on radius - creates water-like waves
+                const ripple = Math.sin(t * 6 - dist * 0.02) * 0.2 * falloff;
+                this.radius = this.baseRadius * (1 + ripple);
+              } else {
+                // Return to base radius when no cursor influence
+                this.radius += (this.baseRadius - this.radius) * 0.15;
+              }
+            } else {
+              // Organic pulsing when cursor not active
+              this.radius = this.baseRadius * (1 + Math.sin(t * this.frequency + this.phase) * 0.12);
+            }
+          }
+        }
+        
+        // Initialize blobs
+        function initBlobs() {
+          blobs.length = 0;
+          for (let i = 0; i < blobCount; i++) {
+            blobs.push(new LavaBlob(i));
+          }
+        }
+        
+        // Cache theme colors
+        let themeColor = { r: 255, g: 255, b: 255 };
+        let colorCacheTime = 0;
+        
+        function refreshThemeColor(now) {
+          if (now - colorCacheTime < 500) return;
+          const cs = getComputedStyle(document.documentElement);
+          const accentColor = (cs.getPropertyValue('--theme-primary-3') || 'rgba(255,255,255,0.2)').trim();
+          
+          // Parse color
+          const match = accentColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (match) {
+            themeColor.r = parseInt(match[1]);
+            themeColor.g = parseInt(match[2]);
+            themeColor.b = parseInt(match[3]);
+          }
+          colorCacheTime = now;
+        }
+        
+        let resizeTimer;
+        function resize() {
+          w = Math.ceil(window.innerWidth);
+          h = Math.ceil(window.innerHeight);
+          // Use lower resolution on mobile to improve performance
+          const canvasScale = DeviceCapabilities.isMobile ? 0.7 : DeviceCapabilities.isTablet ? 0.85 : 1;
+          lavaCanvas.width = Math.floor(w * dpr * canvasScale);
+          lavaCanvas.height = Math.floor(h * dpr * canvasScale);
+          lavaCanvas.style.width = w + 'px';
+          lavaCanvas.style.height = h + 'px';
+          lavaCtx.setTransform(dpr * canvasScale, 0, 0, dpr * canvasScale, 0, 0);
+          initBlobs();
+        }
+        window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 150); }, { passive: true });
+        resize();
+        
+        let pointer = { x: w / 2, y: h / 2, active: false };
+        let rafId = null;
+        
+        function drawLava(time) {
+          rafId = requestAnimationFrame(drawLava);
+          
+          if (document.hidden) return;
+          
+          refreshThemeColor(time);
+          const t = time * 0.001;
+          
+          lavaCtx.clearRect(0, 0, w, h);
+          
+          // Update blobs
+          blobs.forEach(blob => blob.update(t, pointer));
+          
+          // Render blobs with radial gradients (more performant than pixel manipulation)
+          lavaCtx.globalCompositeOperation = 'lighter'; // Additive blending for organic merge
+          
+          blobs.forEach(blob => {
+            const gradient = lavaCtx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.radius);
+            
+            // Theme-aware colors with stronger visibility
+            const alpha = 0.12;
+            gradient.addColorStop(0, `rgba(${themeColor.r}, ${themeColor.g}, ${themeColor.b}, ${alpha})`);
+            gradient.addColorStop(0.35, `rgba(${themeColor.r}, ${themeColor.g}, ${themeColor.b}, ${alpha * 0.7})`);
+            gradient.addColorStop(0.65, `rgba(${themeColor.r}, ${themeColor.g}, ${themeColor.b}, ${alpha * 0.3})`);
+            gradient.addColorStop(1, `rgba(${themeColor.r}, ${themeColor.g}, ${themeColor.b}, 0)`);
+            
+            lavaCtx.fillStyle = gradient;
+            lavaCtx.fillRect(
+              blob.x - blob.radius, 
+              blob.y - blob.radius, 
+              blob.radius * 2, 
+              blob.radius * 2
+            );
+          });
+          
+          lavaCtx.globalCompositeOperation = 'source-over';
+        }
+        
+        function setPointer(e) {
+          const rect = lavaCanvas.getBoundingClientRect();
+          pointer.x = e.clientX - rect.left;
+          pointer.y = e.clientY - rect.top;
+          pointer.active = true;
+        }
+        
+        window.addEventListener('pointermove', setPointer, { passive: true });
+        window.addEventListener('pointerleave', () => { pointer.active = false; }, { passive: true });
+        
+        // Start animation
+        requestAnimationFrame(drawLava);
       })();
 
       // Background animated geometric grid — straight lines with smoothed hover highlights
@@ -498,7 +825,7 @@
         let glow2 = 'rgba(255,255,255,0.25)';
         let glow3 = 'rgba(255,255,255,0.18)';
         let prim3 = 'rgba(255,255,255,0.2)';
-        let gridScale = 1.0;
+        let gridScale = 0.75;
         let colorCacheAt = 0;
         function refreshColors(now){
           if (now - colorCacheAt < 400) return; // refresh at most ~2.5 Hz
@@ -515,17 +842,20 @@
         function resize() {
           w = Math.ceil(window.innerWidth);
           h = Math.ceil(window.innerHeight);
-          canvas.width = Math.floor(w * dpr);
-          canvas.height = Math.floor(h * dpr);
+          // Reduce resolution on mobile/tablet for better performance
+          const mobileScale = DeviceCapabilities.isMobile ? 0.75 : DeviceCapabilities.isTablet ? 0.9 : 1;
+          canvas.width = Math.floor(w * dpr * mobileScale);
+          canvas.height = Math.floor(h * dpr * mobileScale);
           canvas.style.width = w + 'px';
           canvas.style.height = h + 'px';
-          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctx.setTransform(dpr * mobileScale, 0, 0, dpr * mobileScale, 0, 0);
         }
         window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 120); }, { passive: true });
         resize();
 
         function drawGrid(time) {
           if (hidden) { requestAnimationFrame(drawGrid); return; }
+          
           refreshColors(time);
           const dt = Math.min(48, Math.max(0, time - (lastFrame || time)));
           lastFrame = time;
@@ -540,7 +870,7 @@
 
           // base grid (offset by half-spacing so lines avoid common edges)
           const offset = spacing / 2;
-          ctx.strokeStyle = `rgba(255,255,255,${(0.12 + shimmer)})`;
+          ctx.strokeStyle = `rgba(255,255,255,${(0.14 + shimmer)})`;
           for (let y = offset; y <= h; y += spacing) {
             ctx.beginPath();
             ctx.moveTo(0, y);
@@ -557,10 +887,10 @@
           // highlight near pointer: skip heavy blending if we're smooth scrolling
           if (pointer.active && !prefersReduced && !window.__isSmoothScrolling && !document.documentElement.classList.contains('tv')) {
             // Smooth pointer position for buttery motion
-            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.2);
-            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.2);
-            const maxDist = 220 * gridScale; // larger radius for a more prominent aura
-            const band = 120 * gridScale; // width of colored intensity band around the pointer
+            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.25);
+            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.25);
+            const maxDist = 280 * gridScale; // larger radius for a more prominent aura
+            const band = 150 * gridScale; // width of colored intensity band around the pointer
             // Pre-compute common gradient values to reduce redundant calculations
             const cx = Math.max(0, Math.min(1, pointer.sx / w));
             const cy = Math.max(0, Math.min(1, pointer.sy / h));
@@ -574,7 +904,7 @@
             for (let y = offset; y <= h; y += spacing) {
               const dy = Math.abs(pointer.sy - y);
               if (dy <= maxDist) {
-                const a = Math.exp(-dy / 70) * (0.85 * gridScale); // stronger but still smooth
+                const a = Math.exp(-dy / 70) * (1.0 * gridScale); // stronger but still smooth
                 // horizontal gradient centered at pointer.sx
                 const grad = ctx.createLinearGradient(0, y, w, y);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -595,7 +925,7 @@
             for (let x = offset; x <= w; x += spacing) {
               const dx = Math.abs(pointer.sx - x);
               if (dx <= maxDist) {
-                const a = Math.exp(-dx / 70) * (0.85 * gridScale);
+                const a = Math.exp(-dx / 70) * (1.0 * gridScale);
                 // vertical gradient centered at pointer.sy
                 const grad = ctx.createLinearGradient(x, 0, x, h);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -635,34 +965,57 @@
       // Added smooth interpolation for buttery 3D effects
       (function() {
         const maxTilt = 6; // degrees
+        
         // Only enable tilt when opted in via data-tilt to keep cards basic
-        document.querySelectorAll('.card[data-tilt]').forEach(card => {
+        // Skip on low-end and medium devices for better performance
+        const tiltCards = document.querySelectorAll('.card[data-tilt]');
+        if (DeviceCapabilities.tier !== 'high' || userPrefersReducedMotion()) return;
+        
+        tiltCards.forEach(card => {
           let targetRx = 0, targetRy = 0;
           let currentRx = 0, currentRy = 0;
+          let rafId = null;
+          let isActive = false;
           
           const lerp = (a, b, t) => a + (b - a) * t;
           
           function updateTilt() {
-            currentRx = lerp(currentRx, targetRx, 0.12);
-            currentRy = lerp(currentRy, targetRy, 0.12);
-            card.style.setProperty('--rx', currentRx.toFixed(2) + 'deg');
-            card.style.setProperty('--ry', currentRy.toFixed(2) + 'deg');
-            requestAnimationFrame(updateTilt);
+            currentRx = lerp(currentRx, targetRx, 0.15);
+            currentRy = lerp(currentRy, targetRy, 0.15);
+            
+            // Stop animation when close enough to target
+            const threshold = 0.01;
+            if (isActive || Math.abs(currentRx - targetRx) > threshold || Math.abs(currentRy - targetRy) > threshold) {
+              card.style.setProperty('--rx', currentRx.toFixed(1) + 'deg');
+              card.style.setProperty('--ry', currentRy.toFixed(1) + 'deg');
+              rafId = requestAnimationFrame(updateTilt);
+            } else {
+              rafId = null;
+            }
           }
-          updateTilt();
           
+          let moveRafId = null;
           card.addEventListener('pointermove', e => {
+            isActive = true;
+            if (moveRafId) return;
             const rect = card.getBoundingClientRect();
             const px = (e.clientX - rect.left) / rect.width; // 0..1
             const py = (e.clientY - rect.top) / rect.height; // 0..1
-            targetRy = (px - 0.5) * (maxTilt * 2);
-            targetRx = -(py - 0.5) * (maxTilt * 2);
-          });
+            moveRafId = requestAnimationFrame(() => {
+              targetRy = (px - 0.5) * (maxTilt * 2);
+              targetRx = -(py - 0.5) * (maxTilt * 2);
+              if (!rafId) updateTilt();
+              moveRafId = null;
+            });
+          }, { passive: true });
           
           card.addEventListener('pointerleave', () => {
+            isActive = false;
+            if (moveRafId) { cancelAnimationFrame(moveRafId); moveRafId = null; }
             targetRx = 0;
             targetRy = 0;
-          });
+            if (!rafId) updateTilt();
+          }, { passive: true });
         });
       })();
 
@@ -984,29 +1337,172 @@
         window.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide(); });
       })();
 
-      // Graceful global error handling — user-friendly overlay and toast
+      // Enhanced global error handling — user-friendly, prevents spam, handles all error types
       (function(){
         const overlay = document.getElementById('errorOverlay');
         if (!overlay) return;
+        
+        // Error tracking to prevent spam and duplicates
+        const seenErrors = new Set();
+        let lastErrorTime = 0;
+        const ERROR_COOLDOWN = 2000; // 2 seconds minimum between errors
+        let errorCount = 0;
+        const MAX_ERRORS = 5; // Max errors to show before suppressing
+        
+        // Categorize errors for better user messaging
+        function categorizeError(msg, detail) {
+          if (!msg || msg === 'null' || msg === 'undefined') return 'unknown';
+          const msgLower = msg.toLowerCase();
+          if (msgLower.includes('network') || msgLower.includes('fetch') || msgLower.includes('xmlhttprequest')) return 'network';
+          if (msgLower.includes('script') || msgLower.includes('loading')) return 'loading';
+          if (msgLower.includes('permission') || msgLower.includes('denied')) return 'permission';
+          if (msgLower.includes('quota') || msgLower.includes('storage')) return 'storage';
+          if (detail && detail.includes('ResizeObserver')) return 'benign'; // Safe to ignore
+          return 'runtime';
+        }
+        
+        // Get user-friendly message based on error category
+        function getUserFriendlyMessage(category, originalMsg) {
+          const messages = {
+            network: 'Network connection issue. Please check your internet and try again.',
+            loading: 'Failed to load a resource. The page may not work properly.',
+            permission: 'Permission denied. Some features may not work.',
+            storage: 'Browser storage limit reached. Try clearing your cache.',
+            benign: 'Minor internal notification (safe to ignore).',
+            unknown: 'Something unexpected happened.',
+            runtime: originalMsg || 'An error occurred while running the page.'
+          };
+          return messages[category] || messages.runtime;
+        }
+        
         function showError(msg, detail){
+          // Filter out blank, false, or useless errors
+          if (!msg || msg === 'null' || msg === 'undefined' || msg === '' || msg === 'Script error.') {
+            return; // Silently ignore unhelpful errors
+          }
+          
+          // Check cooldown to prevent spam
+          const now = Date.now();
+          if (now - lastErrorTime < ERROR_COOLDOWN) return;
+          lastErrorTime = now;
+          
+          // Check if we've seen this exact error before
+          const errorKey = `${msg}:${detail?.substring(0, 100) || ''}`;
+          if (seenErrors.has(errorKey)) return; // Don't show duplicates
+          seenErrors.add(errorKey);
+          
+          // Check max error limit
+          errorCount++;
+          if (errorCount > MAX_ERRORS) {
+            console.warn(`Max errors (${MAX_ERRORS}) reached. Suppressing further error displays.`);
+            return;
+          }
+          
+          // Categorize the error
+          const category = categorizeError(msg, detail);
+          
+          // Skip benign errors (like ResizeObserver loop notifications)
+          if (category === 'benign') {
+            console.info('Benign error ignored:', msg);
+            return;
+          }
+          
+          // Build error UI
           overlay.innerHTML = '';
           overlay.style.display = 'block';
-          overlay.style.position = 'fixed'; overlay.style.inset = '10px'; overlay.style.zIndex = '1000';
-          overlay.style.background = 'rgba(30,30,30,0.8)'; overlay.style.border = '1px solid #333'; overlay.style.borderRadius = '12px';
-          overlay.style.backdropFilter = 'blur(6px) saturate(120%)'; overlay.style.padding = '16px';
-          const title = document.createElement('div'); title.style.fontWeight = '600'; title.style.marginBottom = '6px'; title.textContent = 'Something went wrong — but we handled it.';
-          const message = document.createElement('div'); message.style.color = '#ccc'; message.textContent = msg || 'An unexpected error occurred.';
-          const details = document.createElement('details'); details.style.marginTop = '8px';
-          const sum = document.createElement('summary'); sum.textContent = 'Details'; details.appendChild(sum);
-          const pre = document.createElement('pre'); pre.style.whiteSpace = 'pre-wrap'; pre.style.fontSize = '12px'; pre.style.color = '#aaa'; pre.textContent = detail || '';
+          overlay.style.position = 'fixed'; overlay.style.inset = '20px'; overlay.style.zIndex = '9999';
+          overlay.style.background = 'rgba(20,20,20,0.95)'; 
+          overlay.style.border = '1px solid rgba(255,100,100,0.3)'; 
+          overlay.style.borderRadius = '16px';
+          overlay.style.backdropFilter = 'blur(12px) saturate(120%)'; 
+          overlay.style.padding = '24px';
+          overlay.style.maxWidth = '600px';
+          overlay.style.margin = 'auto';
+          overlay.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
+          
+          // Icon based on category
+          const icon = category === 'network' ? '🌐' : category === 'permission' ? '🔒' : '⚠️';
+          
+          const title = document.createElement('div'); 
+          title.style.fontWeight = '700'; 
+          title.style.marginBottom = '12px'; 
+          title.style.fontSize = '18px';
+          title.style.display = 'flex';
+          title.style.alignItems = 'center';
+          title.style.gap = '8px';
+          title.innerHTML = `<span style="font-size: 24px">${icon}</span> Error Handled`;
+          
+          const message = document.createElement('div'); 
+          message.style.color = '#f5f5f5'; 
+          message.style.lineHeight = '1.6';
+          message.style.marginBottom = '12px';
+          message.textContent = getUserFriendlyMessage(category, msg);
+          
+          // Technical details (collapsed by default)
+          const details = document.createElement('details'); 
+          details.style.marginTop = '12px';
+          details.style.padding = '12px';
+          details.style.background = 'rgba(0,0,0,0.3)';
+          details.style.borderRadius = '8px';
+          details.style.border = '1px solid rgba(255,255,255,0.1)';
+          
+          const sum = document.createElement('summary'); 
+          sum.textContent = 'Technical Details'; 
+          sum.style.cursor = 'pointer';
+          sum.style.fontWeight = '600';
+          sum.style.marginBottom = '8px';
+          details.appendChild(sum);
+          
+          const pre = document.createElement('pre'); 
+          pre.style.whiteSpace = 'pre-wrap'; 
+          pre.style.fontSize = '11px'; 
+          pre.style.color = '#999'; 
+          pre.style.fontFamily = 'monospace';
+          pre.style.maxHeight = '200px';
+          pre.style.overflow = 'auto';
+          pre.textContent = `${msg}\n\n${detail || 'No additional details'}`;
           details.appendChild(pre);
-          const btn = document.createElement('button'); btn.className = 'btn ghost'; btn.textContent = 'Dismiss'; btn.style.marginTop = '12px';
-          btn.addEventListener('click', () => { overlay.style.display = 'none'; overlay.innerHTML = ''; });
-          overlay.append(title, message, details, btn);
-          window.showToast && window.showToast('An error occurred — details shown.');
+          
+          // Action buttons
+          const btnContainer = document.createElement('div');
+          btnContainer.style.display = 'flex';
+          btnContainer.style.gap = '8px';
+          btnContainer.style.marginTop = '16px';
+          
+          const dismissBtn = document.createElement('button'); 
+          dismissBtn.className = 'btn primary'; 
+          dismissBtn.textContent = 'Dismiss'; 
+          dismissBtn.addEventListener('click', () => { 
+            overlay.style.display = 'none'; 
+            overlay.innerHTML = ''; 
+          });
+          
+          const reloadBtn = document.createElement('button'); 
+          reloadBtn.className = 'btn ghost'; 
+          reloadBtn.textContent = 'Reload Page';
+          reloadBtn.addEventListener('click', () => window.location.reload());
+          
+          btnContainer.append(dismissBtn, reloadBtn);
+          overlay.append(title, message, details, btnContainer);
+          
+          // Show toast for quick notification
+          window.showToast && window.showToast(`${icon} Error: ${getUserFriendlyMessage(category, msg).substring(0, 60)}...`);
         }
-        window.addEventListener('error', (e) => { showError(e.message, (e.error && e.error.stack) || ''); });
-        window.addEventListener('unhandledrejection', (e) => { const reason = e.reason || {}; showError(reason.message || 'Unhandled promise rejection', reason.stack || JSON.stringify(reason)); });
+        
+        // Global error handler
+        window.addEventListener('error', (e) => { 
+          e.preventDefault(); // Prevent default browser error handling
+          showError(e.message, (e.error && e.error.stack) || ''); 
+        });
+        
+        // Promise rejection handler
+        window.addEventListener('unhandledrejection', (e) => { 
+          e.preventDefault(); // Prevent console spam
+          const reason = e.reason || {};
+          const msg = reason.message || reason.toString() || 'Unhandled promise rejection';
+          const stack = reason.stack || (typeof reason === 'object' ? JSON.stringify(reason, null, 2) : String(reason));
+          showError(msg, stack);
+        });
       })();
 
       // Global copy toast — surface feedback whenever user copies text
@@ -1023,7 +1519,7 @@
       // Particle effects system — adds delightful sparkles to buttons and text
       // Creates a sense of magic and responsiveness throughout the site
       (function() {
-        const allowParticles = !userPrefersReducedMotion();
+        const allowParticles = !userPrefersReducedMotion() && DeviceCapabilities.tier !== 'low';
         if (!allowParticles) {
           window.spawnButtonParticles = function noop() {};
           return;
@@ -1060,8 +1556,9 @@
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
           
-          // Spawn cluster of particles from button center
-          const count = 6 + Math.floor(Math.random() * 4);
+          // Spawn cluster of particles from button center - reduced count for performance
+          const baseCount = DeviceCapabilities.tier === 'high' ? 6 : 3;
+          const count = baseCount + Math.floor(Math.random() * (DeviceCapabilities.tier === 'high' ? 4 : 2));
           for (let i = 0; i < count; i++) {
             const offsetX = (Math.random() - 0.5) * rect.width * 0.6;
             const offsetY = (Math.random() - 0.5) * rect.height * 0.6;
@@ -1287,9 +1784,21 @@
 
         // Command definitions — each action is a delightful little function
         const commands = [
+          // Navigation
+          {
+            id: 'home',
+            title: '🏠 Go to Home',
+            category: 'Navigation',
+            keywords: ['home', 'top', 'start', 'hero'],
+            action: () => {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              cmdk.classList.remove('open');
+            }
+          },
           {
             id: 'projects',
-            title: 'Go to Projects',
+            title: '💼 Go to Projects',
+            category: 'Navigation',
             keywords: ['project', 'work', 'portfolio'],
             action: () => {
               const el = document.querySelector('#projects');
@@ -1301,7 +1810,8 @@
           },
           {
             id: 'vision',
-            title: 'Go to Vision',
+            title: '🎵 Go to Vision',
+            category: 'Navigation',
             keywords: ['vision', 'future', 'music', 'ai'],
             action: () => {
               const el = document.querySelector('#vision');
@@ -1313,7 +1823,8 @@
           },
           {
             id: 'why',
-            title: 'Why me?',
+            title: '💡 Why me?',
+            category: 'Navigation',
             keywords: ['why', 'hire', 'about'],
             action: () => {
               const el = document.querySelector('#why');
@@ -1325,7 +1836,8 @@
           },
           {
             id: 'faq',
-            title: 'Go to FAQ',
+            title: '❓ Go to FAQ',
+            category: 'Navigation',
             keywords: ['faq', 'question', 'answer', 'help'],
             action: () => {
               const el = document.querySelector('#faq');
@@ -1337,7 +1849,8 @@
           },
           {
             id: 'skills',
-            title: 'View Skills',
+            title: '⚡ View Skills',
+            category: 'Navigation',
             keywords: ['skill', 'tech', 'stack'],
             action: () => {
               const el = document.querySelector('#skills');
@@ -1349,7 +1862,8 @@
           },
           {
             id: 'contact',
-            title: 'Go to Contact',
+            title: '✉️ Go to Contact',
+            category: 'Navigation',
             keywords: ['contact', 'email', 'reach'],
             action: () => {
               const el = document.querySelector('#contact');
@@ -1359,9 +1873,11 @@
               }
             }
           },
+          // Actions
           {
             id: 'copy-email',
-            title: 'Copy Email Address',
+            title: '📋 Copy Email Address',
+            category: 'Actions',
             keywords: ['email', 'copy', 'contact'],
             action: () => {
               const email = 'mayukhjit.chakraborty@gmail.com';
@@ -1379,7 +1895,8 @@
           },
           {
             id: 'github',
-            title: 'Open GitHub Profile',
+            title: '🔗 Open GitHub Profile',
+            category: 'Actions',
             keywords: ['github', 'code', 'repo'],
             action: () => {
               window.open('https://github.com/mayukhjit-c', '_blank');
@@ -1387,8 +1904,39 @@
             }
           },
           {
+            id: 'linkedin',
+            title: '💼 Open LinkedIn',
+            category: 'Actions',
+            keywords: ['linkedin', 'professional', 'network'],
+            action: () => {
+              window.open('https://linkedin.com/in/mayukhjit-chakraborty', '_blank');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'spotify',
+            title: '🎧 Listen on Spotify',
+            category: 'Actions',
+            keywords: ['spotify', 'music', 'listen'],
+            action: () => {
+              window.open('https://open.spotify.com/artist/your-id', '_blank');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'youtube',
+            title: '📺 Watch on YouTube',
+            category: 'Actions',
+            keywords: ['youtube', 'video', 'watch'],
+            action: () => {
+              window.open('https://youtube.com/@mayukhjitc', '_blank');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
             id: 'top',
-            title: 'Scroll to Top',
+            title: '⬆️ Scroll to Top',
+            category: 'Actions',
             keywords: ['top', 'home', 'beginning'],
             action: () => {
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1396,8 +1944,29 @@
             }
           },
           {
+            id: 'bottom',
+            title: '⬇️ Scroll to Bottom',
+            category: 'Actions',
+            keywords: ['bottom', 'end', 'footer'],
+            action: () => {
+              window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+              cmdk.classList.remove('open');
+            }
+          },
+          {
+            id: 'keyboard-shortcuts',
+            title: '⌨️ View Keyboard Shortcuts',
+            category: 'Help',
+            keywords: ['shortcuts', 'keyboard', 'keys', 'help'],
+            action: () => {
+              window.showToast && window.showToast('⌨️ H=Home • P=Projects • S=Skills • C=Contact • J/K=Scroll • ?=Help • Cmd+K=Commands');
+              cmdk.classList.remove('open');
+            }
+          },
+          {
             id: 'easter-egg',
-            title: 'Easter Egg 🥚',
+            title: '🥚 Easter Egg',
+            category: 'Fun',
             keywords: ['easter', 'egg', 'secret', 'konami'],
             action: () => {
               window.showToast && window.showToast('🎉 You found an easter egg! Keep exploring...');
@@ -1434,21 +2003,41 @@
 
         function renderCommands() {
           cmdkList.innerHTML = '';
-          filteredCommands.forEach((cmd, idx) => {
-            const item = document.createElement('div');
-            item.className = 'cmdk-item';
-            item.setAttribute('role', 'option');
-            item.setAttribute('aria-selected', idx === selectedIndex);
-            item.innerHTML = `
-              <span>${cmd.title}</span>
-              ${idx === selectedIndex ? '<span class="cmdk-kbd">↵</span>' : ''}
-            `;
-            item.addEventListener('click', () => cmd.action());
-            cmdkList.appendChild(item);
+          
+          if (filteredCommands.length === 0) {
+            cmdkList.innerHTML = '<div class="cmdk-empty">No commands found. Try a different search.</div>';
+            return;
+          }
+          
+          // Group by category
+          const grouped = {};
+          filteredCommands.forEach(cmd => {
+            const cat = cmd.category || 'Other';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(cmd);
           });
-          // Update aria-selected for all items
-          cmdkList.querySelectorAll('.cmdk-item').forEach((item, idx) => {
-            item.setAttribute('aria-selected', idx === selectedIndex);
+          
+          let globalIndex = 0;
+          Object.keys(grouped).forEach(category => {
+            // Add category header
+            const categoryHeader = document.createElement('div');
+            categoryHeader.className = 'cmdk-category';
+            categoryHeader.textContent = category;
+            cmdkList.appendChild(categoryHeader);
+            
+            grouped[category].forEach(cmd => {
+              const item = document.createElement('div');
+              item.className = 'cmdk-item';
+              item.setAttribute('role', 'option');
+              item.setAttribute('aria-selected', globalIndex === selectedIndex);
+              item.innerHTML = `
+                <span>${cmd.title}</span>
+                ${globalIndex === selectedIndex ? '<span class="cmdk-kbd">↵</span>' : ''}
+              `;
+              item.addEventListener('click', () => cmd.action());
+              cmdkList.appendChild(item);
+              globalIndex++;
+            });
           });
         }
 
@@ -1494,6 +2083,78 @@
           }
           if (e.key === 'Escape' && cmdk.classList.contains('open')) {
             closePalette();
+          }
+        });
+        
+        // Additional global keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+          // Skip if command palette is open or user is typing
+          if (cmdk.classList.contains('open') || document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+          
+          // Cmd+/ or Ctrl+/ → Quick help
+          if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+            e.preventDefault();
+            window.showToast && window.showToast('⌨️ Shortcuts: H=Home, P=Projects, S=Skills, C=Contact, T=Top, B=Bottom, J/K=Scroll, ?=Help');
+          }
+          
+          // J/K → Scroll down/up (vim-style)
+          if (e.key === 'j') {
+            e.preventDefault();
+            window.scrollBy({ top: 100, behavior: 'smooth' });
+          }
+          if (e.key === 'k' && !e.metaKey && !e.ctrlKey) {
+            e.preventDefault();
+            window.scrollBy({ top: -100, behavior: 'smooth' });
+          }
+          
+          // G/gg → Go to bottom/top
+          if (e.key === 'g') {
+            if (window.__lastGPress && Date.now() - window.__lastGPress < 500) {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              window.__lastGPress = 0;
+            } else {
+              window.__lastGPress = Date.now();
+            }
+          }
+          if (e.key === 'G' && e.shiftKey) {
+            e.preventDefault();
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+          }
+          
+          // Quick navigation shortcuts
+          if (e.key === 'h') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          if (e.key === 'p') {
+            e.preventDefault();
+            const el = document.querySelector('#projects');
+            if (el) smoothScrollTo(Math.max(0, el.offsetTop - 70), 400);
+          }
+          if (e.key === 's') {
+            e.preventDefault();
+            const el = document.querySelector('#skills');
+            if (el) smoothScrollTo(Math.max(0, el.offsetTop - 70), 400);
+          }
+          if (e.key === 'c') {
+            e.preventDefault();
+            const el = document.querySelector('#contact');
+            if (el) smoothScrollTo(Math.max(0, el.offsetTop - 70), 400);
+          }
+          if (e.key === 't') {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+          if (e.key === 'b') {
+            e.preventDefault();
+            window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
+          }
+          
+          // ? → Show shortcuts help
+          if (e.key === '?' && e.shiftKey) {
+            e.preventDefault();
+            openPalette();
           }
         });
 
@@ -1967,10 +2628,37 @@
           threshold: 0.1
         };
         
+        // Special handling for skill categories - sequential animation
+        const skillsObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const skillCategories = document.querySelectorAll('.skill-category');
+              let delay = 0;
+              skillCategories.forEach((category, index) => {
+                setTimeout(() => {
+                  const animationType = category.dataset.animate || 'fade-in';
+                  category.classList.add(animationType);
+                }, delay);
+                delay += 150; // Stagger by 150ms
+              });
+              skillsObserver.unobserve(entry.target);
+            }
+          });
+        }, observerOptions);
+        
+        // Observe skills container for sequential animation
+        const skillsContainer = document.querySelector('.skills-container');
+        if (skillsContainer) {
+          skillsObserver.observe(skillsContainer);
+        }
+        
         const observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
               const element = entry.target;
+              // Skip skill categories as they're handled separately
+              if (element.classList.contains('skill-category')) return;
+              
               const animationType = element.dataset.animate || 'fade-in';
               element.classList.add(animationType);
               observer.unobserve(element);
@@ -1978,10 +2666,12 @@
           });
         }, observerOptions);
         
-        // Observe all elements with data-animate attribute
+        // Observe all elements with data-animate attribute except skill categories
         window.requestIdleCallback(() => {
           document.querySelectorAll('[data-animate]').forEach(el => {
-            observer.observe(el);
+            if (!el.classList.contains('skill-category')) {
+              observer.observe(el);
+            }
           });
         });
       })();
@@ -2563,31 +3253,70 @@
         function spawnBurst(x, y, themeId) {
           if (prefersReduced || isLowPowerMode) return;
           
-          // Adaptive particle count based on device capabilities
-          const deviceScale = DeviceCapabilities.tier === 'low' ? 0.5 : DeviceCapabilities.tier === 'medium' ? 0.75 : 1;
+          // Adaptive particle count based on device capabilities and viewport
+          const burstScale = DeviceCapabilities.getBurstScale();
+          const viewportScale = DeviceCapabilities.getViewportScale();
+          const combinedScale = burstScale * viewportScale;
+          
           const burst = { x, y, themeId, life: 0, max: 1200, items: [] };
           const add = (o) => burst.items.push(o);
           
           if (themeId === 'fire') {
-            const count = Math.floor(26 * deviceScale);
+            const count = Math.floor(26 * combinedScale);
             for (let i = 0; i < count; i++) {
-              const a = Math.random() * Math.PI * 2; const s = 0.8 + Math.random()*1.6;
-              add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.4, r: 0.8 + Math.random()*1.6, life: 0, max: 700 + Math.random()*500 });
+              const a = Math.random() * Math.PI * 2; 
+              const s = (0.8 + Math.random()*1.6) * viewportScale;
+              const r = (0.8 + Math.random()*1.6) * viewportScale;
+              add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.4, r, life: 0, max: 700 + Math.random()*500 });
             }
           } else if (themeId === 'ice') {
-            const rings = Math.ceil(3 * deviceScale);
-            for (let i = 0; i < rings; i++) add({ x, y, ring: true, r: 2, vr: 1.6 + i*0.3, life: 0, max: 900 });
+            const rings = Math.max(1, Math.ceil(3 * combinedScale));
+            for (let i = 0; i < rings; i++) {
+              const vr = (1.6 + i*0.3) * viewportScale;
+              add({ x, y, ring: true, r: 2 * viewportScale, vr, life: 0, max: 900 });
+            }
           } else if (themeId === 'forest') {
-            const petals = Math.floor(8 * deviceScale); 
-            for (let i = 0; i < petals; i++) add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr: 0.9, life: 0, max: 1000 });
+            const petals = Math.max(3, Math.floor(8 * combinedScale)); 
+            for (let i = 0; i < petals; i++) {
+              const vr = 0.9 * viewportScale;
+              add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr, life: 0, max: 1000 });
+            }
           } else if (themeId === 'lilac') {
-            for (let i = 0; i < 14; i++) { const a = Math.random()*Math.PI*2; const s = 0.9 + Math.random()*1.4; add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, r: 1.2 + Math.random()*1.8, life: 0, max: 800 }); }
+            const count = Math.max(6, Math.floor(14 * combinedScale));
+            for (let i = 0; i < count; i++) { 
+              const a = Math.random()*Math.PI*2; 
+              const s = (0.9 + Math.random()*1.4) * viewportScale;
+              const r = (1.2 + Math.random()*1.8) * viewportScale;
+              add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, r, life: 0, max: 800 }); 
+            }
           } else if (themeId === 'fog') {
-            for (let i = 0; i < 10; i++) add({ x, y, smoke: true, r: 4 + Math.random()*6, vr: 0.3 + Math.random()*0.4, life: 0, max: 1400, ox: (Math.random()-0.5)*8, oy: (Math.random()-0.5)*8 });
+            const count = Math.max(4, Math.floor(10 * combinedScale));
+            for (let i = 0; i < count; i++) {
+              const r = (4 + Math.random()*6) * viewportScale;
+              const vr = (0.3 + Math.random()*0.4) * viewportScale;
+              const ox = (Math.random()-0.5)*8 * viewportScale;
+              const oy = (Math.random()-0.5)*8 * viewportScale;
+              add({ x, y, smoke: true, r, vr, life: 0, max: 1400, ox, oy });
+            }
           }
           (state.bursts || (state.bursts = [])).push(burst);
         }
+        // Touch-optimized burst spawning with throttling on mobile
+        let lastBurstTime = 0;
+        const burstCooldown = DeviceCapabilities.isMobile ? 300 : DeviceCapabilities.isTablet ? 200 : 100; // ms between bursts
+        const maxConcurrentBursts = DeviceCapabilities.isMobile ? 2 : DeviceCapabilities.isTablet ? 3 : 5; // Limit active bursts
+        
         window.addEventListener('pointerdown', (e) => {
+          const now = Date.now();
+          // Throttle burst spawning on mobile to prevent lag from rapid taps
+          if (now - lastBurstTime < burstCooldown) return;
+          
+          // Limit concurrent bursts to prevent memory/performance issues
+          if (state.bursts && state.bursts.length >= maxConcurrentBursts) {
+            state.bursts.shift(); // Remove oldest burst
+          }
+          
+          lastBurstTime = now;
           const themeId = themes[themeIndex].id;
           spawnBurst(e.clientX, e.clientY, themeId);
         }, { passive: true });
@@ -2624,20 +3353,23 @@
           } else {
             state.cross = null;
           }
-          // Seed a small number of elements per theme - adaptive based on device
+          // Seed a small number of elements per theme - adaptive based on device and viewport
           const particleLimit = DeviceCapabilities.getParticleLimit();
+          const viewportScale = DeviceCapabilities.getViewportScale();
           const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : 28);
           const coarseScale = pointerCoarse ? 0.7 : 1;
           const deviceScale = particleLimit === 0 ? 0 : Math.min(1, particleLimit / baseCount);
-          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale * deviceScale);
+          // Further reduce on very small screens (mobile portrait)
+          const screenScale = window.innerWidth < 768 ? 0.6 : 1;
+          const count = (!effectsEnabled || prefersReduced) ? 0 : Math.floor(baseCount * (perfMode ? 0.7 : 1) * coarseScale * deviceScale * screenScale);
           for (let i = 0; i < count; i++) {
             if (themeId === 'ice') {
-              // Snowflake
+              // Snowflake - scale size and velocity by viewport
               state.parts.push({
                 x: Math.random() * w, y: Math.random() * h,
-                r: 1 + Math.random() * 2.6,
-                vx: -0.15 + Math.random() * 0.3,
-                vy: 0.25 + Math.random() * 0.55,
+                r: (1 + Math.random() * 2.6) * viewportScale,
+                vx: (-0.15 + Math.random() * 0.3) * viewportScale,
+                vy: (0.25 + Math.random() * 0.55) * viewportScale,
                 sway: Math.random() * Math.PI * 2,
                 swayAmp: 0.6 + Math.random() * 1.2,
                 life: 0, max: 12000 + Math.random() * 8000,
@@ -2646,27 +3378,27 @@
             } else if (themeId === 'forest') {
               state.parts.push({
                 x: Math.random() * w, y: Math.random() * h,
-                r: 2 + Math.random() * 6,
-                vx: (Math.random() - 0.5) * 0.2,
-                vy: (Math.random() - 0.5) * 0.2,
+                r: (2 + Math.random() * 6) * viewportScale,
+                vx: (Math.random() - 0.5) * 0.2 * viewportScale,
+                vy: (Math.random() - 0.5) * 0.2 * viewportScale,
                 life: 0, max: 4000 + Math.random() * 4000,
                 data: Math.random()
               });
             } else if (themeId === 'fire') {
               state.parts.push({
                 x: Math.random() * w, y: h * (0.55 + Math.random() * 0.45),
-                r: 2 + Math.random() * 6,
-                vx: (Math.random() - 0.5) * 0.15,
-                vy: -0.1 - Math.random() * 0.1,
+                r: (2 + Math.random() * 6) * viewportScale,
+                vx: (Math.random() - 0.5) * 0.15 * viewportScale,
+                vy: (-0.1 - Math.random() * 0.1) * viewportScale,
                 life: 0, max: 5000 + Math.random() * 4000,
                 data: Math.random()
               });
             } else {
               state.parts.push({
                 x: Math.random() * w, y: Math.random() * h,
-                r: 2 + Math.random() * 6,
-                vx: (Math.random() - 0.5) * 0.2,
-                vy: (Math.random() - 0.5) * 0.2,
+                r: (2 + Math.random() * 6) * viewportScale,
+                vx: (Math.random() - 0.5) * 0.2 * viewportScale,
+                vy: (Math.random() - 0.5) * 0.2 * viewportScale,
                 life: 0, max: 4000 + Math.random() * 4000,
                 data: Math.random()
               });
@@ -2739,26 +3471,29 @@
           ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2); ctx.fill();
           s.vx *= 0.995; s.vy *= 0.99; s.vx += (Math.random() - 0.5) * 0.02;
         }
-        function drawBurst(b) {
+        function drawBurst(b, dt) {
           const k = b.life / b.max; const alpha = Math.max(0, 1 - k);
+          // Use delta time for consistent speed across all frame rates
+          const dtScale = dt / 16.67; // Normalize to 60fps baseline
+          
           if (b.themeId === 'fire') {
             for (const it of b.items) {
               const a = 1 - (it.life / it.max);
               ctx.fillStyle = `rgba(255,170,60,${0.35 * a * alpha})`;
               ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill();
-              it.x += it.vx; it.y += it.vy; it.vy += 0.006; it.life += 16;
+              it.x += it.vx * dtScale; it.y += it.vy * dtScale; it.vy += 0.006 * dtScale; it.life += dt;
             }
           } else if (b.themeId === 'ice') {
             ctx.strokeStyle = `rgba(200,230,255,${0.45*alpha})`; ctx.lineWidth = 1;
-            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.stroke(); }
+            for (const it of b.items) { it.r += it.vr * dtScale; it.life += dt; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.stroke(); }
           } else if (b.themeId === 'forest') {
-            for (const it of b.items) { it.r += it.vr; it.life += 16; ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.a); ctx.fillStyle = `rgba(104,220,130,${0.25*alpha})`; ctx.beginPath(); ctx.ellipse(it.r*1.2, 0, 8, 5, 0, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = `rgba(60,160,90,${0.5*alpha})`; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(it.r*1.2, -3); ctx.lineTo(it.r*1.2, 3); ctx.stroke(); ctx.restore(); }
+            for (const it of b.items) { it.r += it.vr * dtScale; it.life += dt; ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.a); ctx.fillStyle = `rgba(104,220,130,${0.25*alpha})`; ctx.beginPath(); ctx.ellipse(it.r*1.2, 0, 8, 5, 0, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = `rgba(60,160,90,${0.5*alpha})`; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(it.r*1.2, -3); ctx.lineTo(it.r*1.2, 3); ctx.stroke(); ctx.restore(); }
           } else if (b.themeId === 'lilac') {
-            for (const it of b.items) { const a = 1 - (it.life/it.max); ctx.fillStyle = `rgba(255,255,255,${0.28*a*alpha})`; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill(); it.x += it.vx; it.y += it.vy; it.life += 16; }
+            for (const it of b.items) { const a = 1 - (it.life/it.max); ctx.fillStyle = `rgba(255,255,255,${0.28*a*alpha})`; ctx.beginPath(); ctx.arc(it.x, it.y, it.r, 0, Math.PI*2); ctx.fill(); it.x += it.vx * dtScale; it.y += it.vy * dtScale; it.life += dt; }
           } else if (b.themeId === 'fog') {
-            for (const it of b.items) { ctx.fillStyle = `rgba(255,60,60,${0.08*alpha})`; ctx.beginPath(); ctx.arc(it.x + it.ox, it.y + it.oy, it.r, 0, Math.PI*2); ctx.fill(); it.r += it.vr; it.ox *= 0.99; it.oy *= 0.99; it.life += 16; }
+            for (const it of b.items) { ctx.fillStyle = `rgba(255,60,60,${0.08*alpha})`; ctx.beginPath(); ctx.arc(it.x + it.ox, it.y + it.oy, it.r, 0, Math.PI*2); ctx.fill(); it.r += it.vr * dtScale; it.ox *= Math.pow(0.99, dtScale); it.oy *= Math.pow(0.99, dtScale); it.life += dt; }
           }
-          b.life += 16;
+          b.life += dt;
         }
         function drawSnowflake(p) {
           // Fade in/out envelope over life (roll in/out)
@@ -3049,10 +3784,14 @@
             perfMode = true;
             dpr = 1;
             ensureCanvas();
+            // Reduce theme transition duration for better performance
+            if (window.__toggleSlowThemes) window.__toggleSlowThemes(true);
           } else if (!shouldPerf && perfMode && dpr < 1.5) {
             perfMode = false;
             dpr = Math.min(1.5, window.devicePixelRatio || 1);
             ensureCanvas();
+            // Restore normal theme transitions
+            if (window.__toggleSlowThemes) window.__toggleSlowThemes(false);
           }
         }
 
@@ -3180,11 +3919,11 @@
               drawFog(now);
             }
             
-            // Draw interactive bursts
+            // Draw interactive bursts with delta time for consistent speed
             if (state.bursts && state.bursts.length) {
               for (let i = state.bursts.length - 1; i >= 0; i--) {
                 const b = state.bursts[i];
-                drawBurst(b);
+                drawBurst(b, dt);
                 if (b.life >= b.max) {
                   state.bursts.splice(i, 1);
                 }
@@ -3193,9 +3932,10 @@
             ctx.restore();
           }
 
-          // Integrate particles
+          // Integrate particles with delta time for consistent speed
+          const dtScale = dt / 16.67; // Normalize to 60fps baseline
           for (const p of state.parts) {
-            p.x += p.vx; p.y += p.vy; p.life += 16;
+            p.x += p.vx * dtScale; p.y += p.vy * dtScale; p.life += dt;
             if (p.x < -10) p.x = w + 10; if (p.x > w + 10) p.x = -10;
             if (p.y < -10) p.y = h + 10; if (p.y > h + 10) p.y = -10;
             // Loop life for snowflakes to keep fade cycling
