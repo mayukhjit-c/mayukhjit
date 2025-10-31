@@ -209,7 +209,7 @@
         }
       })();
 
-      // Console Easter Egg — because developers deserve nice things too 🦄
+  // Console Easter Egg — because developers deserve nice things too
       // console hello (yes, this is definitely written by a human)
       console.log('%cHello, curious developer.', 'font-size: 16px; font-weight: bold; color: #fff;');
       console.log('%cYou\'re poking around the code? Nice. The command palette (Cmd/Ctrl+K) is worth a look.', 'font-size: 12px; color: #bbb;');
@@ -1210,7 +1210,7 @@
         setTimeout(() => { computeAge(); setInterval(computeAge, 24*60*60*1000); }, msUntilTomorrow);
       })();
 
-      // Toast notification helper — because alerts are so 2010 😎
+  // Toast notification helper — because alerts are so 2010
       (function() {
         const toast = document.getElementById('toast');
         function showToast(message, duration = 2500) {
@@ -1421,7 +1421,7 @@
           overlay.style.boxShadow = '0 8px 32px rgba(0,0,0,0.6)';
           
           // Icon based on category
-          const icon = category === 'network' ? '🌐' : category === 'permission' ? '🔒' : '⚠️';
+          const icon = category === 'network' ? '[Network]' : category === 'permission' ? '[Permission]' : '[Error]';
           
           const title = document.createElement('div'); 
           title.style.fontWeight = '700'; 
@@ -1782,12 +1782,12 @@
         const cmdkList = document.getElementById('cmdkList');
         if (!cmdk || !cmdkInput || !cmdkList) return;
 
-        // Command definitions — each action is a delightful little function
+  // Command definitions — each action is a small helper function
         const commands = [
           // Navigation
           {
             id: 'home',
-            title: '🏠 Go to Home',
+            title: 'Go to Home',
             category: 'Navigation',
             keywords: ['home', 'top', 'start', 'hero'],
             action: () => {
@@ -1797,7 +1797,7 @@
           },
           {
             id: 'projects',
-            title: '💼 Go to Projects',
+            title: 'Go to Projects',
             category: 'Navigation',
             keywords: ['project', 'work', 'portfolio'],
             action: () => {
@@ -1810,7 +1810,7 @@
           },
           {
             id: 'vision',
-            title: '🎵 Go to Vision',
+            title: 'Go to Vision',
             category: 'Navigation',
             keywords: ['vision', 'future', 'music', 'ai'],
             action: () => {
@@ -1823,7 +1823,7 @@
           },
           {
             id: 'why',
-            title: '💡 Why me?',
+            title: 'Why me?',
             category: 'Navigation',
             keywords: ['why', 'hire', 'about'],
             action: () => {
@@ -1836,7 +1836,7 @@
           },
           {
             id: 'faq',
-            title: '❓ Go to FAQ',
+            title: 'Go to FAQ',
             category: 'Navigation',
             keywords: ['faq', 'question', 'answer', 'help'],
             action: () => {
@@ -1849,7 +1849,7 @@
           },
           {
             id: 'skills',
-            title: '⚡ View Skills',
+            title: 'View Skills',
             category: 'Navigation',
             keywords: ['skill', 'tech', 'stack'],
             action: () => {
@@ -1862,7 +1862,7 @@
           },
           {
             id: 'contact',
-            title: '✉️ Go to Contact',
+            title: 'Go to Contact',
             category: 'Navigation',
             keywords: ['contact', 'email', 'reach'],
             action: () => {
@@ -1876,7 +1876,7 @@
           // Actions
           {
             id: 'copy-email',
-            title: '📋 Copy Email Address',
+            title: 'Copy Email Address',
             category: 'Actions',
             keywords: ['email', 'copy', 'contact'],
             action: () => {
@@ -1895,7 +1895,7 @@
           },
           {
             id: 'github',
-            title: '🔗 Open GitHub Profile',
+            title: 'Open GitHub Profile',
             category: 'Actions',
             keywords: ['github', 'code', 'repo'],
             action: () => {
@@ -1905,17 +1905,17 @@
           },
           {
             id: 'linkedin',
-            title: '💼 Open LinkedIn',
+            title: 'Open LinkedIn',
             category: 'Actions',
             keywords: ['linkedin', 'professional', 'network'],
             action: () => {
-              window.open('https://linkedin.com/in/mayukhjit-chakraborty', '_blank');
+              window.open('https://www.linkedin.com/in/mayukhjitchakraborty/', '_blank');
               cmdk.classList.remove('open');
             }
           },
           {
             id: 'spotify',
-            title: '🎧 Listen on Spotify',
+            title: 'Listen on Spotify',
             category: 'Actions',
             keywords: ['spotify', 'music', 'listen'],
             action: () => {
@@ -1925,7 +1925,7 @@
           },
           {
             id: 'youtube',
-            title: '📺 Watch on YouTube',
+            title: 'Watch on YouTube',
             category: 'Actions',
             keywords: ['youtube', 'video', 'watch'],
             action: () => {
@@ -1935,7 +1935,7 @@
           },
           {
             id: 'top',
-            title: '⬆️ Scroll to Top',
+            title: 'Scroll to Top',
             category: 'Actions',
             keywords: ['top', 'home', 'beginning'],
             action: () => {
@@ -1945,7 +1945,7 @@
           },
           {
             id: 'bottom',
-            title: '⬇️ Scroll to Bottom',
+            title: 'Scroll to Bottom',
             category: 'Actions',
             keywords: ['bottom', 'end', 'footer'],
             action: () => {
@@ -1955,21 +1955,21 @@
           },
           {
             id: 'keyboard-shortcuts',
-            title: '⌨️ View Keyboard Shortcuts',
+            title: 'View Keyboard Shortcuts',
             category: 'Help',
             keywords: ['shortcuts', 'keyboard', 'keys', 'help'],
             action: () => {
-              window.showToast && window.showToast('⌨️ H=Home • P=Projects • S=Skills • C=Contact • J/K=Scroll • ?=Help • Cmd+K=Commands');
+              window.showToast && window.showToast('H=Home • P=Projects • S=Skills • C=Contact • J/K=Scroll • ?=Help • Cmd+K=Commands');
               cmdk.classList.remove('open');
             }
           },
           {
             id: 'easter-egg',
-            title: '🥚 Easter Egg',
+            title: 'Easter Egg',
             category: 'Fun',
             keywords: ['easter', 'egg', 'secret', 'konami'],
             action: () => {
-              window.showToast && window.showToast('🎉 You found an easter egg! Keep exploring...');
+              window.showToast && window.showToast('You found an easter egg! Keep exploring...');
               // Add a subtle celebration effect
               document.body.style.animation = 'none';
               setTimeout(() => {
@@ -2094,7 +2094,7 @@
           // Cmd+/ or Ctrl+/ → Quick help
           if ((e.metaKey || e.ctrlKey) && e.key === '/') {
             e.preventDefault();
-            window.showToast && window.showToast('⌨️ Shortcuts: H=Home, P=Projects, S=Skills, C=Contact, T=Top, B=Bottom, J/K=Scroll, ?=Help');
+            window.showToast && window.showToast('Shortcuts: H=Home, P=Projects, S=Skills, C=Contact, T=Top, B=Bottom, J/K=Scroll, ?=Help');
           }
           
           // J/K → Scroll down/up (vim-style)
@@ -2365,11 +2365,11 @@
           clearTimeout(timeout);
           timeout = setTimeout(() => { clickCount = 0; }, 600);
           
-          if (clickCount === 3) {
+            if (clickCount === 3) {
             clickCount = 0;
             const messages = [
-              '🎵 "Code by day, music by night — building stuff that matters."',
-              '💡 "Every line of code is a beat in the song of creation."',
+              '"Code by day, music by night — building stuff that matters."',
+              '"Every line of code is a beat in the song of creation."',
               '"Shipping fast, learning faster, improving always."',
               '"Good design is invisible. Great design is unforgettable."',
               '"Focus, flow, iterate — that\'s the developer\'s groove."'
@@ -2386,7 +2386,7 @@
         window.addEventListener('keydown', (e) => {
           if (e.shiftKey && e.key === 'Shift' && smoothScrollMultiplier === 1) {
             smoothScrollMultiplier = 0.5;
-            window.showToast && window.showToast('🐌 Slow-mo scrolling enabled! Release Shift to return to normal.');
+            window.showToast && window.showToast('Slow-mo scrolling enabled. Release Shift to return to normal.');
           }
         });
         window.addEventListener('keyup', (e) => {
@@ -2450,7 +2450,7 @@
               clickedInOrder.push(selector);
               
               if (clickedInOrder.length === requiredSections.length) {
-                window.showToast && window.showToast('🎊 Incredible! You clicked all section icons in order! You win... bragging rights!');
+                window.showToast && window.showToast('Incredible! You clicked all section icons in order! You win... bragging rights!');
                 clickedInOrder = [];
                 
                 // Celebration animation
@@ -2827,12 +2827,12 @@
             // Subtle reminder that the page is interactive
             if (window.showToast) {
               const messages = [
-                '👋 Still here? Try clicking around - there are surprises!',
-                '💡 Psst... try the Konami code (↑↑↓↓←→←→BA)',
-                '🎨 The colors change every few seconds. Watch closely!',
-                '✨ Try double-tapping anywhere for sparkles!',
-                '🔍 Click the section icons in order for a reward!'
-              ];
+                  'Still here? Try clicking around - there are surprises!',
+                  'Psst... try the Konami code (↑↑↓↓←→←→BA)',
+                  'The colors change every few seconds. Watch closely!',
+                  'Try double-tapping anywhere for sparkles!',
+                  'Click the section icons in order for a reward!'
+                ];
               const msg = messages[Math.floor(Math.random() * messages.length)];
               window.showToast(msg);
             }
@@ -2879,10 +2879,10 @@
       // Unique Feature: Celebrate milestones (scroll depth achievements)
       (function() {
         const milestones = [
-          { percent: 25, message: '🎉 Quarter way through! Keep scrolling!', triggered: false },
-          { percent: 50, message: '⭐ Halfway there! You\'re doing great!', triggered: false },
-          { percent: 75, message: '🚀 Almost done! Just a bit more!', triggered: false },
-          { percent: 100, message: '🎊 You made it to the bottom! Thanks for exploring!', triggered: false }
+          { percent: 25, message: 'Quarter way through! Keep scrolling!', triggered: false },
+          { percent: 50, message: 'Halfway there! You\'re doing great!', triggered: false },
+          { percent: 75, message: 'Almost done! Just a bit more!', triggered: false },
+          { percent: 100, message: 'You made it to the bottom! Thanks for exploring!', triggered: false }
         ];
         
         function checkMilestones() {
