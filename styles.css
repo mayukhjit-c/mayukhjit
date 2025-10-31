@@ -304,19 +304,25 @@
         text-decoration: none; 
         transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
       }
+      /* Theme-aware link hover with smooth color transition */
       a:hover { 
-        opacity: 0.85;
+        opacity: 1;
+        color: var(--theme-primary-3);
+        transition: color 280ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 280ms cubic-bezier(0.4, 0, 0.2, 1);
       }
-      /* Animated underline for inline links */
+      /* Animated underline with theme colors */
       .link-underline {
-        background: linear-gradient(currentColor, currentColor) left bottom/0 2px no-repeat;
-        transition: background-size 350ms cubic-bezier(0.16, 1, 0.3, 1),
-                    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+        background: linear-gradient(var(--theme-primary-3), var(--theme-primary-3)) left bottom/0 2px no-repeat;
+        transition: background-size 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 280ms cubic-bezier(0.4, 0, 0.2, 1),
+                    color 280ms cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
       }
       .link-underline:hover { 
         background-size: 100% 2px; 
         opacity: 1;
+        color: var(--theme-primary-2);
       }
 
       .container { max-width: var(--maxw); margin: 0 auto; padding: 0 36px; overflow: visible; }
@@ -586,28 +592,31 @@
         border-radius: 999px;
         padding: 12px 18px;
         border: 1px solid var(--fg);
-        transition: background-color 350ms var(--ease-smooth),
-                    color 350ms var(--ease-smooth),
-                    border-color 350ms var(--ease-smooth),
-                    box-shadow 350ms var(--ease-smooth),
-                    transform 250ms var(--ease-out);
+        /* Smooth, natural transitions with theme-aware colors */
+        transition: background-color 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                    color 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                    border-color 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
         font-family: inherit;
         position: relative;
         overflow: visible;
         min-height: 40px;
         transform: translateZ(0);
-  cursor: pointer;
-  -webkit-user-select: none;
-  user-select: none;
-        will-change: transform, box-shadow;
+        cursor: pointer;
+        -webkit-user-select: none;
+        user-select: none;
+        will-change: transform;
         backface-visibility: hidden;
-        
       }
       /* Allow tooltips/glows to render outside buttons when needed */
       .btn[data-tooltip] { overflow: visible; }
+      /* Theme-aware hover with smooth fade-in using CSS custom properties */
       .btn:hover { 
-        box-shadow: 0 0 60px 24px rgba(255,200,100,0.09);
-        transform: translateY(-2px) scale(1.03) translateZ(0);
+        box-shadow: 0 0 50px 20px var(--theme-glow-2),
+                    0 4px 24px -2px var(--theme-glow-3);
+        transform: translateY(-2px) scale(1.02) translateZ(0);
+        border-color: var(--theme-primary-3);
       }
       .btn:active {
         transform: translateY(0) scale(0.97) translateZ(0);
@@ -636,11 +645,26 @@
         80% { transform: translateX(0.3px) translateZ(0); }
         100% { transform: translateX(0) translateZ(0); }
       }
-      .btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-      .btn.ghost { background: transparent; color: var(--fg); }
-      /* Invert-on-hover for buttons */
-      .btn.primary:hover { background: transparent; color: var(--fg); }
-      .btn.ghost:hover { background: var(--fg); color: var(--bg); }
+      .btn.primary { 
+        background: var(--fg); 
+        color: var(--bg); 
+        border-color: var(--fg); 
+      }
+      .btn.ghost { 
+        background: transparent; 
+        color: var(--fg); 
+      }
+      /* Theme-aware smooth hover with gentle fade transitions */
+      .btn.primary:hover { 
+        background: var(--theme-primary-3);
+        color: var(--fg);
+        border-color: var(--theme-primary-2);
+      }
+      .btn.ghost:hover { 
+        background: var(--theme-primary-3);
+        color: var(--bg);
+        border-color: var(--theme-primary-2);
+      }
       /* Button shine on hover with smooth follow effect */
       .btn::after {
         content: "";
@@ -716,32 +740,36 @@
         pointer-events: none;
       }
       .card:hover {
-        /* fallback for browsers without color-mix */
+        /* Theme-aware background with smooth fade-in */
         background-color: var(--card);
         background-color: color-mix(in oklab, var(--card) 86%, var(--theme-primary-2));
-        box-shadow: 0 0 120px 36px rgba(255,200,100,0.07);
-        transform: translateY(-6px) scale(1.03) rotate3d(1, -1, 0, 0.35deg) translateZ(0);
+        /* Theme-aware glow that matches current color palette */
+        box-shadow: 0 0 80px 28px var(--theme-glow-3),
+                    0 8px 32px -4px var(--theme-glow-4);
+        transform: translateY(-6px) scale(1.02) rotate3d(1, -1, 0, 0.35deg) translateZ(0);
       }
-      /* Simple reflective shine on hover that follows cursor */
+      /* Theme-aware reflective shine that follows cursor with smooth fade */
       .card::after {
         content: '';
         position: absolute;
-        /* Extend even further to eliminate any hard cutoff */
         inset: -140px;
         pointer-events: none;
-        /* Softer, multi-stop radial for gradual falloff + blur to diffuse edges like neon */
+        /* Dynamic theme-based gradient using CSS custom properties */
         background: radial-gradient(900px 460px at var(--mx, 60%) var(--my, 25%),
-          rgba(255,211,120,0.14) 0%,
-          rgba(255,211,120,0.08) 25%,
-          rgba(255,211,120,0.03) 55%,
+          var(--theme-glow-2) 0%,
+          var(--theme-glow-3) 25%,
+          var(--theme-glow-4) 55%,
           transparent 85%);
         filter: blur(28px);
-        /* match card rounding so glow doesn't show a rectangular edge */
         border-radius: var(--radius);
         opacity: 0;
-        transition: opacity 260ms cubic-bezier(0.16, 1, 0.3, 1), filter 260ms var(--ease);
+        /* Smooth natural fade-in */
+        transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1), 
+                    filter 300ms cubic-bezier(0.4, 0, 0.2, 1);
       }
-      .card:hover::after { opacity: 1; }
+      .card:hover::after { 
+        opacity: 1; 
+      }
       .card:hover::before {
         opacity: 1;
       }
@@ -1644,5 +1672,130 @@
           background: var(--theme-primary-3);
           color: var(--bg);
         }
+      }
+
+      /* === GPU-Accelerated Animation System === */
+      /* Force GPU acceleration for smooth 60fps animations */
+      .btn, .card, .project-card, nav a, .section-title {
+        will-change: transform;
+        transform: translateZ(0);
+        backface-visibility: hidden;
+      }
+
+      /* Entrance animations with staggered delays */
+      .fade-in {
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      }
+      
+      .slide-in-up {
+        animation: slideInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      }
+      
+      .slide-in-left {
+        animation: slideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      }
+      
+      .slide-in-right {
+        animation: slideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      }
+      
+      .scale-in {
+        animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+      }
+
+      /* Stagger animation delays for sequential entrance */
+      [data-animate]:nth-child(1) { animation-delay: 0.05s; }
+      [data-animate]:nth-child(2) { animation-delay: 0.1s; }
+      [data-animate]:nth-child(3) { animation-delay: 0.15s; }
+      [data-animate]:nth-child(4) { animation-delay: 0.2s; }
+      [data-animate]:nth-child(5) { animation-delay: 0.25s; }
+      [data-animate]:nth-child(6) { animation-delay: 0.3s; }
+      [data-animate]:nth-child(7) { animation-delay: 0.35s; }
+      [data-animate]:nth-child(8) { animation-delay: 0.4s; }
+      [data-animate]:nth-child(9) { animation-delay: 0.45s; }
+      [data-animate]:nth-child(10) { animation-delay: 0.5s; }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideInUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px) translateZ(0);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) translateZ(0);
+        }
+      }
+
+      @keyframes slideInLeft {
+        from {
+          opacity: 0;
+          transform: translateX(-30px) translateZ(0);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0) translateZ(0);
+        }
+      }
+
+      @keyframes slideInRight {
+        from {
+          opacity: 0;
+          transform: translateX(30px) translateZ(0);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0) translateZ(0);
+        }
+      }
+
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateZ(0);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateZ(0);
+        }
+      }
+
+      /* Loading skeleton screens for better perceived performance */
+      .skeleton {
+        background: linear-gradient(90deg, 
+          var(--card) 0%, 
+          color-mix(in oklab, var(--card) 95%, var(--fg)) 50%, 
+          var(--card) 100%
+        );
+        background-size: 200% 100%;
+        animation: skeletonShimmer 1.5s ease-in-out infinite;
+        border-radius: var(--radius);
+      }
+
+      @keyframes skeletonShimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      /* Subtle parallax effect for depth */
+      [data-parallax] {
+        will-change: transform;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* Focus ring with theme colors for better accessibility */
+      :focus-visible {
+        outline: 2px solid var(--theme-primary-3);
+        outline-offset: 3px;
+        border-radius: 4px;
+        transition: outline-color 280ms cubic-bezier(0.4, 0, 0.2, 1);
       }
 

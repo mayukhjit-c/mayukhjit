@@ -1924,6 +1924,112 @@
         clearTimeout(id);
       };
 
+      // Performance Monitor - Track FPS and frame times for debugging
+      const PerformanceMonitor = (function() {
+        let frames = [];
+        let lastTime = performance.now();
+        const maxSamples = 60;
+        
+        function recordFrame() {
+          const now = performance.now();
+          const delta = now - lastTime;
+          lastTime = now;
+          
+          frames.push(delta);
+          if (frames.length > maxSamples) {
+            frames.shift();
+          }
+        }
+        
+        function getMetrics() {
+          if (frames.length === 0) return { fps: 60, avgFrameTime: 16.67, maxFrameTime: 16.67 };
+          
+          const avgFrameTime = frames.reduce((a, b) => a + b, 0) / frames.length;
+          const fps = 1000 / avgFrameTime;
+          const maxFrameTime = Math.max(...frames);
+          
+          return { fps: Math.round(fps), avgFrameTime: avgFrameTime.toFixed(2), maxFrameTime: maxFrameTime.toFixed(2) };
+        }
+        
+        return { recordFrame, getMetrics };
+      })();
+      
+      // Expose performance metrics for debugging
+      window.getPerformanceMetrics = () => PerformanceMonitor.getMetrics();
+
+      // Entrance Animation System - Intersection Observer for performance
+      (function() {
+        if (!('IntersectionObserver' in window)) return;
+        
+        const observerOptions = {
+          root: null,
+          rootMargin: '0px 0px -100px 0px',
+          threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const element = entry.target;
+              const animationType = element.dataset.animate || 'fade-in';
+              element.classList.add(animationType);
+              observer.unobserve(element);
+            }
+          });
+        }, observerOptions);
+        
+        // Observe all elements with data-animate attribute
+        window.requestIdleCallback(() => {
+          document.querySelectorAll('[data-animate]').forEach(el => {
+            observer.observe(el);
+          });
+        });
+      })();
+
+      // Unified Event Delegation System for better performance
+      (function() {
+        // Single delegated click handler for all interactive elements
+        document.addEventListener('click', (e) => {
+          const target = e.target;
+          
+          // Button clicks with ripple effect
+          const btn = target.closest('.btn');
+          if (btn) {
+            btn.classList.add('clicked');
+            setTimeout(() => btn.classList.remove('clicked'), 200);
+            PerformanceMonitor.recordFrame();
+          }
+          
+          // Card clicks
+          const card = target.closest('.card');
+          if (card && !btn) {
+            card.classList.add('clicked');
+            setTimeout(() => card.classList.remove('clicked'), 200);
+          }
+        }, { passive: false });
+        
+        // Delegated hover tracking for cursor effects
+        let lastHoverTarget = null;
+        document.addEventListener('mousemove', (e) => {
+          const target = e.target.closest('[data-cursor]');
+          if (target !== lastHoverTarget) {
+            if (lastHoverTarget) {
+              lastHoverTarget.style.removeProperty('--mx');
+              lastHoverTarget.style.removeProperty('--my');
+            }
+            lastHoverTarget = target;
+          }
+          
+          if (target) {
+            const rect = target.getBoundingClientRect();
+            const mx = ((e.clientX - rect.left) / rect.width) * 100;
+            const my = ((e.clientY - rect.top) / rect.height) * 100;
+            target.style.setProperty('--mx', `${mx}%`);
+            target.style.setProperty('--my', `${my}%`);
+          }
+        }, { passive: true });
+      })();
+
       // Unique Feature: Time-based greeting message - shows personality
       (function() {
         const hour = new Date().getHours();
@@ -2453,20 +2559,27 @@
           }
         }
         window.addEventListener('resize', () => { cancelAnimationFrame(resizeId); resizeId = requestAnimationFrame(ensureCanvas); }, { passive: true });
-        // Interactive background clicks — tailored per theme (small but fun)
+        // Enhanced interactive background clicks with performance optimization
         function spawnBurst(x, y, themeId) {
-          if (prefersReduced) return;
+          if (prefersReduced || isLowPowerMode) return;
+          
+          // Adaptive particle count based on device capabilities
+          const deviceScale = DeviceCapabilities.tier === 'low' ? 0.5 : DeviceCapabilities.tier === 'medium' ? 0.75 : 1;
           const burst = { x, y, themeId, life: 0, max: 1200, items: [] };
           const add = (o) => burst.items.push(o);
+          
           if (themeId === 'fire') {
-            for (let i = 0; i < 26; i++) {
+            const count = Math.floor(26 * deviceScale);
+            for (let i = 0; i < count; i++) {
               const a = Math.random() * Math.PI * 2; const s = 0.8 + Math.random()*1.6;
               add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s - 0.4, r: 0.8 + Math.random()*1.6, life: 0, max: 700 + Math.random()*500 });
             }
           } else if (themeId === 'ice') {
-            for (let i = 0; i < 3; i++) add({ x, y, ring: true, r: 2, vr: 1.6 + i*0.3, life: 0, max: 900 });
+            const rings = Math.ceil(3 * deviceScale);
+            for (let i = 0; i < rings; i++) add({ x, y, ring: true, r: 2, vr: 1.6 + i*0.3, life: 0, max: 900 });
           } else if (themeId === 'forest') {
-            const petals = 8; for (let i = 0; i < petals; i++) add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr: 0.9, life: 0, max: 1000 });
+            const petals = Math.floor(8 * deviceScale); 
+            for (let i = 0; i < petals; i++) add({ x, y, petal: true, a: (i/petals)*Math.PI*2, r: 0, vr: 0.9, life: 0, max: 1000 });
           } else if (themeId === 'lilac') {
             for (let i = 0; i < 14; i++) { const a = Math.random()*Math.PI*2; const s = 0.9 + Math.random()*1.4; add({ x, y, vx: Math.cos(a)*s, vy: Math.sin(a)*s, r: 1.2 + Math.random()*1.8, life: 0, max: 800 }); }
           } else if (themeId === 'fog') {
