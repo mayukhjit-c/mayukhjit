@@ -1,17 +1,150 @@
-      // Loading screen handler - fade out when page is ready
+      // loading screen with contextual tips cuz why not make it fun
       (function() {
         const loadingScreen = document.getElementById('loadingScreen');
         if (!loadingScreen) return;
         
-        // Hide loading screen after DOM + critical assets loaded
+        // dynamic tip element goes here
+        const tipEl = document.createElement('div');
+        tipEl.style.cssText = 'position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); font-size: 13px; color: rgba(255,255,255,0.6); max-width: 400px; text-align: center; padding: 0 20px; animation: fadeInTip 0.6s ease-out;';
+        loadingScreen.appendChild(tipEl);
+        
+        // figure out what time it is and where they are
+        const hour = new Date().getHours();
+        const isNight = hour >= 21 || hour < 6;
+        const isMorning = hour >= 6 && hour < 12;
+        const isAfternoon = hour >= 12 && hour < 17;
+        const isEvening = hour >= 17 && hour < 21;
+        
+        // timezone detection for location-based tips
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const isUK = timezone.includes('London') || timezone.includes('Europe');
+        const isUS = timezone.includes('America') || timezone.includes('New_York') || timezone.includes('Los_Angeles') || timezone.includes('Chicago');
+        const isAsia = timezone.includes('Asia');
+        const isAustralia = timezone.includes('Australia');
+        
+        // context-aware tips with some personality lol
+        const tips = [];
+        
+        // time-based tips
+        if (isNight) {
+          tips.push(
+            'Burning the midnight oil? Same here.',
+            'Late night coding sessions hit different.',
+            'The best code gets written after dark.',
+            'Night owl mode activated.'
+          );
+        } else if (isMorning) {
+          tips.push(
+            'Morning! Coffee first, then greatness.',
+            'Fresh day, fresh ideas.',
+            'Early bird gets the... well, good code.',
+            'Rise and code.'
+          );
+        } else if (isAfternoon) {
+          tips.push(
+            'Afternoon productivity surge incoming.',
+            'Post-lunch code review time?',
+            'That 2pm energy boost hitting right.',
+            'Halfway through the day already.'
+          );
+        } else if (isEvening) {
+          tips.push(
+            'Evening coding is underrated.',
+            'Winding down with some portfolio browsing.',
+            'Golden hour for golden code.',
+            'Almost time to call it a day.'
+          );
+        }
+        
+        // location-based personality
+        if (isUK) {
+          tips.push(
+            'Fancy a brew while you browse?',
+            'Proper British engineering, this.',
+            'Weather looking gray? At least the code is bright.',
+            'Cheers for stopping by.'
+          );
+        } else if (isUS) {
+          tips.push(
+            'Coast to coast performance optimization.',
+            'Built with American efficiency.',
+            'Freedom to choose your own theme below.'
+          );
+        } else if (isAsia) {
+          tips.push(
+            'Built for speed, optimized for performance.',
+            'Low latency, high quality.',
+            'Engineered for global reach.'
+          );
+        } else if (isAustralia) {
+          tips.push(
+            'G\'day! Loading faster than a kangaroo.',
+            'Built upside down for extra difficulty.',
+            'Australian-tested, globally approved.'
+          );
+        }
+        
+        // general helpful stuff
+        tips.push(
+          'Press Cmd/Ctrl+K to open the command palette.',
+          'Try pressing T for quick theme switching.',
+          'Easter eggs hidden throughout. Keep exploring.',
+          'This site was built with vanilla JS. No frameworks.',
+          'Every animation is performance-optimized.',
+          'The themes change automatically every 7 seconds.',
+          'Type secret words anywhere to unlock surprises.',
+          'All designs are custom-made, pixel by pixel.',
+          'Smooth scrolling enabled. Hold Shift for speed.',
+          'The grid responds to your mouse movement.',
+          'Trees in the forest theme actually sway with wind.',
+          'Dark mode? This IS dark mode.',
+          'Built by a developer who obsesses over details.',
+          'Loading bars are lies. This is honest loading.',
+          'Accessibility matters. Everything is keyboard-navigable.'
+        );
+        
+        // occasional humor cuz why not lmao
+        if (Math.random() > 0.7) {
+          tips.push(
+            'Loading... because instant is too mainstream.',
+            'Warming up the particle engine...',
+            'Convincing pixels to align perfectly...',
+            'Teaching the themes to play nice...',
+            'Untangling the CSS spaghetti...',
+            'Optimizing the flux capacitor...',
+            'Just adding that final polish...',
+            'Making sure everything is pixel-perfect...',
+            '99% loaded. The last 1% takes 90% of the time.',
+            'Worth the wait. Probably.'
+          );
+        }
+        
+        // pick a random tip and show it
+        const randomTip = tips[Math.floor(Math.random() * tips.length)];
+        tipEl.textContent = randomTip;
+        
+        // animate the loading text with dots
+        const loadingText = loadingScreen.querySelector('.loading-text');
+        if (loadingText) {
+          const dots = ['', '.', '..', '...'];
+          let dotIndex = 0;
+          const dotInterval = setInterval(() => {
+            if (loadingScreen.classList.contains('loaded')) {
+              clearInterval(dotInterval);
+              return;
+            }
+            dotIndex = (dotIndex + 1) % dots.length;
+            loadingText.textContent = 'Loading' + dots[dotIndex];
+          }, 400);
+        }
+        
         function hideLoadingScreen() {
           loadingScreen.classList.add('loaded');
           setTimeout(() => {
             loadingScreen.style.display = 'none';
-          }, 600); // Match CSS transition duration
+          }, 600);
         }
         
-        // Check if already loaded
         if (document.readyState === 'complete') {
           setTimeout(hideLoadingScreen, 100);
         } else {
@@ -20,10 +153,9 @@
           });
         }
         
-        // Fallback: hide after 3 seconds regardless
         setTimeout(hideLoadingScreen, 3000);
       })();
-      // Motion & input helpers
+      // motion & input helpers - respect user prefs obvs
       const __motionQuery = (typeof window !== 'undefined' && typeof window.matchMedia === 'function')
         ? window.matchMedia('(prefers-reduced-motion: reduce)')
         : null;
@@ -37,7 +169,7 @@
         return __pointerQuery ? __pointerQuery.matches : false;
       }
 
-      // Device capability detection for adaptive performance
+      // device detection so we can scale effects accordingly
       const DeviceCapabilities = (function() {
         const ua = navigator.userAgent || '';
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
@@ -45,38 +177,38 @@
         const isLowEndDevice = /Android ([1-4]\.|5\.[0-1])|MSIE [6-9]|Windows Phone|Trident\/[4-7]/i.test(ua);
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         
-        // Estimate device tier based on available metrics
+        // guess device tier for perf scaling
         function estimateDeviceTier() {
-          let score = 10; // Start optimistic
+          let score = 10; // optimistic start lol
           
-          // Check CPU cores
+          // cpu cores check
           const cores = navigator.hardwareConcurrency || 2;
           if (cores <= 2) score -= 3;
           else if (cores <= 4) score -= 1;
           
-          // Check memory (if available)
+          // memory check (when available)
           if (navigator.deviceMemory) {
             if (navigator.deviceMemory <= 2) score -= 3;
             else if (navigator.deviceMemory <= 4) score -= 1;
           }
           
-          // Mobile devices typically lower tier
+          // mobile usually means lower tier
           if (isMobile && !isTablet) score -= 2;
           if (isLowEndDevice) score -= 4;
           
-          // Check for older Safari/Chrome versions
+          // older browser versions?
           const safariVersion = ua.match(/Version\/(\d+)/);
           const chromeVersion = ua.match(/Chrome\/(\d+)/);
           if (safariVersion && parseInt(safariVersion[1]) < 13) score -= 2;
           if (chromeVersion && parseInt(chromeVersion[1]) < 80) score -= 2;
           
-          // Classify into tiers
+          // classify into tiers
           if (score >= 8) return 'high';
           if (score >= 5) return 'medium';
           return 'low';
         }
         
-        // Battery/power save detection
+        // battery/power save detection
         function checkLowPowerMode(callback) {
           if (!('getBattery' in navigator)) {
             callback(false);
@@ -92,7 +224,7 @@
           }).catch(() => callback(false));
         }
         
-        // Connection speed detection
+        // connection speed detection
         function getConnectionSpeed() {
           const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
           if (!conn) return 'unknown';
@@ -117,47 +249,47 @@
           memory: navigator.deviceMemory || null,
           checkLowPowerMode,
           
-          // Performance budgets based on tier
+          // perf limits based on device caps
           getParticleLimit() {
-            if (userPrefersReducedMotion()) return 0;
-            if (tier === 'low') return 15;
+            if (userPrefersReducedMotion()) return 0; // respect user prefs obvs
+            if (tier === 'low') return 15;  // fewer particles for older devices
             if (tier === 'medium') return 40;
-            return 80;
+            return 80; // high-end can handle the eye candy
           },
           
           getTargetFPS() {
-            if (tier === 'low') return 30;
+            if (tier === 'low') return 30; // lower fps for older hardware
             if (tier === 'medium') return 45;
-            return 60;
+            return 60; // smooth as butter
           },
           
           shouldUseAdvancedEffects() {
-            return tier === 'high' && !isMobile;
+            return tier === 'high' && !isMobile; // fancy stuff only on powerful desktops
           },
           
           getCanvasScale() {
-            if (tier === 'low') return 0.5;
-            if (isMobile) return 0.75;
-            return 1;
+            if (tier === 'low') return 0.5; // lower res = better perf
+            if (isMobile) return 0.75; // balance quality & battery
+            return 1; // full res on desktop
           },
           
-          // Viewport-based scaling for responsive effects
+          // scale stuff based on viewport so it looks good everywhere
           getViewportScale() {
             const vw = window.innerWidth;
             const vh = window.innerHeight;
-            const baseWidth = 1920; // Desktop baseline
+            const baseWidth = 1920; // desktop baseline
             const baseHeight = 1080;
             
-            // Scale based on smaller dimension for consistent sizing
+            // scale based on smaller dimension
             const widthScale = vw / baseWidth;
             const heightScale = vh / baseHeight;
             const scale = Math.min(widthScale, heightScale);
             
-            // Clamp between 0.3 and 1.2 for reasonable bounds
+            // clamp between 0.3 and 1.2
             return Math.max(0.3, Math.min(1.2, scale));
           },
           
-          // Device-specific burst particle count multiplier
+          // burst particle multiplier per device
           getBurstScale() {
             if (tier === 'low' || isMobile) return 0.4;
             if (tier === 'medium' || isTablet) return 0.65;
@@ -215,15 +347,15 @@
       console.log('%cYou\'re poking around the code? Nice. The command palette (Cmd/Ctrl+K) is worth a look.', 'font-size: 12px; color: #bbb;');
       console.log('%cP.S. There are easter eggs hidden around. Keep exploring.', 'font-size: 11px; color: #999; font-style: italic;');
 
-      // Cross-browser rAF polyfill
+      // Polyfill for requestAnimationFrame (just in case we're on an old browser)
       window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(cb){ return setTimeout(function(){ cb(Date.now()); }, 16); };
       window.cancelAnimationFrame = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || clearTimeout;
 
-      // Progressive image hints — ensure non-critical imagery is lazy + async decoded
+      // Image optimization: lazy load everything except hero images to speed up initial load
       (function() {
         const mark = () => {
           document.querySelectorAll('img').forEach(img => {
-            if (img.dataset.priority === 'hero') return;
+            if (img.dataset.priority === 'hero') return; // skip hero images — need those right away
             if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
             if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
           });
@@ -235,16 +367,15 @@
         }
       })();
 
-      // Smooth nav active underline on scroll + smooth anchor easing
-      // This function makes the nav feel alive — active states that actually make sense!
-      // Pro tip: The offset calculation accounts for sticky header, because details matter.
+      // Navigation active state: highlight the right nav link as you scroll
+      // Took me forever to get the offset math right, but it's perfect now!
       (function() {
-        // Input-mode detection: coarse pointer (touch), or TV-like devices (no hover)
+        // Detect input type: touch devices vs mouse, plus big screens without hover (TVs)
         try {
           if (window.matchMedia('(pointer: coarse)').matches) document.documentElement.classList.add('coarse');
           const noHover = window.matchMedia('(hover: none)').matches;
           const big = Math.max(window.innerWidth, window.innerHeight) >= 1800;
-          if (noHover && big) document.documentElement.classList.add('tv');
+          if (noHover && big) document.documentElement.classList.add('tv'); // probably a smart TV
         } catch (_) {}
 
         const links = Array.from(document.querySelectorAll('nav a'));
@@ -522,17 +653,17 @@
         interactiveCards.forEach(card => {
           card.style.setProperty('--mx', '50%');
           card.style.setProperty('--my', '0%');
-          if (!enableCardFollow) return;
+          if (!enableCardFollow) return; // only enable on high-end desktops
           
-          // Throttle card pointer movement for performance - use RAF for smooth updates
+          // Card following mouse: throttled using RAF so we don't kill performance
           let rafId = null;
           let lastX = 50, lastY = 0;
           card.addEventListener('pointermove', e => {
-            if (rafId) return; // Skip if already scheduled
+            if (rafId) return; // already have an update queued
             const rect = card.getBoundingClientRect();
             const x = ((e.clientX - rect.left) / Math.max(1, rect.width)) * 100;
             const y = ((e.clientY - rect.top) / Math.max(1, rect.height)) * 100;
-            // Only update if moved significantly (reduces jitter)
+            // debounce small movements to reduce jitter
             if (Math.abs(x - lastX) < 2 && Math.abs(y - lastY) < 2) return;
             lastX = x; lastY = y;
             rafId = requestAnimationFrame(() => {
@@ -543,13 +674,13 @@
           }, { passive: true });
           card.addEventListener('pointerleave', () => {
             if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-            card.style.setProperty('--mx', '50%');
+            card.style.setProperty('--mx', '50%'); // reset to center
             card.style.setProperty('--my', '0%');
             lastX = 50; lastY = 0;
           }, { passive: true });
         });
 
-        // TV/keyboard navigation for project cards
+        // Keyboard navigation: use arrow keys to move between project cards (for accessibility + TV users)
         (function(){
           const grid = document.querySelector('#projects .grid');
           if (!grid) return;
@@ -886,11 +1017,11 @@
 
           // highlight near pointer: skip heavy blending if we're smooth scrolling
           if (pointer.active && !prefersReduced && !window.__isSmoothScrolling && !document.documentElement.classList.contains('tv')) {
-            // Smooth pointer position for buttery motion
-            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.25);
-            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.25);
-            const maxDist = 280 * gridScale; // larger radius for a more prominent aura
-            const band = 150 * gridScale; // width of colored intensity band around the pointer
+            // Much faster pointer tracking for immediate response
+            pointer.sx = pointer.sx === undefined ? pointer.tx : lerp(pointer.sx, pointer.tx, 0.5);
+            pointer.sy = pointer.sy === undefined ? pointer.ty : lerp(pointer.sy, pointer.ty, 0.5);
+            const maxDist = 350 * gridScale; // even larger radius for more prominent effect
+            const band = 180 * gridScale; // wider colored intensity band
             // Pre-compute common gradient values to reduce redundant calculations
             const cx = Math.max(0, Math.min(1, pointer.sx / w));
             const cy = Math.max(0, Math.min(1, pointer.sy / h));
@@ -904,7 +1035,8 @@
             for (let y = offset; y <= h; y += spacing) {
               const dy = Math.abs(pointer.sy - y);
               if (dy <= maxDist) {
-                const a = Math.exp(-dy / 70) * (1.0 * gridScale); // stronger but still smooth
+                // Much stronger, more visible falloff
+                const a = Math.exp(-dy / 90) * (1.6 * gridScale); // increased intensity
                 // horizontal gradient centered at pointer.sx
                 const grad = ctx.createLinearGradient(0, y, w, y);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -915,6 +1047,7 @@
                 ctx.save();
                 ctx.globalAlpha *= a;
                 ctx.strokeStyle = grad;
+                ctx.lineWidth = 1.8; // thicker glowing lines
                 ctx.beginPath();
                 ctx.moveTo(0, y);
                 ctx.lineTo(w, y);
@@ -925,7 +1058,7 @@
             for (let x = offset; x <= w; x += spacing) {
               const dx = Math.abs(pointer.sx - x);
               if (dx <= maxDist) {
-                const a = Math.exp(-dx / 70) * (1.0 * gridScale);
+                const a = Math.exp(-dx / 90) * (1.6 * gridScale); // increased intensity
                 // vertical gradient centered at pointer.sy
                 const grad = ctx.createLinearGradient(x, 0, x, h);
                 grad.addColorStop(0, 'rgba(255,255,255,0)');
@@ -936,6 +1069,7 @@
                 ctx.save();
                 ctx.globalAlpha *= a;
                 ctx.strokeStyle = grad;
+                ctx.lineWidth = 1.8; // thicker glowing lines
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
                 ctx.lineTo(x, h);
@@ -1623,45 +1757,43 @@
         });
       })();
 
-      // Fire highlight utility — creates clean fiery glow animation
-      // Immediate response with smooth animations
+      // fire highlight utility for smooth glow animations
       (function() {
         function highlightElement(selector, scrollDelay = 0) {
           const el = document.querySelector(selector);
           if (!el) return;
           
-          // Add fire-highlight class immediately if not present
+          // add fire-highlight if not there already
           if (!el.classList.contains('fire-highlight')) {
             el.classList.add('fire-highlight');
           }
           
-          // Start scroll immediately (non-blocking)
+          // scroll immediately (non-blocking)
           const scrollY = Math.max(0, el.offsetTop - 100);
           const scroller = typeof window.smoothScrollTo === 'function'
             ? window.smoothScrollTo
             : (target => window.scrollTo({ top: target, behavior: userPrefersReducedMotion() ? 'auto' : 'smooth' }));
           scroller(scrollY, 600);
           
-          // Start highlight immediately - don't wait for scroll
+          // start highlight right away
           requestAnimationFrame(() => {
             el.classList.add('active');
             
-            // Remove highlight after 3 seconds
+            // remove after 3s
             setTimeout(() => {
               el.classList.remove('active');
             }, 3000);
           });
         }
         
-        window.highlightElement = highlightElement; // Global for other functions
+        window.highlightElement = highlightElement; // global for other stuff
       })();
 
-      // Copy email helpers with toast notification and fire highlight (spelling is hard sometimes)
-      // Immediate response with visual feedback
+      // copy email with toast + fire highlight
       (function() {
         const email = 'mayukhjit.chakraborty@gmail.com';
         const copy = async (btn) => {
-          // Immediate visual feedback
+          // immediate visual feedback
           if (btn) {
             btn.classList.add('clicked');
             btn.classList.add('clicked-shake');
@@ -1673,12 +1805,12 @@
           try {
             await navigator.clipboard.writeText(email);
             window.showToast && window.showToast('Email copied to clipboard.');
-            // Highlight email immediately
+            // highlight email right away
             requestAnimationFrame(() => {
               window.highlightElement && window.highlightElement('#emailLink', 0);
             });
           } catch (e) {
-            // Fallback for older browsers (yes this will look old school)
+            // fallback for older browsers lol
             const ta = document.createElement('textarea');
             ta.value = email; document.body.appendChild(ta); ta.select();
             document.execCommand('copy'); document.body.removeChild(ta);
@@ -1694,12 +1826,12 @@
         b2 && b2.addEventListener('click', () => copy(b2));
       })();
 
-      // Button fire highlights — immediate response with smooth animations
+      // button fire highlights with immediate response
       (function() {
-        // Immediate button click feedback for all action buttons
+        // instant button click feedback
         function setupButtonFeedback(btn) {
           btn.addEventListener('click', function(e) {
-            // Immediate visual feedback - no delay
+            // immediate visual feedback
             const reduce = userPrefersReducedMotion();
             this.classList.add('clicked');
             if (!reduce) {
@@ -1713,15 +1845,15 @@
           }, { passive: true });
         }
         
-        // Wait for DOM to be fully loaded
+        // wait for dom to load
         setTimeout(() => {
-          // "Let's work together" button → highlight email
+          // "let's work together" btn -> highlight email
           document.querySelectorAll('a.btn[href="#contact"]').forEach(btn => {
             if (btn.textContent.includes('work together') || btn.textContent.includes('Collaborate')) {
               setupButtonFeedback(btn);
               btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Immediate action - no delay
+                // immediate action
                 requestAnimationFrame(() => {
                   window.highlightElement && window.highlightElement('#emailLink', 0);
                 });
@@ -1729,7 +1861,7 @@
             }
           });
           
-          // "View Projects" button → highlight projects section
+          // "view projects" btn -> highlight projects
           document.querySelectorAll('a.btn[href="#projects"]').forEach(btn => {
             if (btn.textContent.includes('Projects')) {
               setupButtonFeedback(btn);
@@ -1737,10 +1869,10 @@
                 e.preventDefault();
                 const projectsSection = document.querySelector('#projects');
                 if (projectsSection) {
-                  // Start immediately - no delays
+                  // start immediately
                   projectsSection.classList.add('fire-highlight');
                   smoothScrollTo(Math.max(0, projectsSection.offsetTop - 100), 600);
-                  // Activate highlight immediately
+                  // activate highlight
                   requestAnimationFrame(() => {
                     projectsSection.classList.add('active');
                     setTimeout(() => {
@@ -1752,7 +1884,7 @@
             }
           });
           
-          // "Collaborate" button in vision section → highlight email
+          // "collaborate" btn in vision -> highlight email
           document.querySelectorAll('.card .btn[href="#contact"]').forEach(btn => {
             if (btn.textContent.includes('Collaborate')) {
               setupButtonFeedback(btn);
@@ -1765,7 +1897,7 @@
             }
           });
           
-          // Setup feedback for all other buttons too
+          // setup feedback for all other buttons
           document.querySelectorAll('.btn').forEach(btn => {
             if (!btn.classList.contains('clicked')) {
               setupButtonFeedback(btn);
@@ -1774,17 +1906,17 @@
         }, 100);
       })();
 
-      // Command Palette — the Swiss Army knife of navigation
-      // Pro tip: This is where the magic happens. Press Cmd+K (or Ctrl+K) to open.
+      // command palette - swiss army knife of navigation lmao
+      // press cmd+k or ctrl+k to open
       (function() {
         const cmdk = document.getElementById('cmdk');
         const cmdkInput = document.getElementById('cmdkInput');
         const cmdkList = document.getElementById('cmdkList');
         if (!cmdk || !cmdkInput || !cmdkList) return;
 
-  // Command definitions — each action is a small helper function
+  // command defs - each one does a thing
         const commands = [
-          // Navigation
+          // navigation
           {
             id: 'home',
             title: 'Go to Home',
@@ -1995,7 +2127,17 @@
           { id: 'grid-soft', title: 'Grid highlight: softer', keywords: ['grid','highlight','hover'], action: () => setGridHighlight(gridHighlight - 0.1) },
           { id: 'effects-toggle', title: 'Toggle visual effects', keywords: ['effects','particles','background'], action: () => { toggleEffects(); window.showToast && window.showToast(effectsPaused ? 'Effects paused' : 'Effects resumed'); } },
           { id: 'themes-slow', title: 'Theme rotation: slow', keywords: ['theme','palette','rotation','slow'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(true); window.showToast && window.showToast('Theme rotation slowed'); } },
-          { id: 'themes-normal', title: 'Theme rotation: normal', keywords: ['theme','palette','rotation','normal'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(false); window.showToast && window.showToast('Theme rotation normal'); } }
+          { id: 'themes-normal', title: 'Theme rotation: normal', keywords: ['theme','palette','rotation','normal'], action: () => { window.__toggleSlowThemes && window.__toggleSlowThemes(false); window.showToast && window.showToast('Theme rotation normal'); } },
+          { id: 'theme-fire', title: 'Switch to Fire theme', category: 'Themes', keywords: ['fire','red','orange','hot','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fire'); window.showToast && window.showToast('Fire theme activated (or press T for visual picker)'); } },
+          { id: 'theme-ice', title: 'Switch to Ice theme', category: 'Themes', keywords: ['ice','blue','cold','frozen','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('ice'); window.showToast && window.showToast('Ice theme activated'); } },
+          { id: 'theme-forest', title: 'Switch to Forest theme', category: 'Themes', keywords: ['forest','green','tree','nature','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('forest'); window.showToast && window.showToast('Forest theme activated'); } },
+          { id: 'theme-lilac', title: 'Switch to Lilac theme', category: 'Themes', keywords: ['lilac','purple','bubble','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('lilac'); window.showToast && window.showToast('Lilac theme activated'); } },
+          { id: 'theme-fog', title: 'Switch to Fog theme', category: 'Themes', keywords: ['fog','gray','grey','mist','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fog'); window.showToast && window.showToast('Fog theme activated'); } },
+          { id: 'theme-auto', title: 'Resume automatic theme rotation', category: 'Themes', keywords: ['auto','automatic','rotate','theme'], action: () => { if(window.__forceTheme) window.__forceTheme(null); window.showToast && window.showToast('Automatic theme rotation resumed'); } },
+          { id: 'party-mode', title: 'Party Mode (rapid theme changes)', category: 'Fun', keywords: ['party','fun','fast','rapid'], action: () => { if(window.__partyMode) window.__partyMode(); window.showToast && window.showToast('Party mode activated'); } },
+          { id: 'spawn-fireworks', title: 'Spawn fireworks burst', category: 'Fun', keywords: ['fireworks','burst','particles','fun'], action: () => { const x = window.innerWidth / 2; const y = window.innerHeight / 2; if(window.spawnBurst) window.spawnBurst(x, y, 'fire'); window.showToast && window.showToast('Boom!'); } },
+          { id: 'matrix-rain', title: 'Matrix rain effect', category: 'Fun', keywords: ['matrix','rain','code','hack'], action: () => { window.showToast && window.showToast('Sorry Neo, that feature is still in development'); } },
+          { id: 'performance-stats', title: 'Show performance stats', category: 'Tools', keywords: ['performance','fps','stats','debug'], action: () => { const stats = window.getPerformanceMetrics && window.getPerformanceMetrics(); if(stats) window.showToast && window.showToast(`FPS: ${stats.fps} | Avg: ${stats.avgFrameTime}ms | Max: ${stats.maxFrameTime}ms`); } }
         );
 
         let selectedIndex = 0;
@@ -2404,29 +2546,63 @@
         }
       })();
 
-      // Easter Egg: Type "dev" anywhere on the page
+      // Easter Egg: Type secret words anywhere on the page
       (function() {
         let typed = '';
-        const trigger = 'dev';
+        const triggers = {
+          'dev': [
+            'Developer mode: Unlocked!',
+            'You found the dev portal! (Just kidding, there isn\'t one... yet.)',
+            'Pro tip: Open DevTools (F12) to see my code comments!',
+            '"The best code is code that explains itself." — Me, probably',
+            'You typed "dev"! Here\'s a secret: I obsess over performance.'
+          ],
+          'theme': [
+            'Try Cmd/Ctrl+K and search for "theme" to pick one!',
+            'Loving the colors? They change every few seconds!',
+            'Fire, Ice, Forest, Lilac, or Fog. Pick your favorite!'
+          ],
+          'music': [
+            'I make music too! Check the About section.',
+            'Fun fact: I have over 6k monthly listeners on Spotify!',
+            'Music + Code = My happy place'
+          ],
+          'portfolio': [
+            'Thanks for exploring my portfolio!',
+            'Built from scratch with vanilla JS. No frameworks!',
+            'Every pixel has a purpose here.'
+          ],
+          'coffee': [
+            'I run on coffee and curiosity.',
+            'Coffee: The real programming language',
+            'def work(): return coffee() + code()'
+          ],
+          'tree': [
+            'The forest theme has the coolest animations!',
+            'Try switching to the forest theme - the trees grow in real-time!',
+            'Those branches took me hours to get right. Worth it.'
+          ]
+        };
+        
         let timeout;
         window.addEventListener('keypress', (e) => {
-          // Ignore if typing in input
+          // skip if typing in input
           if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
           
           typed += e.key.toLowerCase();
           clearTimeout(timeout);
-          timeout = setTimeout(() => { typed = ''; }, 2000);
+          timeout = setTimeout(() => { typed = ''; }, 2500);
           
-          if (typed.includes(trigger)) {
-            typed = '';
-            const devMsgs = [
-              'Developer mode: Unlocked!',
-              'You found the dev portal! (Just kidding, there isn\'t one... yet.)',
-              'Pro tip: Open DevTools (F12) to see my code comments!',
-              '"The best code is code that explains itself." — Me, probably',
-              'You typed "dev"! Here\'s a secret: I obsess over performance.'
-            ];
-            window.showToast && window.showToast(devMsgs[Math.floor(Math.random() * devMsgs.length)]);
+          // check all triggers
+          for (const [trigger, messages] of Object.entries(triggers)) {
+            if (typed.includes(trigger)) {
+              typed = '';
+              const msg = messages[Math.floor(Math.random() * messages.length)];
+              window.showToast && window.showToast(msg);
+              // trigger haptic if available
+              window.triggerHaptic && window.triggerHaptic('light');
+              break;
+            }
           }
         });
       })();
@@ -2724,27 +2900,22 @@
       (function() {
         const hour = new Date().getHours();
         let greeting = '';
-        let emoji = '';
         
         if (hour >= 5 && hour < 12) {
           greeting = 'Good morning!';
-          emoji = '🌅';
         } else if (hour >= 12 && hour < 17) {
           greeting = 'Good afternoon!';
-          emoji = '☀️';
         } else if (hour >= 17 && hour < 21) {
           greeting = 'Good evening!';
-          emoji = '🌆';
         } else {
           greeting = 'Burning the midnight oil?';
-          emoji = '🌙';
         }
         
         // Show greeting after initial load - use requestIdleCallback for better performance
         window.requestIdleCallback(() => {
           setTimeout(() => {
             if (window.showToast) {
-              window.showToast(`${emoji} ${greeting} Welcome to my portfolio!`);
+              window.showToast(`${greeting} Welcome to my portfolio.`);
             }
           }, 2000);
         });
@@ -2960,11 +3131,11 @@
           }
         ];
 
-        // Color interpolation utilities for smooth transitions
-        // Memoization cache for color parsing - significant performance improvement
+        // Color interpolation: smooth blending between themes
+        // Cache color parsing results so we don't recalculate the same colors over and over
         const colorCache = new Map();
         function hexToRgb(hex) {
-          // Check cache first for O(1) lookup
+          // already parsed this color? grab it from cache
           if (colorCache.has(hex)) {
             return colorCache.get(hex);
           }
@@ -3098,13 +3269,13 @@
             return;
           }
           
-          // Smooth transition over 3 seconds
+          // Smooth transition coordinated with tree animation timing
           if (isTransitioning) return; // Don't start a new transition if one is in progress
           isTransitioning = true;
           
           const startVars = { ...currentThemeVars };
           const endVars = { ...v };
-          const duration = 4500; // smoother 4.5 seconds
+          const duration = 3500; // 3.5 seconds - smooth but allows tree exit to complete
           const startTime = performance.now();
           
           // Pre-compute color pairs and RGB values to avoid redundant parsing
@@ -3190,26 +3361,26 @@
           requestAnimationFrame(animate);
         }
 
-        // Themed overlay effects on a lightweight canvas
+        // Canvas setup: where all the theme particle magic happens
         let fx, ctx, w = 0, h = 0;
         let dpr = Math.min(1.5, window.devicePixelRatio || 1) * DeviceCapabilities.getCanvasScale();
         let isLowPowerMode = false;
         
-        // Monitor battery status for adaptive performance
+        // Battery watcher: dial back effects when the battery is low
         DeviceCapabilities.checkLowPowerMode((lowPower) => {
           isLowPowerMode = lowPower;
           if (lowPower && !perfMode) {
-            // Reduce particle counts in low power mode
+            // cut particle count in half to save battery
             const particleLimit = Math.floor(DeviceCapabilities.getParticleLimit() * 0.5);
             if (state.parts && state.parts.length > particleLimit) {
               state.parts.length = particleLimit;
             }
           }
         });
-        // Defer visual effects until after initial view or first interaction
+        // Start effects after the page loads (no need to animate what users can't see yet)
         let effectsEnabled = false;
         let effectsAlpha = 0;
-        let perfMode = false; // enable when FPS is low
+        let perfMode = false; // kick in when FPS drops
         let lastTick = 0, fpsEMA = 60;
         function animateEffectsAlpha() {
           if (!effectsEnabled) return;
@@ -3249,11 +3420,11 @@
           }
         }
         window.addEventListener('resize', () => { cancelAnimationFrame(resizeId); resizeId = requestAnimationFrame(ensureCanvas); }, { passive: true });
-        // Enhanced interactive background clicks with performance optimization
+        // interactive bg clicks with perf optimization
         function spawnBurst(x, y, themeId) {
           if (prefersReduced || isLowPowerMode) return;
           
-          // Adaptive particle count based on device capabilities and viewport
+          // adaptive particle count based on device caps
           const burstScale = DeviceCapabilities.getBurstScale();
           const viewportScale = DeviceCapabilities.getViewportScale();
           const combinedScale = burstScale * viewportScale;
@@ -3301,19 +3472,410 @@
           }
           (state.bursts || (state.bursts = [])).push(burst);
         }
-        // Touch-optimized burst spawning with throttling on mobile
+        // bubble pop system for lilac theme
+        const bubblePopState = {
+          pops: [], // active bubble pops with splash particles
+          lastPop: 0,
+          score: parseInt(localStorage.getItem('bubbleScore') || '0'),
+          highScore: parseInt(localStorage.getItem('bubbleHighScore') || '0'),
+          combo: 0,
+          comboTimer: 0,
+          totalPopped: parseInt(localStorage.getItem('bubbleTotalPopped') || '0'),
+          sessionScore: 0
+        };
+        
+        function checkBubbleClick(x, y) {
+          const themeId = themes[themeIndex].id;
+          if (themeId !== 'lilac') return false;
+          
+          // check if click hit any bubble
+          for (let i = state.parts.length - 1; i >= 0; i--) {
+            const bubble = state.parts[i];
+            const dx = x - bubble.x;
+            const dy = y - bubble.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < bubble.r) {
+              // bubble hit! create pop effect
+              popBubble(bubble, i);
+              return true;
+            }
+          }
+          return false;
+        }
+        
+        function popBubble(bubble, index) {
+          // remove the bubble
+          state.parts.splice(index, 1);
+          
+          // update score and combo
+          const now = Date.now();
+          if (now - bubblePopState.lastPop < 1000) {
+            bubblePopState.combo++;
+          } else {
+            bubblePopState.combo = 1;
+          }
+          bubblePopState.lastPop = now;
+          bubblePopState.comboTimer = now + 1500;
+          
+          // calculate points with combo multiplier
+          const basePoints = Math.floor(bubble.r * 2);
+          const comboMultiplier = 1 + (bubblePopState.combo - 1) * 0.5;
+          const points = Math.floor(basePoints * comboMultiplier);
+          
+          bubblePopState.score += points;
+          bubblePopState.sessionScore += points;
+          bubblePopState.totalPopped++;
+          
+          // update high score
+          if (bubblePopState.score > bubblePopState.highScore) {
+            bubblePopState.highScore = bubblePopState.score;
+            localStorage.setItem('bubbleHighScore', bubblePopState.highScore);
+          }
+          
+          // save progress
+          localStorage.setItem('bubbleScore', bubblePopState.score);
+          localStorage.setItem('bubbleTotalPopped', bubblePopState.totalPopped);
+          
+          // update ui
+          updateBubbleScoreUI();
+          
+          // show floating score
+          showFloatingScore(bubble.x, bubble.y, points, bubblePopState.combo);
+          
+          // create epic pop effect
+          const hue = 260 + (bubble.colorShift || 0);
+          const pop = {
+            x: bubble.x,
+            y: bubble.y,
+            r: bubble.r,
+            hue: hue,
+            life: 0,
+            maxLife: 1200,
+            splashes: [],
+            shockwave: { radius: 0, maxRadius: bubble.r * 3, alpha: 1 },
+            mist: []
+          };
+          
+          // create splash particles in all directions
+          const splashCount = Math.floor(bubble.r / 3) + 8;
+          for (let i = 0; i < splashCount; i++) {
+            const angle = (i / splashCount) * Math.PI * 2;
+            const speed = 2 + Math.random() * 4;
+            const size = 2 + Math.random() * 4;
+            
+            pop.splashes.push({
+              x: bubble.x,
+              y: bubble.y,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              size: size,
+              life: 0,
+              maxLife: 600 + Math.random() * 400,
+              rotation: Math.random() * Math.PI * 2,
+              rotSpeed: (Math.random() - 0.5) * 0.2
+            });
+          }
+          
+          // create mist particles
+          const mistCount = Math.floor(bubble.r / 4) + 5;
+          for (let i = 0; i < mistCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * bubble.r * 0.5;
+            pop.mist.push({
+              x: bubble.x + Math.cos(angle) * dist,
+              y: bubble.y + Math.sin(angle) * dist,
+              vx: Math.cos(angle) * 0.5,
+              vy: Math.sin(angle) * 0.5 - 0.5,
+              size: 3 + Math.random() * 8,
+              life: 0,
+              maxLife: 800 + Math.random() * 600,
+              alpha: 0.4 + Math.random() * 0.3
+            });
+          }
+          
+          bubblePopState.pops.push(pop);
+          
+          // play sound if available
+          if (typeof window.playUiPop === 'function') {
+            window.playUiPop({ frequency: 380 + Math.random() * 100 });
+          }
+        }
+        
+        // floating score display
+        const floatingScores = [];
+        
+        function showFloatingScore(x, y, points, combo) {
+          floatingScores.push({
+            x, y,
+            points,
+            combo,
+            life: 0,
+            maxLife: 1500,
+            vy: -2
+          });
+        }
+        
+        function drawFloatingScores() {
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          
+          for (let i = floatingScores.length - 1; i >= 0; i--) {
+            const score = floatingScores[i];
+            score.life += 16;
+            score.y += score.vy;
+            score.vy *= 0.95;
+            
+            if (score.life > score.maxLife) {
+              floatingScores.splice(i, 1);
+              continue;
+            }
+            
+            const lifeRatio = score.life / score.maxLife;
+            const alpha = lifeRatio < 0.2 ? lifeRatio / 0.2 : 1 - ((lifeRatio - 0.8) / 0.2);
+            
+            ctx.globalAlpha = Math.max(0, alpha);
+            
+            // draw points
+            ctx.font = 'bold 24px system-ui, sans-serif';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(`+${score.points}`, score.x, score.y);
+            
+            // draw combo if applicable
+            if (score.combo > 1) {
+              ctx.font = 'bold 16px system-ui, sans-serif';
+              ctx.fillStyle = '#ffd700';
+              ctx.fillText(`x${score.combo} COMBO!`, score.x, score.y + 25);
+            }
+          }
+          
+          ctx.restore();
+        }
+        
+        // score ui management
+        let scoreUIElement = null;
+        
+        function createBubbleScoreUI() {
+          if (scoreUIElement) return;
+          
+          scoreUIElement = document.createElement('div');
+          scoreUIElement.id = 'bubbleScoreUI';
+          scoreUIElement.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(147, 112, 219, 0.5);
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: #fff;
+            font-family: system-ui, sans-serif;
+            z-index: 100;
+            min-width: 200px;
+            box-shadow: 0 8px 32px rgba(147, 112, 219, 0.3);
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(-10px);
+          `;
+          
+          scoreUIElement.innerHTML = `
+            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Bubble Popper</div>
+            <div style="font-size: 28px; font-weight: bold; color: #9370db; margin-bottom: 5px;" id="bubbleScore">0</div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">High Score: <span id="bubbleHighScore">0</span></div>
+            <div style="font-size: 14px; color: #ffd700; font-weight: bold; height: 20px;" id="bubbleCombo"></div>
+            <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+              Total Popped: <span id="bubbleTotalPopped">0</span>
+            </div>
+          `;
+          
+          document.body.appendChild(scoreUIElement);
+          
+          // fade in
+          setTimeout(() => {
+            scoreUIElement.style.opacity = '1';
+            scoreUIElement.style.transform = 'translateY(0)';
+          }, 100);
+          
+          updateBubbleScoreUI();
+        }
+        
+        function updateBubbleScoreUI() {
+          if (!scoreUIElement) return;
+          
+          const scoreEl = document.getElementById('bubbleScore');
+          const highScoreEl = document.getElementById('bubbleHighScore');
+          const comboEl = document.getElementById('bubbleCombo');
+          const totalEl = document.getElementById('bubbleTotalPopped');
+          
+          if (scoreEl) scoreEl.textContent = bubblePopState.score;
+          if (highScoreEl) highScoreEl.textContent = bubblePopState.highScore;
+          if (totalEl) totalEl.textContent = bubblePopState.totalPopped;
+          
+          // update combo display
+          const now = Date.now();
+          if (comboEl) {
+            if (bubblePopState.combo > 1 && now < bubblePopState.comboTimer) {
+              comboEl.textContent = `${bubblePopState.combo}x COMBO!`;
+              comboEl.style.opacity = '1';
+            } else {
+              comboEl.style.opacity = '0';
+              if (now >= bubblePopState.comboTimer) {
+                bubblePopState.combo = 0;
+              }
+            }
+          }
+          
+          // pulse effect on score change
+          if (scoreEl && bubblePopState.sessionScore > 0) {
+            scoreEl.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+              scoreEl.style.transform = 'scale(1)';
+            }, 200);
+          }
+        }
+        
+        function removeBubbleScoreUI() {
+          if (scoreUIElement) {
+            scoreUIElement.style.opacity = '0';
+            scoreUIElement.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+              if (scoreUIElement && scoreUIElement.parentNode) {
+                scoreUIElement.parentNode.removeChild(scoreUIElement);
+              }
+              scoreUIElement = null;
+            }, 300);
+          }
+        }
+        
+        function drawBubblePops() {
+          for (let i = bubblePopState.pops.length - 1; i >= 0; i--) {
+            const pop = bubblePopState.pops[i];
+            pop.life += 16;
+            
+            if (pop.life > pop.maxLife) {
+              bubblePopState.pops.splice(i, 1);
+              continue;
+            }
+            
+            const lifeRatio = pop.life / pop.maxLife;
+            
+            // draw expanding shockwave
+            if (lifeRatio < 0.3) {
+              const shockRatio = lifeRatio / 0.3;
+              pop.shockwave.radius = pop.shockwave.maxRadius * shockRatio;
+              pop.shockwave.alpha = 1 - shockRatio;
+              
+              ctx.save();
+              ctx.strokeStyle = `hsla(${pop.hue}, 70%, 70%, ${pop.shockwave.alpha * 0.6})`;
+              ctx.lineWidth = 3;
+              ctx.beginPath();
+              ctx.arc(pop.x, pop.y, pop.shockwave.radius, 0, Math.PI * 2);
+              ctx.stroke();
+              
+              // inner shockwave
+              ctx.strokeStyle = `hsla(${pop.hue}, 80%, 80%, ${pop.shockwave.alpha * 0.4})`;
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              ctx.arc(pop.x, pop.y, pop.shockwave.radius * 0.7, 0, Math.PI * 2);
+              ctx.stroke();
+              ctx.restore();
+            }
+            
+            // draw splash particles
+            for (let j = pop.splashes.length - 1; j >= 0; j--) {
+              const splash = pop.splashes[j];
+              splash.life += 16;
+              
+              if (splash.life > splash.maxLife) {
+                pop.splashes.splice(j, 1);
+                continue;
+              }
+              
+              // physics
+              splash.vy += 0.15; // gravity
+              splash.x += splash.vx;
+              splash.y += splash.vy;
+              splash.rotation += splash.rotSpeed;
+              splash.vx *= 0.98;
+              splash.vy *= 0.98;
+              
+              const splashRatio = splash.life / splash.maxLife;
+              const alpha = 1 - splashRatio;
+              const size = splash.size * (1 - splashRatio * 0.5);
+              
+              ctx.save();
+              ctx.translate(splash.x, splash.y);
+              ctx.rotate(splash.rotation);
+              
+              // draw liquid droplet shape
+              ctx.fillStyle = `hsla(${pop.hue}, 75%, 70%, ${alpha * 0.8})`;
+              ctx.beginPath();
+              ctx.ellipse(0, 0, size, size * 1.3, 0, 0, Math.PI * 2);
+              ctx.fill();
+              
+              // highlight
+              ctx.fillStyle = `rgba(255, 255, 255, ${alpha * 0.4})`;
+              ctx.beginPath();
+              ctx.ellipse(-size * 0.3, -size * 0.4, size * 0.4, size * 0.2, 0, 0, Math.PI * 2);
+              ctx.fill();
+              
+              ctx.restore();
+            }
+            
+            // draw mist particles
+            for (let j = pop.mist.length - 1; j >= 0; j--) {
+              const mist = pop.mist[j];
+              mist.life += 16;
+              
+              if (mist.life > mist.maxLife) {
+                pop.mist.splice(j, 1);
+                continue;
+              }
+              
+              mist.x += mist.vx;
+              mist.y += mist.vy;
+              mist.size += 0.1; // expand
+              mist.vx *= 0.95;
+              mist.vy *= 0.95;
+              
+              const mistRatio = mist.life / mist.maxLife;
+              const alpha = mist.alpha * (1 - mistRatio);
+              
+              ctx.save();
+              const grad = ctx.createRadialGradient(mist.x, mist.y, 0, mist.x, mist.y, mist.size);
+              grad.addColorStop(0, `hsla(${pop.hue}, 70%, 75%, ${alpha * 0.3})`);
+              grad.addColorStop(0.5, `hsla(${pop.hue}, 65%, 70%, ${alpha * 0.15})`);
+              grad.addColorStop(1, `hsla(${pop.hue}, 60%, 65%, 0)`);
+              ctx.fillStyle = grad;
+              ctx.beginPath();
+              ctx.arc(mist.x, mist.y, mist.size, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            }
+          }
+        }
+        
+        // touch-optimized burst spawning with throttle on mobile
         let lastBurstTime = 0;
         const burstCooldown = DeviceCapabilities.isMobile ? 300 : DeviceCapabilities.isTablet ? 200 : 100; // ms between bursts
-        const maxConcurrentBursts = DeviceCapabilities.isMobile ? 2 : DeviceCapabilities.isTablet ? 3 : 5; // Limit active bursts
+        const maxConcurrentBursts = DeviceCapabilities.isMobile ? 2 : DeviceCapabilities.isTablet ? 3 : 5; // limit active bursts
         
         window.addEventListener('pointerdown', (e) => {
           const now = Date.now();
-          // Throttle burst spawning on mobile to prevent lag from rapid taps
+          
+          // check for bubble click in lilac theme first
+          if (themes[themeIndex].id === 'lilac' && checkBubbleClick(e.clientX, e.clientY)) {
+            return; // bubble was popped, don't spawn burst
+          }
+          
+          // throttle on mobile to prevent lag
           if (now - lastBurstTime < burstCooldown) return;
           
-          // Limit concurrent bursts to prevent memory/performance issues
+          // limit concurrent bursts for perf
           if (state.bursts && state.bursts.length >= maxConcurrentBursts) {
-            state.bursts.shift(); // Remove oldest burst
+            state.bursts.shift(); // remove oldest
           }
           
           lastBurstTime = now;
@@ -3321,12 +3883,19 @@
           spawnBurst(e.clientX, e.clientY, themeId);
         }, { passive: true });
 
-        // Particles for effects
+        // particles for effects
         const state = { t: 0, parts: [], sparks: [], cross: null };
         const branchState = { branches: [], exit: null };
         let fogPhase = 0; // 0..1 smoothed alpha for fog
         let fogTarget = 0;
         function resetFor(themeId, prevThemeId) {
+          // show/hide score UI based on theme
+          if (themeId === 'lilac') {
+            createBubbleScoreUI();
+          } else {
+            removeBubbleScoreUI();
+          }
+          
           // Snapshot current parts BEFORE clearing, so crossfade always has something to draw
           const prevSnapshot = (state.parts && state.parts.length) ? state.parts.map(p => ({ ...p })) : (state.partsPrev || []);
           state.parts.length = 0;
@@ -3335,12 +3904,16 @@
           if (prevThemeId && !prefersReduced) {
             // Limit old parts for performance during crossfade, especially for ice
             const prevCopy = prevSnapshot.map(p => ({ ...p }));
-            let dur = 2600;
+            let dur = 3000; // extended to match tree exit animation (2.5s) + buffer
             let limited = prevCopy;
             if (prevThemeId === 'ice') {
-              dur = 3200; // slightly longer for a calmer fade-out
+              dur = 3500; // slightly longer for a calmer fade-out
               const cap = 100; // cap fading flakes to avoid jitter/lag
               if (prevCopy.length > cap) limited = prevCopy.slice(0, cap);
+            }
+            // forest theme gets extra time for the dramatic leaf-fall exit
+            if (prevThemeId === 'forest') {
+              dur = 3200; // matches 2.5s tree animation + fade buffer
             }
             state.cross = {
               oldTheme: prevThemeId,
@@ -3356,7 +3929,7 @@
           // Seed a small number of elements per theme - adaptive based on device and viewport
           const particleLimit = DeviceCapabilities.getParticleLimit();
           const viewportScale = DeviceCapabilities.getViewportScale();
-          const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : 28);
+          const baseCount = (themeId === 'forest' ? 18 : themeId === 'ice' ? 110 : themeId === 'lilac' ? 45 : 28);
           const coarseScale = pointerCoarse ? 0.7 : 1;
           const deviceScale = particleLimit === 0 ? 0 : Math.min(1, particleLimit / baseCount);
           // Further reduce on very small screens (mobile portrait)
@@ -3392,6 +3965,19 @@
                 vy: (-0.1 - Math.random() * 0.1) * viewportScale,
                 life: 0, max: 5000 + Math.random() * 4000,
                 data: Math.random()
+              });
+            } else if (themeId === 'lilac') {
+              // bubbles spread across entire screen with varied sizes for gameplay
+              state.parts.push({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                r: (15 + Math.random() * 45) * viewportScale, // larger, more varied sizes
+                vx: (Math.random() - 0.5) * 0.15 * viewportScale,
+                vy: (Math.random() - 0.5) * 0.15 * viewportScale,
+                life: 0,
+                max: 15000 + Math.random() * 10000, // longer lifetime
+                data: Math.random(),
+                colorShift: Math.random() * 40 - 20 // color variation
               });
             } else {
               state.parts.push({
@@ -3543,77 +4129,131 @@
           p.vy = 0.06 + p.data * 0.1; p.vx += (Math.sin(state.t * 0.001 + p.data * 6) * 0.015);
         }
         
-        // Brown branches growing from edges with recursive sub-branches
+        // realistic tree branches growing from edges with recursive sub-branches
+        // wind simulation for natural movement
+        const windState = {
+          time: 0,
+          strength: 0,
+          direction: 0,
+          gustPhase: 0
+        };
+        
         function initBranches() {
           branchState.branches = [];
-          // Create branches from edges, with precomputed curved paths (no wiggle)
+          windState.time = 0;
+          windState.strength = 0.5 + Math.random() * 0.5;
+          windState.direction = Math.random() * Math.PI * 2;
+          windState.gustPhase = Math.random() * Math.PI * 2;
+          
+          // create branches from edges with natural curves
           const edgePoints = [
             {x: 0, y: h * 0.3, angle: 0},
+            {x: 0, y: h * 0.5, angle: 0},
             {x: 0, y: h * 0.7, angle: 0},
             {x: w, y: h * 0.2, angle: Math.PI},
+            {x: w, y: h * 0.5, angle: Math.PI},
             {x: w, y: h * 0.8, angle: Math.PI},
-            {x: w * 0.2, y: 0, angle: -Math.PI/2},
-            {x: w * 0.8, y: 0, angle: -Math.PI/2},
-            {x: w * 0.3, y: h, angle: Math.PI/2},
-            {x: w * 0.7, y: h, angle: Math.PI/2}
+            {x: w * 0.2, y: 0, angle: Math.PI/2},
+            {x: w * 0.5, y: 0, angle: Math.PI/2},
+            {x: w * 0.8, y: 0, angle: Math.PI/2},
+            {x: w * 0.3, y: h, angle: -Math.PI/2},
+            {x: w * 0.7, y: h, angle: -Math.PI/2}
           ];
-          const branchCount = 6;
+          const branchCount = 8; // more branches for fuller look
           for (let i = 0; i < branchCount; i++) {
             const ep = edgePoints[Math.floor(Math.random() * edgePoints.length)];
-            const baseAngle = ep.angle + (Math.random() - 0.5) * 0.4;
-            const totalLength = 80 + Math.random() * 120;
-            const segments = 8 + Math.floor(Math.random() * 6);
-            const thickness = 1.5 + Math.random() * 2.5;
-            // Precompute a gentle, organic curve with small, fixed deviations
+            const baseAngle = ep.angle + (Math.random() - 0.5) * 0.5;
+            const totalLength = 100 + Math.random() * 150; // longer branches
+            const segments = 10 + Math.floor(Math.random() * 8); // more segments for smoother curves
+            const thickness = 2 + Math.random() * 3; // thicker base
+            
+            // create natural curve w/ gradual angle changes
             const points = [{ x: ep.x, y: ep.y }];
             let cx = ep.x, cy = ep.y, ca = baseAngle;
             const segLen = totalLength / segments;
+            
             for (let s = 0; s < segments; s++) {
-              // small fixed curvature
-              ca += (Math.random() - 0.5) * 0.15;
+              // gradual natural curve
+              ca += (Math.random() - 0.5) * 0.2;
               cx += Math.cos(ca) * segLen;
               cy += Math.sin(ca) * segLen;
               points.push({ x: cx, y: cy });
             }
-            // generate sub-branches from mid segments
+            
+            // generate more sub-branches for fuller tree
             const subs = [];
-            for (let s = 2; s < points.length - 2; s += 2 + (Math.random()*2|0)) {
+            for (let s = 2; s < points.length - 1; s += 1 + (Math.random()*2|0)) {
               const from = points[s];
-              const ang = baseAngle + (Math.random() - 0.5) * 1.4;
-              const len = totalLength * (0.25 + Math.random() * 0.35);
-              const segs = 5 + Math.floor(Math.random() * 4);
+              const ang = baseAngle + (Math.random() - 0.5) * 1.6;
+              const len = totalLength * (0.3 + Math.random() * 0.4);
+              const segs = 6 + Math.floor(Math.random() * 5);
               const subPts = [{ x: from.x, y: from.y }];
-              let sca = ang; let sx = from.x; let sy = from.y;
+              let sca = ang; 
+              let sx = from.x; 
+              let sy = from.y;
+              
               for (let k = 0; k < segs; k++) {
-                sca += (Math.random() - 0.5) * 0.25;
+                sca += (Math.random() - 0.5) * 0.3;
                 sx += Math.cos(sca) * (len / segs);
                 sy += Math.sin(sca) * (len / segs);
                 subPts.push({ x: sx, y: sy });
               }
-              subs.push({ points: subPts, thickness: Math.max(0.5, thickness * 0.6), growth: 0, totalLength: len, segments: segs });
+              subs.push({ 
+                points: subPts, 
+                thickness: Math.max(0.6, thickness * 0.65), 
+                growth: 0, 
+                totalLength: len, 
+                segments: segs 
+              });
             }
-            branchState.branches.push({ points, thickness, growth: 0, totalLength, segments, subs });
+            branchState.branches.push({ 
+              points, 
+              thickness, 
+              growth: 0, 
+              totalLength, 
+              segments, 
+              subs 
+            });
           }
         }
         
         function drawBranches(now) {
-          ctx.strokeStyle = 'rgba(101, 67, 33, 0.28)';
+          // update wind simulation
+          windState.time = now * 0.001;
+          const baseWind = Math.sin(windState.time * 0.8) * 0.5 + 0.5;
+          const gustWind = Math.sin(windState.time * 2.3 + windState.gustPhase) * 0.3;
+          const currentWind = (baseWind + gustWind) * windState.strength;
+          const windX = Math.cos(windState.direction) * currentWind;
+          const windY = Math.sin(windState.direction) * currentWind;
+          
+          // richer brown for more realistic bark
+          ctx.strokeStyle = 'rgba(101, 67, 33, 0.45)';
           ctx.lineCap = 'round';
           ctx.lineJoin = 'round';
-          function drawTinyLeaf(x, y, angle, scale, alpha) {
+          
+          function drawTinyLeaf(x, y, angle, scale, alpha, windInfluence = 1) {
             ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle);
+            // apply wind sway
+            const leafWind = windInfluence * currentWind * 8;
+            const leafWindAngle = windInfluence * currentWind * 0.3;
+            ctx.translate(x + windX * leafWind, y + windY * leafWind);
+            ctx.rotate(angle + leafWindAngle);
             ctx.scale(scale, scale);
             ctx.globalAlpha *= alpha;
-            // leaf body
-            ctx.fillStyle = 'rgba(80, 200, 120, 0.28)';
+            
+            // more vibrant leaf with gradient
+            const leafGrad = ctx.createRadialGradient(-1, -1, 0, 0, 0, 5);
+            leafGrad.addColorStop(0, 'rgba(120, 220, 140, 0.45)');
+            leafGrad.addColorStop(0.7, 'rgba(80, 200, 120, 0.35)');
+            leafGrad.addColorStop(1, 'rgba(60, 180, 100, 0.25)');
+            ctx.fillStyle = leafGrad;
             ctx.beginPath();
             ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
             ctx.fill();
-            // veins
-            ctx.strokeStyle = 'rgba(50, 140, 85, 0.6)';
-            ctx.lineWidth = 0.6;
+            
+            // stronger veins for definition
+            ctx.strokeStyle = 'rgba(50, 140, 85, 0.8)';
+            ctx.lineWidth = 0.7;
             ctx.beginPath();
             ctx.moveTo(0, -3);
             ctx.lineTo(0, 3);
@@ -3624,72 +4264,105 @@
             ctx.stroke();
             ctx.restore();
           }
+          
           for (const branch of branchState.branches) {
-            // Timelapse growth: accelerate early, slow later
-            branch.growth = Math.min(1, branch.growth + 0.0035);
+            // slower growth for smoother animation, ensure full render
+            branch.growth = Math.min(1, branch.growth + 0.0045);
             const targetLength = branch.totalLength * branch.growth;
             let drawn = 0;
-            ctx.lineWidth = Math.max(0.6, branch.thickness * (0.6 + 0.4 * branch.growth));
+            
+            // thicker branches with gradient for depth
+            const baseThickness = Math.max(0.8, branch.thickness * (0.7 + 0.3 * branch.growth));
+            ctx.lineWidth = baseThickness;
+            
+            // draw branch with gradient stroke for depth and wind sway
             ctx.beginPath();
             const pts = branch.points;
             ctx.moveTo(pts[0].x, pts[0].y);
+            
             for (let i = 1; i < pts.length; i++) {
               const px = pts[i - 1];
               const py = pts[i];
               const seg = Math.hypot(py.x - px.x, py.y - px.y);
+              
+              // apply wind sway increasing towards branch tips
+              const windInfluence = (i / pts.length) * branch.growth;
+              const swayX = windX * windInfluence * 5;
+              const swayY = windY * windInfluence * 5;
+              
               if (drawn + seg <= targetLength) {
-                ctx.lineTo(py.x, py.y);
+                ctx.lineTo(py.x + swayX, py.y + swayY);
                 drawn += seg;
               } else {
                 const remain = Math.max(0, targetLength - drawn);
                 if (remain > 0) {
                   const t = remain / seg;
-                  ctx.lineTo(px.x + (py.x - px.x) * t, px.y + (py.y - px.y) * t);
+                  const finalX = px.x + (py.x - px.x) * t;
+                  const finalY = px.y + (py.y - px.y) * t;
+                  ctx.lineTo(finalX + swayX, finalY + swayY);
                 }
                 break;
               }
             }
             ctx.stroke();
-            // add small green leaves along grown segments
+            
+            // more leaves for fuller appearance
             const pts2 = branch.points;
-            const leavesCount = Math.floor(pts2.length * Math.max(0, branch.growth - 0.2));
-            for (let i = 2; i < leavesCount; i += 2) {
+            const leavesCount = Math.floor(pts2.length * Math.max(0, branch.growth - 0.15));
+            for (let i = 1; i < leavesCount; i += 1) {
               const a = pts2[i - 1];
               const b = pts2[i];
               const ang = Math.atan2(b.y - a.y, b.x - a.x);
               const midx = (a.x + b.x) / 2;
               const midy = (a.y + b.y) / 2;
-              drawTinyLeaf(midx, midy, ang + Math.PI/2, 1, 0.9);
+              // alternate leaf sides for natural look
+              const side = (i % 2 === 0) ? 1 : -1;
+              const leafWindInfluence = i / pts2.length; // leaves sway more at branch tips
+              drawTinyLeaf(midx, midy, ang + (Math.PI/2 * side), 1.1, 0.95, leafWindInfluence);
             }
-            // draw sub-branches with slightly delayed growth
+            
+            // draw sub-branches with better growth
             if (branch.subs) {
               ctx.save();
-              ctx.strokeStyle = 'rgba(101, 67, 33, 0.22)';
+              ctx.strokeStyle = 'rgba(101, 67, 33, 0.35)';
               for (const sb of branch.subs) {
-                sb.growth = Math.min(1, sb.growth + 0.003);
-                const tgt = sb.totalLength * Math.max(0, branch.growth - 0.15) * sb.growth;
+                sb.growth = Math.min(1, sb.growth + 0.0040);
+                const tgt = sb.totalLength * Math.max(0, branch.growth - 0.1) * sb.growth;
                 let d2 = 0;
-                ctx.lineWidth = Math.max(0.45, sb.thickness * (0.5 + 0.4 * sb.growth));
+                ctx.lineWidth = Math.max(0.6, sb.thickness * (0.6 + 0.4 * sb.growth));
                 ctx.beginPath();
                 const sp = sb.points;
                 ctx.moveTo(sp[0].x, sp[0].y);
                 for (let i = 1; i < sp.length; i++) {
-                  const a = sp[i - 1]; const b = sp[i];
+                  const a = sp[i - 1]; 
+                  const b = sp[i];
                   const seg = Math.hypot(b.x - a.x, b.y - a.y);
-                  if (d2 + seg <= tgt) { ctx.lineTo(b.x, b.y); d2 += seg; }
-                  else { const rm = Math.max(0, tgt - d2); if (rm > 0) { const t = rm / seg; ctx.lineTo(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); } break; }
+                  if (d2 + seg <= tgt) { 
+                    ctx.lineTo(b.x, b.y); 
+                    d2 += seg; 
+                  } else { 
+                    const rm = Math.max(0, tgt - d2); 
+                    if (rm > 0) { 
+                      const t = rm / seg; 
+                      ctx.lineTo(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t); 
+                    } 
+                    break; 
+                  }
                 }
                 ctx.stroke();
-                // leaves on sub-branches
+                
+                // more leaves on sub-branches
                 const sp2 = sb.points;
-                const cnt = Math.floor(sp2.length * Math.max(0, sb.growth - 0.2));
-                for (let j = 2; j < cnt; j += 2) {
+                const cnt = Math.floor(sp2.length * Math.max(0, sb.growth - 0.15));
+                for (let j = 1; j < cnt; j += 1) {
                   const a2 = sp2[j - 1];
                   const b2 = sp2[j];
                   const ang2 = Math.atan2(b2.y - a2.y, b2.x - a2.x);
                   const mx = (a2.x + b2.x) / 2;
                   const my = (a2.y + b2.y) / 2;
-                  drawTinyLeaf(mx, my, ang2 + Math.PI/2, 0.9, 0.85);
+                  const side = (j % 2 === 0) ? 1 : -1;
+                  const subLeafWind = 0.7 + (j / sp2.length) * 0.3; // sub-branch leaves sway a bit more
+                  drawTinyLeaf(mx, my, ang2 + (Math.PI/2 * side), 0.95, 0.90, subLeafWind);
                 }
               }
               ctx.restore();
@@ -3699,62 +4372,314 @@
         function drawBranchesExit() {
           if (!branchState.exit) return;
           const ex = branchState.exit;
-          ctx.save();
-          ctx.globalAlpha *= Math.max(0, ex.phase);
-          ctx.strokeStyle = 'rgba(101, 67, 33, 0.24)';
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          for (const b of ex.branches) {
-            const target = b.totalLength * Math.max(0, ex.phase);
-            let drawn = 0; ctx.lineWidth = Math.max(0.5, b.thickness * ex.phase);
-            ctx.beginPath(); const pts = b.points; ctx.moveTo(pts[0].x, pts[0].y);
-            for (let i = 1; i < pts.length; i++) {
-              const p0 = pts[i-1], p1 = pts[i]; const seg = Math.hypot(p1.x-p0.x, p1.y-p0.y);
-              if (drawn + seg <= target) { ctx.lineTo(p1.x, p1.y); drawn += seg; }
-              else { const rm = Math.max(0, target - drawn); if (rm > 0) { const t = rm/seg; ctx.lineTo(p0.x + (p1.x-p0.x)*t, p0.y + (p1.y-p0.y)*t);} break; }
+          
+          // phase 1 (0.0-0.7): leaves fall slowly and gracefully
+          // phase 2 (0.7-1.0): branches shrink away
+          const totalDuration = 3.5; // longer duration for smoother exit
+          ex.time = (ex.time || 0) + 0.016; // ~60fps
+          const progress = Math.min(1, ex.time / totalDuration);
+          const phase = 1 - progress;
+          
+          // phase 1: falling leaves (longer duration - 70% of animation)
+          if (progress < 0.7) {
+            if (!ex.fallingLeaves) {
+              // Generate falling leaves from all branch positions
+              ex.fallingLeaves = [];
+              for (const b of ex.branches) {
+                const pts = b.points;
+                for (let i = 1; i < pts.length; i++) {
+                  const a = pts[i - 1];
+                  const b2 = pts[i];
+                  const midx = (a.x + b2.x) / 2;
+                  const midy = (a.y + b2.y) / 2;
+                  const ang = Math.atan2(b2.y - a.y, b2.x - a.x);
+                  // create falling leaf
+                  ex.fallingLeaves.push({
+                    x: midx,
+                    y: midy,
+                    angle: ang + (Math.random() - 0.5) * Math.PI,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: Math.random() * 2 + 1,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.15,
+                    scale: 0.8 + Math.random() * 0.4,
+                    life: 1
+                  });
+                }
+                // add leaves from sub-branches too
+                if (b.subs) {
+                  for (const sb of b.subs) {
+                    const sp = sb.points;
+                    for (let j = 1; j < sp.length; j++) {
+                      const a2 = sp[j - 1];
+                      const b3 = sp[j];
+                      const mx = (a2.x + b3.x) / 2;
+                      const my = (a2.y + b3.y) / 2;
+                      const ang2 = Math.atan2(b3.y - a2.y, b3.x - a2.x);
+                      ex.fallingLeaves.push({
+                        x: mx,
+                        y: my,
+                        angle: ang2 + (Math.random() - 0.5) * Math.PI,
+                        vx: (Math.random() - 0.5) * 2.5,
+                        vy: Math.random() * 2 + 0.8,
+                        rotation: Math.random() * Math.PI * 2,
+                        rotSpeed: (Math.random() - 0.5) * 0.12,
+                        scale: 0.7 + Math.random() * 0.3,
+                        life: 1
+                      });
+                    }
+                  }
+                }
+              }
             }
-            ctx.stroke();
+            
+            // Draw and update falling leaves
+            ctx.save();
+            for (const leaf of ex.fallingLeaves) {
+              // physics: gravity + wind + drift
+              leaf.vy += 0.08; // gravity
+              leaf.vx += Math.sin(ex.time * 2 + leaf.y * 0.01) * 0.08; // wind drift
+              leaf.x += leaf.vx;
+              leaf.y += leaf.vy;
+              leaf.rotation += leaf.rotSpeed;
+              leaf.life = Math.max(0, leaf.life - 0.006);
+              
+              // draw leaf
+              ctx.save();
+              ctx.globalAlpha = leaf.life * 0.85;
+              ctx.translate(leaf.x, leaf.y);
+              ctx.rotate(leaf.rotation);
+              ctx.scale(leaf.scale, leaf.scale);
+              
+              const leafGrad = ctx.createRadialGradient(-1, -1, 0, 0, 0, 5);
+              leafGrad.addColorStop(0, 'rgba(120, 220, 140, 0.45)');
+              leafGrad.addColorStop(0.7, 'rgba(80, 200, 120, 0.35)');
+              leafGrad.addColorStop(1, 'rgba(60, 180, 100, 0.25)');
+              ctx.fillStyle = leafGrad;
+              ctx.beginPath();
+              ctx.ellipse(0, 0, 5, 3, 0, 0, Math.PI * 2);
+              ctx.fill();
+              
+              ctx.strokeStyle = 'rgba(50, 140, 85, 0.8)';
+              ctx.lineWidth = 0.7;
+              ctx.beginPath();
+              ctx.moveTo(0, -3);
+              ctx.lineTo(0, 3);
+              ctx.stroke();
+              ctx.restore();
+            }
+            ctx.restore();
+            
+            // keep branches at full opacity during leaf fall
+            ctx.save();
+            ctx.strokeStyle = 'rgba(101, 67, 33, 0.45)';
+            ctx.lineCap = 'round'; 
+            ctx.lineJoin = 'round';
+            for (const b of ex.branches) {
+              ctx.lineWidth = b.thickness;
+              ctx.beginPath(); 
+              const pts = b.points; 
+              ctx.moveTo(pts[0].x, pts[0].y);
+              for (let i = 1; i < pts.length; i++) {
+                ctx.lineTo(pts[i].x, pts[i].y);
+              }
+              ctx.stroke();
+            }
+            ctx.restore();
+          } 
+          // phase 2: branches shrink (last 30% of animation)
+          else {
+            const shrinkProgress = (progress - 0.7) / 0.3; // normalize to 0-1
+            const shrinkPhase = 1 - shrinkProgress;
+            
+            ctx.save();
+            // keep opacity steady, just shrink
+            ctx.strokeStyle = 'rgba(101, 67, 33, 0.45)';
+            ctx.lineCap = 'round'; 
+            ctx.lineJoin = 'round';
+            
+            for (const b of ex.branches) {
+              const target = b.totalLength * shrinkPhase;
+              let drawn = 0; 
+              ctx.lineWidth = Math.max(0.5, b.thickness * shrinkPhase);
+              ctx.beginPath(); 
+              const pts = b.points; 
+              ctx.moveTo(pts[0].x, pts[0].y);
+              
+              for (let i = 1; i < pts.length; i++) {
+                const p0 = pts[i-1], p1 = pts[i]; 
+                const seg = Math.hypot(p1.x-p0.x, p1.y-p0.y);
+                if (drawn + seg <= target) { 
+                  ctx.lineTo(p1.x, p1.y); 
+                  drawn += seg; 
+                } else { 
+                  const rm = Math.max(0, target - drawn); 
+                  if (rm > 0) { 
+                    const t = rm/seg; 
+                    ctx.lineTo(p0.x + (p1.x-p0.x)*t, p0.y + (p1.y-p0.y)*t);
+                  } 
+                  break; 
+                }
+              }
+              ctx.stroke();
+            }
+            ctx.restore();
           }
-          ctx.restore();
-          ex.phase -= 0.02;
-          if (ex.phase <= 0) branchState.exit = null;
+          
+          if (progress >= 1) branchState.exit = null;
         }
         function drawBubbles(p) {
-          // Glassmorphic purple bubbles with gradient and highlight
-          // Add soft fade/scale envelope for silky enter/crossfade
-          const k = Math.min(1, Math.max(0, p.life / (p.max || 1000)));
-          const fadeIn = Math.min(1, k / 0.25);
-          const fadeOut = Math.min(1, (1 - k) / 0.25);
-          const env = (fadeIn * fadeIn * (3 - 2 * fadeIn)) * (fadeOut * fadeOut * (3 - 2 * fadeOut));
-          const scale = (p._crossScale !== undefined) ? p._crossScale : (0.9 + 0.1 * env);
+          // enhanced lava lamp: liquid-like bubbles with organic motion
+          // initialize blob shape if not exists
+          if (!p.blobPoints) {
+            const numPoints = 12;
+            p.blobPoints = [];
+            for (let i = 0; i < numPoints; i++) {
+              p.blobPoints.push({
+                angle: (i / numPoints) * Math.PI * 2,
+                offset: 0,
+                speed: 0.02 + Math.random() * 0.03,
+                amplitude: 0.15 + Math.random() * 0.15
+              });
+            }
+            p.wavePhase = Math.random() * Math.PI * 2;
+            p.colorShift = Math.random() * 60 - 30;
+            p.wobbleIntensity = 1; // for interaction effects
+          }
+          
+          // check for mouse proximity for interaction
+          if (typeof pointer !== 'undefined' && pointer.x !== undefined) {
+            const dx = pointer.x - p.x;
+            const dy = pointer.y - p.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            const interactionRadius = p.r * 3;
+            
+            if (dist < interactionRadius) {
+              // bubble reacts to nearby cursor
+              const influence = 1 - (dist / interactionRadius);
+              p.wobbleIntensity = 1 + influence * 0.8;
+              
+              // push bubble away slightly
+              const pushForce = influence * 0.3;
+              p.vx += (dx / dist) * pushForce * -1;
+              p.vy += (dy / dist) * pushForce * -1;
+            } else {
+              // smoothly return to normal
+              p.wobbleIntensity += (1 - p.wobbleIntensity) * 0.1;
+            }
+          }
+          
+          // update wave phase for liquid motion (wobble intensity affects speed)
+          p.wavePhase += 0.02 * p.wobbleIntensity;
+          
+          // Bubbles never die, they cycle instead
+          if (!p.max || p.life >= p.max) {
+            p.life = 0;
+            p.y = h + 50;
+            p.x = Math.random() * w;
+            p.vx = (Math.random() - 0.5) * 0.4;
+            p.r = 15 + Math.random() * 45;
+            p.colorShift = Math.random() * 60 - 30;
+          }
+          
+          const k = Math.min(1, Math.max(0, p.life / 800));
+          const fadeIn = Math.min(1, k / 0.2);
+          const env = fadeIn * 0.85;
+          
           ctx.save();
           ctx.globalAlpha *= env;
           ctx.translate(p.x, p.y);
-          ctx.scale(scale, scale);
-          const grad = ctx.createRadialGradient(
-            p.x - p.r * 0.3, p.y - p.r * 0.3, 0,
-            p.x, p.y, p.r * 1.2
-          );
-          grad.addColorStop(0, 'rgba(217, 180, 255, 0.25)');
-          grad.addColorStop(0.5, 'rgba(184, 133, 255, 0.15)');
-          grad.addColorStop(1, 'rgba(153, 102, 255, 0.05)');
+          
+          // add slight rotation based on velocity for dynamic feel
+          const rotation = Math.atan2(p.vy, p.vx) * 0.1;
+          ctx.rotate(rotation);
+          
+          // draw liquid blob shape with enhanced wobble
+          ctx.beginPath();
+          for (let i = 0; i < p.blobPoints.length; i++) {
+            const point = p.blobPoints[i];
+            point.offset = Math.sin(p.wavePhase + point.angle * 3) * point.amplitude * p.wobbleIntensity;
+            const r = p.r * (1 + point.offset);
+            const x = Math.cos(point.angle) * r;
+            const y = Math.sin(point.angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else {
+              const prevPoint = p.blobPoints[i - 1];
+              const prevR = p.r * (1 + prevPoint.offset);
+              const prevX = Math.cos(prevPoint.angle) * prevR;
+              const prevY = Math.sin(prevPoint.angle) * prevR;
+              const cpX = (prevX + x) / 2;
+              const cpY = (prevY + y) / 2;
+              ctx.quadraticCurveTo(prevX, prevY, cpX, cpY);
+            }
+          }
+          ctx.closePath();
+          
+          // Enhanced gradient with color variation
+          const hue = 260 + p.colorShift;
+          const grad = ctx.createRadialGradient(-p.r * 0.35, -p.r * 0.35, 0, 0, 0, p.r * 1.3);
+          grad.addColorStop(0, `hsla(${hue}, 70%, 75%, 0.35)`);
+          grad.addColorStop(0.4, `hsla(${hue}, 65%, 65%, 0.25)`);
+          grad.addColorStop(0.7, `hsla(${hue}, 60%, 55%, 0.15)`);
+          grad.addColorStop(1, `hsla(${hue}, 55%, 45%, 0.05)`);
           ctx.fillStyle = grad;
-          ctx.beginPath();
-          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
           ctx.fill();
-          // Highlight
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+          
+          // bright highlight for gloss
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
           ctx.beginPath();
-          ctx.ellipse(- p.r * 0.3, - p.r * 0.3, p.r * 0.4, p.r * 0.25, -0.5, 0, Math.PI * 2);
+          ctx.ellipse(-p.r * 0.35, -p.r * 0.4, p.r * 0.35, p.r * 0.2, -0.6, 0, Math.PI * 2);
           ctx.fill();
-          // Outer ring
-          ctx.strokeStyle = 'rgba(217, 170, 255, 0.3)';
+          
+          // secondary smaller highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+          ctx.beginPath();
+          ctx.ellipse(p.r * 0.25, p.r * 0.3, p.r * 0.2, p.r * 0.15, 0.4, 0, Math.PI * 2);
+          ctx.fill();
+          
+          // subtle outer glow
+          ctx.strokeStyle = `hsla(${hue}, 65%, 70%, ${0.25 * env})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          // enhanced outer glow when wobbling
+          if (p.wobbleIntensity > 1.1) {
+            ctx.save();
+            ctx.globalAlpha = (p.wobbleIntensity - 1) * 0.5;
+            ctx.strokeStyle = `hsla(${hue}, 75%, 80%, 0.4)`;
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.restore();
+          }
+          
+          // subtle inner reflection
+          ctx.save();
+          ctx.globalAlpha = 0.15;
+          ctx.strokeStyle = `hsla(${hue + 20}, 60%, 85%, 0.3)`;
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+          for (let i = 0; i < p.blobPoints.length; i++) {
+            const point = p.blobPoints[i];
+            const r = p.r * 0.85 * (1 + point.offset * 0.5);
+            const x = Math.cos(point.angle) * r;
+            const y = Math.sin(point.angle) * r;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
           ctx.stroke();
           ctx.restore();
-          // gentle drift with slight damping for stability
-          p.vy = -0.06 - p.data * 0.08; p.vx *= 0.992;
+          
+          ctx.restore();
+          
+          // Organic floating motion with turbulence
+          const turbulence = Math.sin(state.t * 0.0008 + p.data * 10) * 0.3;
+          p.vy = -0.08 - p.data * 0.12 + turbulence * 0.05;
+          p.vx += (Math.sin(state.t * 0.0006 + p.data * 8) * 0.15 - p.vx) * 0.03;
+          p.vx *= 0.985;
+          
+          // Add slight horizontal wave drift
+          p.vx += Math.cos(p.y * 0.01 + state.t * 0.0005) * 0.02;
         }
         function drawFog(now) {
           // Smooth fog using a phase that eases to target
@@ -3878,6 +4803,12 @@
             for (let i = 0; i < state.parts.length; i += step) {
               drawBubbles(state.parts[i]);
             }
+            // draw bubble pop effects on top
+            if (!smoothScrolling) {
+              drawBubblePops();
+              drawFloatingScores();
+              updateBubbleScoreUI();
+            }
             ctx.restore();
           }
         }
@@ -3948,10 +4879,148 @@
         if (!prefersReduced) requestAnimationFrame(tick);
 
         // Rotate theme at a configurable interval with smooth crossfade and safe re-entry
+        // Increased timing to accommodate the beautiful tree exit animation (2.5s falling leaves + shrinking)
         let nextThemeTimeout;
-        let themeIntervalMs = 5000;
-        window.__toggleSlowThemes = function(slow){ themeIntervalMs = slow ? 9000 : 5000; };
+        let themeIntervalMs = 7000; // 7 seconds per theme (was 5s)
+        let forcedTheme = null;
+        let partyModeActive = false;
+        
+        window.__toggleSlowThemes = function(slow){ 
+          themeIntervalMs = slow ? 12000 : 7000; // adjusted both speeds
+        };
+        
+        // force a specific theme (or null to resume auto-rotation)
+        window.__forceTheme = function(themeId) {
+          forcedTheme = themeId;
+          if (themeId) {
+            clearTimeout(nextThemeTimeout);
+            const idx = themes.findIndex(t => t.id === themeId);
+            if (idx >= 0) {
+              const prev = themes[themeIndex].id;
+              themeIndex = idx;
+              const newTheme = themes[themeIndex];
+              applyTheme(newTheme);
+              enableEffects();
+              resetFor(newTheme.id, prev);
+            }
+          } else {
+            scheduleNextTheme();
+          }
+        };
+        
+        // party mode: rapid theme changes
+        window.__partyMode = function() {
+          if (partyModeActive) return;
+          partyModeActive = true;
+          forcedTheme = null;
+          const originalInterval = themeIntervalMs;
+          themeIntervalMs = 800; // super fast rotation
+          
+          let partyCount = 0;
+          const partyTimer = setInterval(() => {
+            if (partyCount++ > 15) { // party for ~12 seconds
+              clearInterval(partyTimer);
+              partyModeActive = false;
+              themeIntervalMs = originalInterval;
+              window.showToast && window.showToast('Party mode ended! Back to normal.');
+              scheduleNextTheme();
+            }
+          }, 1000);
+          
+          scheduleNextTheme();
+        };
+        
+        // Visual theme picker UI (Press 'T' to toggle)
+        (function() {
+          let pickerOpen = false;
+          const pickerHTML = `
+            <div id="theme-picker" style="display: none; position: fixed; bottom: 20px; right: 20px; background: rgba(10, 10, 15, 0.92); backdrop-filter: blur(30px); border-radius: 12px; padding: 18px; box-shadow: 0 8px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08); z-index: 10000; border: 1px solid rgba(255,255,255,0.08);">
+              <div style="font-weight: 600; margin-bottom: 14px; font-size: 13px; color: rgba(255,255,255,0.9); letter-spacing: 0.02em;">Theme Selection</div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; max-width: 260px;">
+                <button data-theme="fire" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px);">Fire</button>
+                <button data-theme="ice" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px);">Ice</button>
+                <button data-theme="forest" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px);">Forest</button>
+                <button data-theme="lilac" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px);">Lilac</button>
+                <button data-theme="fog" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px);">Fog</button>
+                <button data-theme="auto" style="padding: 9px 15px; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; background: rgba(255,255,255,0.04); color: rgba(255,255,255,0.85); cursor: pointer; font-weight: 500; font-size: 12px; transition: all 0.2s; backdrop-filter: blur(10px); flex: 1 1 100%;">Auto</button>
+              </div>
+              <div style="margin-top: 12px; font-size: 10px; color: rgba(255,255,255,0.4); text-align: center; letter-spacing: 0.01em;">Press T to close</div>
+            </div>
+          `;
+          
+          // inject picker into page
+          document.body.insertAdjacentHTML('beforeend', pickerHTML);
+          const picker = document.getElementById('theme-picker');
+          
+          // add hover effects to buttons
+          picker.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+              btn.style.background = 'rgba(255,255,255,0.08)';
+              btn.style.borderColor = 'rgba(255,255,255,0.2)';
+              btn.style.transform = 'translateY(-1px)';
+            });
+            btn.addEventListener('mouseleave', () => {
+              btn.style.background = 'rgba(255,255,255,0.04)';
+              btn.style.borderColor = 'rgba(255,255,255,0.12)';
+              btn.style.transform = 'translateY(0)';
+            });
+            btn.addEventListener('click', () => {
+              const theme = btn.dataset.theme;
+              if (theme === 'auto') {
+                window.__forceTheme(null);
+                window.showToast && window.showToast('Auto-rotation enabled');
+              } else {
+                window.__forceTheme(theme);
+                window.showToast && window.showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} theme active`);
+              }
+              picker.style.display = 'none';
+              pickerOpen = false;
+            });
+          });
+          
+          // toggle picker with 'T' key
+          window.addEventListener('keydown', (e) => {
+            // only trigger if not typing in an input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            if (e.key.toLowerCase() === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              pickerOpen = !pickerOpen;
+              picker.style.display = pickerOpen ? 'block' : 'none';
+              if (pickerOpen) {
+                picker.style.animation = 'slideInUp 0.3s ease-out';
+                window.triggerHaptic && window.triggerHaptic('medium');
+              }
+            }
+            
+            // close with Escape too
+            if (e.key === 'Escape' && pickerOpen) {
+              picker.style.display = 'none';
+              pickerOpen = false;
+            }
+          });
+          
+          // add slide-in animation
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes slideInUp {
+              from {
+                opacity: 0;
+                transform: translateY(20px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `;
+          document.head.appendChild(style);
+        })();
+        
         function scheduleNextTheme() {
+          if (forcedTheme || partyModeActive) {
+            if (!partyModeActive) return;
+          }
+          
           clearTimeout(nextThemeTimeout);
           nextThemeTimeout = setTimeout(() => {
             const prev = themes[themeIndex].id;
@@ -3967,7 +5036,7 @@
         scheduleNextTheme();
       })();
 
-      // i18n: simple native UI translations with RTL support
+      // i18n: simple native UI translations with RTL support. please forgive me (mayukhjit) for any bad translations and ik its kind of dumb to hardcode them but it is what it is, and if it aint broke, dont fix it lol
       (function(){
         const htmlEl = document.documentElement;
         const langSelect = document.getElementById('langSelect');
@@ -4062,31 +5131,148 @@
                 'cta.projects':'プロジェクトを見る <svg class="icon" aria-hidden="true"><use href="#icon-external"/></svg>','cta.copy':'メールをコピー <svg class="icon" aria-hidden="true"><use href="#icon-copy"/></svg>','cta.resume':'履歴書' }
         };
 
-        function applyLang(lang){
+        // language transition history for undo/redo
+        let transitionHistory = [];
+        let historyIndex = -1;
+        let isTransitioning = false;
+        
+        function applyLang(lang, skipHistory = false){
+          if (isTransitioning) return;
+          isTransitioning = true;
+          
           const dict = DICT[lang] || DICT.en;
-          document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (dict[key]) el.innerHTML = dict[key];
-          });
-          htmlEl.setAttribute('lang', lang);
-          const isRtl = RTL_LANGS.has(lang);
-          htmlEl.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
-          // After DOM updates, re-init the typewriter safely
-          if (typeof window.typerReinit === 'function') {
-            window.typerReinit();
+          const elements = document.querySelectorAll('[data-i18n]');
+          
+          // add to history if not navigating history
+          if (!skipHistory) {
+            const currentLang = htmlEl.getAttribute('lang') || 'en';
+            if (currentLang !== lang) {
+              // remove any forward history when making new change
+              transitionHistory = transitionHistory.slice(0, historyIndex + 1);
+              transitionHistory.push(lang);
+              historyIndex = transitionHistory.length - 1;
+            }
           }
+          
+          // create erase swipe overlay
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 0; height: 100vh; background: linear-gradient(90deg, transparent, rgba(0,0,0,0.95), rgba(0,0,0,0.95)); z-index: 9998; pointer-events: none;';
+          document.body.appendChild(overlay);
+          
+          // swipe in animation (erase)
+          const swipeIn = overlay.animate([
+            { width: '0%', left: '0%' },
+            { width: '100%', left: '0%' }
+          ], {
+            duration: 400,
+            easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+            fill: 'forwards'
+          });
+          
+          swipeIn.onfinish = () => {
+            // fade out current text
+            elements.forEach(el => {
+              el.style.opacity = '0';
+              el.style.transition = 'opacity 300ms ease-out';
+            });
+            
+            setTimeout(() => {
+              // update content while covered
+              elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerHTML = dict[key];
+              });
+              
+              htmlEl.setAttribute('lang', lang);
+              const isRtl = RTL_LANGS.has(lang);
+              htmlEl.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+              
+              // fade in new text
+              elements.forEach(el => {
+                el.style.opacity = '1';
+              });
+              
+              // swipe out animation (reveal)
+              const swipeOut = overlay.animate([
+                { width: '100%', left: '0%' },
+                { width: '0%', left: '100%' }
+              ], {
+                duration: 400,
+                easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                fill: 'forwards'
+              });
+              
+              swipeOut.onfinish = () => {
+                overlay.remove();
+                isTransitioning = false;
+                
+                // re-init typewriter after transition
+                if (typeof window.typerReinit === 'function') {
+                  window.typerReinit();
+                }
+              };
+            }, 300);
+          };
         }
 
-        // Persist selection
+        // persist selection
         const stored = localStorage.getItem('lang');
         if (stored && DICT[stored]) {
           langSelect.value = stored;
-          applyLang(stored);
+          transitionHistory = [stored];
+          historyIndex = 0;
+          // apply immediately without transition on initial load
+          const dict = DICT[stored];
+          const elements = document.querySelectorAll('[data-i18n]');
+          elements.forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (dict[key]) el.innerHTML = dict[key];
+          });
+          htmlEl.setAttribute('lang', stored);
+          const isRtl = RTL_LANGS.has(stored);
+          htmlEl.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+          
+          // reinit typewriter after dom update
+          if (typeof window.typerReinit === 'function') {
+            setTimeout(() => window.typerReinit(), 50);
+          }
+        } else {
+          transitionHistory = ['en'];
+          historyIndex = 0;
         }
+        
         langSelect.addEventListener('change', () => {
           const lang = langSelect.value;
           localStorage.setItem('lang', lang);
           applyLang(lang);
+        });
+        
+        // undo/redo keyboard shortcuts
+        window.addEventListener('keydown', (e) => {
+          // ctrl+z or cmd+z for undo
+          if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault();
+            if (historyIndex > 0) {
+              historyIndex--;
+              const prevLang = transitionHistory[historyIndex];
+              langSelect.value = prevLang;
+              localStorage.setItem('lang', prevLang);
+              applyLang(prevLang, true);
+              window.showToast && window.showToast(`Language changed to ${prevLang.toUpperCase()}`);
+            }
+          }
+          // ctrl+y or cmd+shift+z for redo
+          else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+            e.preventDefault();
+            if (historyIndex < transitionHistory.length - 1) {
+              historyIndex++;
+              const nextLang = transitionHistory[historyIndex];
+              langSelect.value = nextLang;
+              localStorage.setItem('lang', nextLang);
+              applyLang(nextLang, true);
+              window.showToast && window.showToast(`Language changed to ${nextLang.toUpperCase()}`);
+            }
+          }
         });
 
         // Optionally allow localized feature list for the typewriter

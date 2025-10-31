@@ -4,10 +4,6 @@
         - Subtle interactions: scroll reveal, hover micro‑interactions, smooth anchors
         - Typography: OpenAI Sans (Regular, Medium, Semibold, Bold, Italic)
         
-        Design Philosophy:
-        Every pixel has a purpose. Every animation has meaning.
-        This isn't just a portfolio — it's a conversation.
-        
         Pro Tip: Check the console. Sometimes the best code comments
         are the ones that make you smile while debugging at 3am.
         
@@ -355,14 +351,35 @@
         top: 0;
         padding: 12px 0;
         z-index: 50;
-        -webkit-backdrop-filter: blur(8px) saturate(120%);
-        backdrop-filter: blur(8px) saturate(120%);
-        transition: background-color 500ms var(--ease), border-color 500ms var(--ease), padding 300ms var(--ease);
+        -webkit-backdrop-filter: blur(20px) saturate(140%);
+        backdrop-filter: blur(20px) saturate(140%);
+        transition: background-color 500ms var(--ease), 
+                    border-color 500ms var(--ease), 
+                    padding 300ms var(--ease),
+                    box-shadow 500ms var(--ease);
       }
+      
+      /* Enhanced blur and reflection when scrolled */
       body.scrolled header { 
-        background: rgba(10,10,10,0.6); 
+        background: rgba(10,10,10,0.75); 
         border-bottom: 1px solid var(--line);
         padding: 10px 0;
+        box-shadow: 0 4px 24px -4px rgba(0,0,0,0.4),
+                    0 0 0 1px rgba(255,255,255,0.03),
+                    0 8px 40px -8px var(--theme-glow-4);
+      }
+      
+      /* Add subtle ambient glow to header */
+      body.scrolled header::after {
+        content: '';
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(to bottom, var(--theme-glow-4), transparent);
+        opacity: 0.1;
+        pointer-events: none;
       }
       .nav { display: flex; align-items: center; gap: 24px; justify-content: space-between; }
       .nav nav { flex: 1 1 auto; }
@@ -455,7 +472,36 @@
       :focus-visible { outline: 2px solid #e6e6e6; outline-offset: 2px; border-radius: 8px; }
 
       /* Hero */
-      .hero { padding: 128px 0 88px; position: relative; z-index: 1; overflow: visible; }
+      .hero { 
+        padding: 128px 0 88px; 
+        position: relative; 
+        z-index: 1; 
+        overflow: visible; 
+      }
+      
+      /* Add subtle ambient reflection to hero section */
+      .hero::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(ellipse at center, var(--theme-glow-4) 0%, transparent 60%);
+        filter: blur(80px);
+        opacity: 0.2;
+        pointer-events: none;
+        z-index: -1;
+        animation: heroAmbient 8s ease-in-out infinite alternate;
+      }
+      
+      @keyframes heroAmbient {
+        0% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 0.25; transform: translate(-50%, -50%) scale(1.1); }
+        100% { opacity: 0.15; transform: translate(-50%, -50%) scale(1); }
+      }
+      
       main { overflow: visible; }
       .kicker { color: var(--muted); font-weight: 500; letter-spacing: 0.4px; }
       .title { 
@@ -723,9 +769,62 @@
       }
 
       /* Sections */
-      section { padding: 112px 0; position: relative; z-index: 1; overflow: visible; }
-      .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 28px; margin-bottom: 32px; overflow: visible; }
-      .section-title { font-weight: 600; font-size: 20px; letter-spacing: 0.4px; }
+      section { 
+        padding: 112px 0; 
+        position: relative; 
+        z-index: 1; 
+        overflow: visible;
+      }
+      
+      /* Add subtle ambient reflections to sections */
+      section::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 200px;
+        background: radial-gradient(ellipse at center, var(--theme-glow-4) 0%, transparent 70%);
+        filter: blur(60px);
+        opacity: 0.15;
+        pointer-events: none;
+        z-index: -1;
+      }
+      
+      .section-head { 
+        display: flex; 
+        align-items: baseline; 
+        justify-content: space-between; 
+        gap: 28px; 
+        margin-bottom: 32px; 
+        overflow: visible; 
+      }
+      
+      .section-title { 
+        font-weight: 600; 
+        font-size: 20px; 
+        letter-spacing: 0.4px;
+        position: relative;
+      }
+      
+      /* Add subtle glow to section titles */
+      .section-title::after {
+        content: '';
+        position: absolute;
+        inset: -10px -20px;
+        background: radial-gradient(ellipse at center, var(--theme-glow-4) 0%, transparent 60%);
+        filter: blur(20px);
+        opacity: 0;
+        transition: opacity 300ms ease;
+        pointer-events: none;
+        z-index: -1;
+      }
+      
+      .section-title:hover::after {
+        opacity: 0.6;
+      }
+      
       .section-desc { color: var(--muted); }
 
       /* Projects */
@@ -1002,12 +1101,31 @@
         backface-visibility: hidden;
         
       }
+      /* Add reflection effect to FAQ items */
+      .faq-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%);
+        opacity: 0;
+        transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+      
       .faq-item:hover {
         border-color: rgba(255,255,255,0.12);
         background: rgba(15,15,15,0.88);
         transform: translateY(-3px) translateZ(0);
-        box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2), 
+                    0 0 0 1px rgba(255,255,255,0.05),
+                    0 8px 32px -8px var(--theme-glow-4);
       }
+      
+      .faq-item:hover::before {
+        opacity: 1;
+      }
+      
       .faq-item[open] {
         border-color: rgba(255,255,255,0.18);
         background: rgba(12,12,12,0.92);
@@ -1058,25 +1176,31 @@
         max-height: 0;
         opacity: 0;
         overflow: hidden;
-        transition: max-height 500ms cubic-bezier(0.16, 1, 0.3, 1),
-                    opacity 400ms cubic-bezier(0.16, 1, 0.3, 1),
-                    padding 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        transform: translateY(-8px);
+        transition: max-height 550ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 450ms cubic-bezier(0.16, 1, 0.3, 1),
+                    transform 500ms cubic-bezier(0.16, 1, 0.3, 1),
+                    padding 450ms cubic-bezier(0.16, 1, 0.3, 1);
       }
       .faq-item[open] .faq-answer {
         max-height: 600px;
         opacity: 1;
         padding-bottom: 24px;
         padding-top: 0;
+        transform: translateY(0);
       }
       .faq-answer p {
         margin: 0;
         margin-top: 8px;
-        transform: translateY(-10px);
-        transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
-        transition-delay: 100ms;
+        transform: translateY(-12px);
+        opacity: 0;
+        transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition-delay: 80ms;
       }
       .faq-item[open] .faq-answer p {
         transform: translateY(0);
+        opacity: 1;
       }
       .particle-target {
         position: relative;
@@ -1092,18 +1216,23 @@
       /* Icons */
       .icon {
         width: 18px; height: 18px;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         vertical-align: middle;
         line-height: 1;
         color: var(--fg);
         margin: 0 2px;
+        flex-shrink: 0;
       }
       /* Spotify-specific small alignment nudge without affecting other icons */
       .icon-spotify { transform: translateY(1px); }
+      /* linkedin icon nudge up for better vertical centering */
+      .btn [href="#icon-linkedin"] { transform: translateY(-1px); }
       .btn .icon { 
         margin-left: 8px; 
-        width: 18px; 
-        height: 18px; 
+        width: 20px; 
+        height: 20px; 
         padding: 0; 
         color: currentColor;
         transition: color 320ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -1112,17 +1241,30 @@
         align-items: center;
         justify-content: center;
         vertical-align: middle;
+        flex-shrink: 0;
       }
-      /* Ensure contrast on filled buttons (white bg) */
-      .btn.primary .icon { color: var(--bg); }
-      /* Ghost buttons already use foreground color */
-      .btn.ghost .icon { color: var(--fg); }
-      /* Icons adapt when button background changes on hover */
-      .btn.primary:hover .icon {
-        color: var(--fg); /* Invert to white when button becomes colored */
+      /* Fix icon rendering and ensure proper contrast */
+      .btn.primary .icon { 
+        color: var(--bg); 
+        fill: var(--bg);
       }
+      .btn.ghost .icon { 
+        color: var(--fg);
+        fill: var(--fg);
+      }
+      /* White icons on purple/lilac themed buttons for better contrast */
+      .btn.primary:hover .icon,
       .btn.ghost:hover .icon {
-        color: var(--bg); /* Invert to dark when ghost button becomes colored */
+        color: #ffffff;
+        fill: #ffffff;
+        filter: drop-shadow(0 0 4px rgba(255,255,255,0.3));
+      }
+      /* Ensure all icon SVGs render properly */
+      .icon svg,
+      .icon use {
+        width: 100%;
+        height: 100%;
+        display: block;
       }
       /* Standalone heading icons: large glassmorphic circle with enhanced glow */
       .section-title .icon {
@@ -1242,7 +1384,14 @@
         padding: 0;
         font-size: 16px;
         outline: none;
+        position: relative;
       }
+      
+      /* Add subtle glow when focused */
+      .cmdk-input:focus {
+        text-shadow: 0 0 20px var(--theme-glow-3);
+      }
+      
       .cmdk-input::placeholder {
         color: #666;
       }
@@ -1430,6 +1579,14 @@
         opacity: 1;
         transform: translateX(-50%) translateY(0);
         pointer-events: auto;
+      }
+
+      /* Bubble score UI animations */
+      #bubbleScoreUI #bubbleScore {
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      #bubbleScoreUI #bubbleCombo {
+        transition: opacity 0.3s ease;
       }
 
       /* Skip link for accessibility */
@@ -1708,18 +1865,19 @@
         position: fixed;
         inset: 0;
         z-index: 9999;
-        background: var(--bg);
+        background: linear-gradient(135deg, #0a0a0f 0%, #12121a 100%);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-direction: column;
         gap: 24px;
         opacity: 1;
-        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
         pointer-events: none;
       }
       .loading-screen.loaded {
         opacity: 0;
+        transform: scale(1.05);
       }
       .loading-spinner {
         width: 48px;
@@ -1728,9 +1886,29 @@
         border-top-color: var(--theme-primary-4);
         border-radius: 50%;
         animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+        position: relative;
+      }
+      .loading-spinner::after {
+        content: '';
+        position: absolute;
+        inset: 6px;
+        border: 2px solid rgba(255,255,255,0.05);
+        border-bottom-color: var(--theme-primary-5);
+        border-radius: 50%;
+        animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
       }
       @keyframes spin {
         to { transform: rotate(360deg); }
+      }
+      @keyframes fadeInTip {
+        from {
+          opacity: 0;
+          transform: translateX(-50%) translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
       }
       .loading-text {
         font-weight: 500;
