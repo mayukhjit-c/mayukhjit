@@ -3637,17 +3637,23 @@
             
             ctx.globalAlpha = Math.max(0, alpha);
             
-            // draw points
-            ctx.font = 'bold 24px system-ui, sans-serif';
+            // draw points with glow
+            ctx.font = '700 28px "OpenAI Sans", system-ui, sans-serif';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+            ctx.shadowBlur = 12;
             ctx.fillStyle = '#fff';
             ctx.fillText(`+${score.points}`, score.x, score.y);
             
             // draw combo if applicable
             if (score.combo > 1) {
-              ctx.font = 'bold 16px system-ui, sans-serif';
+              ctx.font = '700 18px "OpenAI Sans", system-ui, sans-serif';
+              ctx.shadowColor = 'rgba(255, 215, 0, 0.6)';
+              ctx.shadowBlur = 16;
               ctx.fillStyle = '#ffd700';
-              ctx.fillText(`x${score.combo} COMBO!`, score.x, score.y + 25);
+              ctx.fillText(`×${score.combo} COMBO!`, score.x, score.y + 30);
             }
+            
+            ctx.shadowBlur = 0;
           }
           
           ctx.restore();
@@ -3665,28 +3671,29 @@
             position: fixed;
             top: 80px;
             right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(147, 112, 219, 0.5);
-            border-radius: 12px;
-            padding: 15px 20px;
-            color: #fff;
-            font-family: system-ui, sans-serif;
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line));
+            border-radius: 16px;
+            padding: 16px 20px;
+            color: var(--fg);
+            font-family: "OpenAI Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
             z-index: 100;
-            min-width: 200px;
-            box-shadow: 0 8px 32px rgba(147, 112, 219, 0.3);
-            transition: all 0.3s ease;
+            min-width: 220px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
             transform: translateY(-10px);
           `;
           
           scoreUIElement.innerHTML = `
-            <div style="font-size: 12px; color: rgba(255,255,255,0.6); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">Bubble Popper</div>
-            <div style="font-size: 28px; font-weight: bold; color: #9370db; margin-bottom: 5px;" id="bubbleScore">0</div>
-            <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">High Score: <span id="bubbleHighScore">0</span></div>
-            <div style="font-size: 14px; color: #ffd700; font-weight: bold; height: 20px;" id="bubbleCombo"></div>
-            <div style="font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-              Total Popped: <span id="bubbleTotalPopped">0</span>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;">Bubble Popper</div>
+            <div style="font-size: 36px; font-weight: 700; background: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 8px; line-height: 1;" id="bubbleScore">0</div>
+            <div style="font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 12px; font-weight: 500;">High Score: <span id="bubbleHighScore" style="color: rgba(255,255,255,0.65); font-weight: 600;">0</span></div>
+            <div style="font-size: 15px; color: #ffd700; font-weight: 700; height: 22px; text-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);" id="bubbleCombo"></div>
+            <div style="font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; font-weight: 500;">
+              Total Popped: <span id="bubbleTotalPopped" style="color: rgba(255,255,255,0.5); font-weight: 600;">0</span>
             </div>
           `;
           

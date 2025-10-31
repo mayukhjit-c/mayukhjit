@@ -521,6 +521,19 @@
         min-height: 1.2em;
         vertical-align: baseline;
       }
+      .highlight-word {
+        position: relative;
+        padding: 0 4px;
+        paint-order: stroke fill;
+        -webkit-text-stroke: 0.6px #000;
+        text-shadow: 1px 0 0 #000, -1px 0 0 #000, 0 1px 0 #000, 0 -1px 0 #000, 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+        background: conic-gradient(from 0deg at 50% 60%, var(--theme-primary-1) 0%, var(--theme-primary-2) 10%, var(--theme-primary-3) 25%, var(--theme-primary-4) 45%, var(--theme-primary-5) 60%, var(--theme-primary-6) 85%, var(--theme-primary-4) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        text-shadow: 0 0 12px var(--theme-glow-1), 0 0 36px var(--theme-glow-2), 0 0 72px var(--theme-glow-3);
+        filter: var(--theme-filter);
+      }
       .typer-text { 
         position: relative; 
         padding: 0 2px; 
