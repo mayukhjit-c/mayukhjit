@@ -321,8 +321,8 @@
         color: var(--theme-primary-2);
       }
 
-      .container { max-width: var(--maxw); margin: 0 auto; padding: 0 36px; overflow: visible; }
-      html.coarse .container { padding: 0 24px; }
+      .container { max-width: var(--maxw); margin: 0 auto; padding: 0 48px; overflow: visible; }
+      html.coarse .container { padding: 0 32px; }
 
       /* Background canvases */
       #bg-lava { 
@@ -381,11 +381,11 @@
         opacity: 0.1;
         pointer-events: none;
       }
-      .nav { display: flex; align-items: center; gap: 24px; justify-content: space-between; }
+      .nav { display: flex; align-items: center; gap: 32px; justify-content: space-between; }
       .nav nav { flex: 1 1 auto; }
-      .nav nav ul { display: flex; gap: 18px; align-items: center; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
-      .nav .brand { display: inline-flex; align-items: center; gap: 12px; flex-shrink: 0; }
-      .lang-select { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+      .nav nav ul { display: flex; gap: 24px; align-items: center; margin: 0; padding: 0; list-style: none; flex-wrap: wrap; }
+      .nav .brand { display: inline-flex; align-items: center; gap: 14px; flex-shrink: 0; }
+      .lang-select { display: flex; align-items: center; gap: 10px; margin-left: auto; }
       .lang-select select { background: #0c0c0c; border: 1px solid #222; color: #fff; padding: 8px 10px; border-radius: 8px; }
       @media (max-width: 900px) {
         .nav { flex-wrap: wrap; row-gap: 10px; }
@@ -683,6 +683,10 @@
         will-change: auto;
         backface-visibility: hidden;
         contain: layout style paint;
+        /* smoother pill rendering with antialiasing */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        outline: none;
       }
       
       /* Add will-change during interaction */
@@ -776,7 +780,7 @@
 
       /* Sections */
       section { 
-        padding: 112px 0; 
+        padding: 128px 0; 
         position: relative; 
         z-index: 1; 
         overflow: visible;
@@ -802,8 +806,8 @@
         display: flex; 
         align-items: baseline; 
         justify-content: space-between; 
-        gap: 28px; 
-        margin-bottom: 32px; 
+        gap: 32px; 
+        margin-bottom: 48px; 
         overflow: visible; 
       }
       
@@ -834,7 +838,7 @@
       .section-desc { color: var(--muted); }
 
       /* Projects */
-      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; overflow: visible; }
+      .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px; overflow: visible; }
       .card {
         grid-column: span 12;
         /* fallback for color-mix */
@@ -842,7 +846,7 @@
         background: color-mix(in oklab, var(--card) 92%, var(--theme-primary-1));
         border: none;
         border-radius: var(--radius);
-        padding: 24px;
+        padding: 32px;
         overflow: visible;
         transition: background-color 200ms var(--ease-smooth), 
                     box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1235,6 +1239,23 @@
       .icon-spotify { transform: translateY(1px); }
       /* linkedin icon nudge up for better vertical centering */
       .btn [href="#icon-linkedin"] { transform: translateY(-1px); }
+      
+      /* brand colors on hover for social media buttons */
+      .btn[href*="youtube.com"]:hover { 
+        border-color: #FF0000 !important; 
+        box-shadow: 0 0 40px 16px rgba(255, 0, 0, 0.3),
+                    0 4px 20px -2px rgba(255, 0, 0, 0.4) !important;
+      }
+      .btn[href*="spotify.com"]:hover { 
+        border-color: #1DB954 !important; 
+        box-shadow: 0 0 40px 16px rgba(29, 185, 84, 0.3),
+                    0 4px 20px -2px rgba(29, 185, 84, 0.4) !important;
+      }
+      .btn[href*="linkedin.com"]:hover { 
+        border-color: #0A66C2 !important; 
+        box-shadow: 0 0 40px 16px rgba(10, 102, 194, 0.3),
+                    0 4px 20px -2px rgba(10, 102, 194, 0.4) !important;
+      }
       .btn .icon { 
         margin-left: 8px; 
         width: 20px; 

@@ -3497,6 +3497,7 @@
           gameEndTime: 0,
           countdown: 0,
           countdownActive: false,
+          countdownTimeout: null,
           manualLilacActivation: false,
           canManuallyActivate: true,
           cyclesSinceManual: 0,
@@ -3526,10 +3527,13 @@
         }
         
         function popBubble(bubble, index, isAutoPop = false) {
+          // safety check: ensure bubble and index are valid
+          if (!bubble || index < 0 || index >= state.parts.length) return;
+          
           // remove the bubble
           state.parts.splice(index, 1);
           
-          if (!isAutoPop) {
+          if (!isAutoPop && bubblePopState.gameActive) {
             bubblePopState.bubblesPopped++;
             
             // update score and combo
@@ -3555,11 +3559,19 @@
             // update high score
             if (bubblePopState.score > bubblePopState.highScore) {
               bubblePopState.highScore = bubblePopState.score;
-              localStorage.setItem('bubbleHighScore', bubblePopState.highScore);
+              try {
+                localStorage.setItem('bubbleHighScore', bubblePopState.highScore);
+              } catch (e) {
+                console.warn('Failed to save high score:', e);
+              }
             }
             
             // save progress
-            localStorage.setItem('bubbleTotalPopped', bubblePopState.totalPopped);
+            try {
+              localStorage.setItem('bubbleTotalPopped', bubblePopState.totalPopped);
+            } catch (e) {
+              console.warn('Failed to save total popped:', e);
+            }
             
             // update ui
             updateBubbleScoreUI();
@@ -3745,36 +3757,70 @@
           const quitBtn = document.getElementById('quitGameBtn');
           
           if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
+            // remove any existing listeners to prevent double-binding
+            const newRestartBtn = restartBtn.cloneNode(true);
+            restartBtn.parentNode.replaceChild(newRestartBtn, restartBtn);
+            
+            newRestartBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // ensure we're still on lilac theme
+              const currentTheme = themes[themeIndex].id;
+              if (currentTheme !== 'lilac') {
+                window.showToast && window.showToast('⚠️ Can only restart during lilac theme', 2000);
+                return;
+              }
+              
+              // end current game
+              const wasManual = bubblePopState.manualLilacActivation;
               endBubbleGame('restart');
+              
+              // restart after brief delay
               setTimeout(() => {
                 if (themes[themeIndex].id === 'lilac') {
-                  startBubbleGame(bubblePopState.manualLilacActivation);
+                  startBubbleGame(wasManual);
+                  window.showToast && window.showToast('🔄 Game restarted!', 2000);
                 }
-              }, 100);
+              }, 150);
             });
-            restartBtn.addEventListener('mouseenter', function() {
+            
+            newRestartBtn.addEventListener('mouseenter', function() {
               this.style.background = 'rgba(255,255,255,0.2)';
               this.style.color = 'rgba(255,255,255,0.9)';
             });
-            restartBtn.addEventListener('mouseleave', function() {
+            newRestartBtn.addEventListener('mouseleave', function() {
               this.style.background = 'rgba(255,255,255,0.1)';
               this.style.color = 'rgba(255,255,255,0.7)';
             });
           }
           
           if (quitBtn) {
-            quitBtn.addEventListener('click', () => {
+            // remove any existing listeners to prevent double-binding
+            const newQuitBtn = quitBtn.cloneNode(true);
+            quitBtn.parentNode.replaceChild(newQuitBtn, quitBtn);
+            
+            newQuitBtn.addEventListener('click', (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // end game and clean up
               endBubbleGame('quit');
-              if (window.__forceTheme) {
-                window.__forceTheme(null); // resume auto rotation
-              }
+              
+              // force theme change away from lilac
+              setTimeout(() => {
+                if (window.__forceTheme) {
+                  window.__forceTheme(null); // resume auto rotation
+                }
+                window.showToast && window.showToast('👋 Game ended', 2000);
+              }, 100);
             });
-            quitBtn.addEventListener('mouseenter', function() {
+            
+            newQuitBtn.addEventListener('mouseenter', function() {
               this.style.background = 'rgba(255,68,68,0.3)';
               this.style.color = '#ff4444';
             });
-            quitBtn.addEventListener('mouseleave', function() {
+            newQuitBtn.addEventListener('mouseleave', function() {
               this.style.background = 'rgba(255,255,255,0.1)';
               this.style.color = 'rgba(255,255,255,0.7)';
             });
@@ -3790,7 +3836,8 @@
         }
         
         function updateBubbleScoreUI() {
-          if (!scoreUIElement) return;
+          // safety check: don't try to update if UI doesn't exist
+          if (!scoreUIElement || !document.body.contains(scoreUIElement)) return;
           
           const scoreEl = document.getElementById('bubbleScore');
           const highScoreEl = document.getElementById('bubbleHighScore');
@@ -3800,14 +3847,15 @@
           const countdownEl = document.getElementById('countdownDisplay');
           const remainingEl = document.getElementById('bubblesRemaining');
           
-          if (scoreEl) scoreEl.textContent = bubblePopState.score;
-          if (highScoreEl) highScoreEl.textContent = bubblePopState.highScore;
-          if (totalEl) totalEl.textContent = bubblePopState.totalPopped;
+          // robust update with null checks
+          if (scoreEl) scoreEl.textContent = bubblePopState.score || 0;
+          if (highScoreEl) highScoreEl.textContent = bubblePopState.highScore || 0;
+          if (totalEl) totalEl.textContent = bubblePopState.totalPopped || 0;
           
           // update remaining bubbles count
-          const themeId = themes[themeIndex].id;
+          const themeId = themes[themeIndex] ? themes[themeIndex].id : null;
           if (remainingEl && themeId === 'lilac') {
-            remainingEl.textContent = state.parts.length;
+            remainingEl.textContent = state.parts ? state.parts.length : 0;
           }
           
           // update timer
@@ -3862,18 +3910,51 @@
         
         function removeBubbleScoreUI() {
           if (scoreUIElement) {
+            // animate out
             scoreUIElement.style.opacity = '0';
             scoreUIElement.style.transform = 'translateY(10px)';
+            
+            // clean up after animation
             setTimeout(() => {
-              if (scoreUIElement && scoreUIElement.parentNode) {
-                scoreUIElement.parentNode.removeChild(scoreUIElement);
+              if (scoreUIElement) {
+                try {
+                  if (scoreUIElement.parentNode) {
+                    scoreUIElement.parentNode.removeChild(scoreUIElement);
+                  }
+                } catch (e) {
+                  console.warn('Error removing score UI:', e);
+                }
+                scoreUIElement = null;
               }
-              scoreUIElement = null;
             }, 300);
+          }
+          
+          // ensure game state is clean
+          if (bubblePopState.gameActive) {
+            endBubbleGame('cleanup');
           }
         }
         
         function startBubbleGame(manualActivation = false) {
+          // safety check: ensure we're on lilac theme
+          const currentTheme = themes[themeIndex] ? themes[themeIndex].id : null;
+          if (currentTheme !== 'lilac') {
+            console.warn('Cannot start bubble game: not on lilac theme');
+            return;
+          }
+          
+          // if game already active, don't restart unless explicitly called
+          if (bubblePopState.gameActive) {
+            console.warn('Game already active');
+            return;
+          }
+          
+          // ensure UI exists
+          if (!scoreUIElement) {
+            createBubbleScoreUI();
+          }
+          
+          // reset game state
           bubblePopState.gameActive = true;
           bubblePopState.gameStartTime = Date.now();
           bubblePopState.gameEndTime = Date.now() + 60000; // 60 seconds
@@ -3883,51 +3964,85 @@
           bubblePopState.combo = 0;
           bubblePopState.countdownActive = false;
           bubblePopState.manualLilacActivation = manualActivation;
-          bubblePopState.totalBubblesInSession = state.parts.length;
+          bubblePopState.totalBubblesInSession = state.parts ? state.parts.length : 0;
+          
+          // clear any existing countdown timeout
+          if (bubblePopState.countdownTimeout) {
+            clearTimeout(bubblePopState.countdownTimeout);
+          }
           
           // start countdown warning at 3 seconds
-          setTimeout(() => {
-            bubblePopState.countdownActive = true;
+          bubblePopState.countdownTimeout = setTimeout(() => {
+            if (bubblePopState.gameActive) {
+              bubblePopState.countdownActive = true;
+            }
           }, 57000);
           
           if (manualActivation) {
             window.showToast && window.showToast('🫧 Game resumed! Pop those bubbles!', 3000);
           }
+          
+          // force initial UI update
+          updateBubbleScoreUI();
         }
         
         function endBubbleGame(reason = 'timeout') {
+          // safety check: only end if game is actually active
           if (!bubblePopState.gameActive) return;
           
+          // immediately set game as inactive to prevent double-ending
           bubblePopState.gameActive = false;
           bubblePopState.countdownActive = false;
+          
+          // clear countdown timeout to prevent stale callbacks
+          if (bubblePopState.countdownTimeout) {
+            clearTimeout(bubblePopState.countdownTimeout);
+            bubblePopState.countdownTimeout = null;
+          }
           
           const finalScore = bubblePopState.score;
           const bubblesPopped = bubblePopState.bubblesPopped;
           const remaining = state.parts.length;
           
-          // check if all bubbles were popped
-          if (remaining === 0 && !bubblePopState.gameCompleted) {
-            bubblePopState.gameCompleted = true;
-            window.showToast && window.showToast('🎉 Perfect! All bubbles popped! Find the other easter eggs...', 5000);
+          // determine end message based on reason and performance
+          let message = '';
+          if (reason === 'allpopped' || remaining === 0) {
+            if (!bubblePopState.gameCompleted) {
+              bubblePopState.gameCompleted = true;
+              message = '🎉 Perfect! All bubbles popped! Find the other easter eggs...';
+            } else {
+              message = `🎉 All bubbles popped again! Score: ${finalScore}`;
+            }
+          } else if (reason === 'quit') {
+            message = `Game quit. Final score: ${finalScore} | Popped: ${bubblesPopped}`;
+          } else if (reason === 'restart') {
+            message = `Restarting... Previous score: ${finalScore}`;
           } else {
-            // show end game summary
-            const message = `Game Over! Score: ${finalScore} | Popped: ${bubblesPopped}`;
-            window.showToast && window.showToast(message, 4000);
+            message = `⏱️ Time's up! Score: ${finalScore} | Popped: ${bubblesPopped}`;
           }
           
-          // if manual activation, re-enable auto mode after showing score
+          // show end game message
+          if (message && reason !== 'restart') {
+            window.showToast && window.showToast(message, reason === 'allpopped' ? 5000 : 4000);
+          }
+          
+          // handle manual activation cleanup
           if (bubblePopState.manualLilacActivation) {
             bubblePopState.manualLilacActivation = false;
             bubblePopState.canManuallyActivate = false;
             bubblePopState.cyclesSinceManual = 0;
-            
-            // re-enable auto theme rotation after 2 seconds
+          }
+          
+          // if quitting, resume auto theme rotation
+          if (reason === 'quit') {
             setTimeout(() => {
+              if (window.__forceTheme) {
+                window.__forceTheme(null); // resume auto rotation
+              }
               if (window.__themeAutoRotate === false) {
                 window.__themeAutoRotate = true;
-                window.showToast && window.showToast('Auto theme rotation resumed', 2000);
               }
-            }, 2000);
+            }, 100);
           }
         }
         
@@ -4073,14 +4188,22 @@
         function resetFor(themeId, prevThemeId) {
           // game management for lilac theme
           if (themeId === 'lilac') {
-            createBubbleScoreUI();
+            // ensure UI exists first
+            if (!scoreUIElement) {
+              createBubbleScoreUI();
+            }
             
             // check if this is auto or manual activation
             const isManual = bubblePopState.manualLilacActivation;
             
             // only start game if not already active or if manual
             if (!bubblePopState.gameActive || isManual) {
-              startBubbleGame(isManual);
+              // small delay to ensure particles are initialized
+              setTimeout(() => {
+                if (themes[themeIndex].id === 'lilac') {
+                  startBubbleGame(isManual);
+                }
+              }, 100);
             }
             
             // track cycles for manual activation cooldown
@@ -4091,11 +4214,15 @@
               }
             }
           } else {
-            // ending lilac theme - end game if active
-            if (bubblePopState.gameActive) {
-              endBubbleGame('theme_change');
+            // leaving lilac theme - clean up game state
+            if (prevThemeId === 'lilac') {
+              // end game if active
+              if (bubblePopState.gameActive) {
+                endBubbleGame('theme_change');
+              }
+              // remove UI
+              removeBubbleScoreUI();
             }
-            removeBubbleScoreUI();
           }
           
           // Snapshot current parts BEFORE clearing, so crossfade always has something to draw
@@ -5037,10 +5164,15 @@
           ctx.clearRect(0, 0, w, h);
           const themeId = themes[themeIndex].id;
           
-          // check game timer for lilac theme
+          // check game timer and bubble count for lilac theme
           if (themeId === 'lilac' && bubblePopState.gameActive) {
+            // check if time expired
             if (now >= bubblePopState.gameEndTime) {
               endBubbleGame('timeout');
+            }
+            // check if all bubbles popped (auto-end condition)
+            else if (state.parts.length === 0) {
+              endBubbleGame('allpopped');
             }
           }
 
