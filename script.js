@@ -3694,58 +3694,96 @@
           scoreUIElement.id = 'bubbleScoreUI';
           scoreUIElement.style.cssText = `
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            background: rgba(17, 17, 17, 0.92);
-            backdrop-filter: blur(20px) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) saturate(140%);
-            border: 2px solid;
-            border-image: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)) 1;
-            border-radius: 24px;
-            padding: 32px 40px;
+            bottom: 20px;
+            right: 20px;
+            transform: translateY(10px);
+            background: rgba(17, 17, 17, 0.85);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
             color: var(--fg);
             font-family: "OpenAI Sans", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-            z-index: 10000;
-            min-width: 320px;
-            max-width: 450px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255,255,255,0.05);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 100;
+            min-width: 200px;
+            max-width: 240px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             opacity: 0;
-            text-align: center;
+            text-align: left;
           `;
           
           scoreUIElement.innerHTML = `
-            <div style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">🫧 Bubble Popper</div>
-            <div id="gameTimer" style="font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 20px; font-weight: 600; height: 24px;"></div>
-            <div id="countdownDisplay" style="font-size: 72px; font-weight: 900; color: #ff4444; margin: 20px 0; line-height: 1; text-shadow: 0 4px 20px rgba(255,68,68,0.5); display: none;"></div>
-            <div style="font-size: 56px; font-weight: 900; background: linear-gradient(135deg, var(--theme-primary-2), var(--theme-primary-4), var(--theme-primary-6)); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 12px; line-height: 1; text-shadow: 0 4px 20px var(--theme-glow-2);" id="bubbleScore">0</div>
-            <div style="font-size: 13px; color: rgba(255,255,255,0.4); margin-bottom: 20px; font-weight: 500;">SCORE</div>
-            <div style="display: flex; justify-content: space-between; gap: 24px; margin-bottom: 16px;">
-              <div style="flex: 1;">
-                <div style="font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.85);" id="bubbleHighScore">0</div>
-                <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">High Score</div>
-              </div>
-              <div style="flex: 1;">
-                <div style="font-size: 24px; font-weight: 700; color: rgba(255,255,255,0.85);" id="bubblesRemaining">0</div>
-                <div style="font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Remaining</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">🫧 Bubble Game</div>
+              <div style="display: flex; gap: 4px;">
+                <button id="restartGameBtn" style="background: rgba(255,255,255,0.1); border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: 600;" title="Restart game">↻</button>
+                <button id="quitGameBtn" style="background: rgba(255,255,255,0.1); border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: 600;" title="Quit game">✕</button>
               </div>
             </div>
-            <div style="font-size: 18px; color: #ffd700; font-weight: 800; height: 28px; text-shadow: 0 2px 12px rgba(255, 215, 0, 0.4); margin: 16px 0;" id="bubbleCombo"></div>
-            <div style="font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); font-weight: 500;">
-              <span style="color: rgba(255,255,255,0.5);">Total Lifetime: </span><span id="bubbleTotalPopped" style="color: var(--theme-primary-4); font-weight: 700;">0</span>
+            <div id="gameTimer" style="font-size: 11px; color: rgba(255,255,255,0.6); margin-bottom: 8px; font-weight: 500; height: 16px;"></div>
+            <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px;">
+              <div style="font-size: 28px; font-weight: 800; background: linear-gradient(135deg, var(--theme-primary-3), var(--theme-primary-5)); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1;" id="bubbleScore">0</div>
+              <div style="font-size: 9px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500;">pts</div>
             </div>
-            <div id="gameInstructions" style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 16px; line-height: 1.6; font-weight: 500;">
-              Pop bubbles to score! Smaller = more points.<br>Red bubbles = auto-popped (no points)
+            <div style="font-size: 12px; color: #ffd700; font-weight: 700; height: 18px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="bubbleCombo"></div>
+            <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: rgba(255,255,255,0.5); margin-bottom: 6px;">
+              <div>Remaining: <span id="bubblesRemaining" style="color: rgba(255,255,255,0.8); font-weight: 600;">0</span></div>
+              <div>Best: <span id="bubbleHighScore" style="color: rgba(255,255,255,0.8); font-weight: 600;">0</span></div>
             </div>
+            <div style="font-size: 9px; color: rgba(255,255,255,0.3); padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06);">
+              Lifetime: <span id="bubbleTotalPopped" style="color: rgba(255,255,255,0.5); font-weight: 600;">0</span>
+            </div>
+            <div id="countdownDisplay" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 120px; font-weight: 900; color: #ff4444; text-shadow: 0 8px 32px rgba(255,68,68,0.6); display: none; z-index: 10001; pointer-events: none;"></div>
           `;
           
           document.body.appendChild(scoreUIElement);
           
+          // add button event listeners
+          const restartBtn = document.getElementById('restartGameBtn');
+          const quitBtn = document.getElementById('quitGameBtn');
+          
+          if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+              endBubbleGame('restart');
+              setTimeout(() => {
+                if (themes[themeIndex].id === 'lilac') {
+                  startBubbleGame(bubblePopState.manualLilacActivation);
+                }
+              }, 100);
+            });
+            restartBtn.addEventListener('mouseenter', function() {
+              this.style.background = 'rgba(255,255,255,0.2)';
+              this.style.color = 'rgba(255,255,255,0.9)';
+            });
+            restartBtn.addEventListener('mouseleave', function() {
+              this.style.background = 'rgba(255,255,255,0.1)';
+              this.style.color = 'rgba(255,255,255,0.7)';
+            });
+          }
+          
+          if (quitBtn) {
+            quitBtn.addEventListener('click', () => {
+              endBubbleGame('quit');
+              if (window.__forceTheme) {
+                window.__forceTheme(null); // resume auto rotation
+              }
+            });
+            quitBtn.addEventListener('mouseenter', function() {
+              this.style.background = 'rgba(255,68,68,0.3)';
+              this.style.color = '#ff4444';
+            });
+            quitBtn.addEventListener('mouseleave', function() {
+              this.style.background = 'rgba(255,255,255,0.1)';
+              this.style.color = 'rgba(255,255,255,0.7)';
+            });
+          }
+          
           // fade in
           setTimeout(() => {
             scoreUIElement.style.opacity = '1';
-            scoreUIElement.style.transform = 'translate(-50%, -50%) scale(1)';
+            scoreUIElement.style.transform = 'translateY(0)';
           }, 100);
           
           updateBubbleScoreUI();
@@ -3825,7 +3863,7 @@
         function removeBubbleScoreUI() {
           if (scoreUIElement) {
             scoreUIElement.style.opacity = '0';
-            scoreUIElement.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            scoreUIElement.style.transform = 'translateY(10px)';
             setTimeout(() => {
               if (scoreUIElement && scoreUIElement.parentNode) {
                 scoreUIElement.parentNode.removeChild(scoreUIElement);
