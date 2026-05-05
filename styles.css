@@ -214,6 +214,7 @@
 
       * { box-sizing: border-box; }
       button, input, select, textarea { font: inherit; }
+        [hidden] { display: none !important; }
       html { scroll-behavior: auto; overflow-x: hidden; overflow-y: visible; }
       /* Ensure anchored sections account for sticky header height to avoid jump/fumble */
       section, #home, footer { scroll-margin-top: 96px; }
@@ -629,6 +630,50 @@
           transform: translate(var(--tx, 0), var(--ty, -30px)) scale(0);
           opacity: 0;
         }
+      }
+
+      html.touch-optimized body::before,
+      html.touch-optimized body::after,
+      html.touch-optimized section::before,
+      html.touch-optimized .hero::before,
+      html.touch-optimized .card::after,
+      html.touch-optimized .thumb::after,
+      html.touch-optimized .section-title::after,
+      html.touch-optimized .theme-indicator::before {
+        animation: none !important;
+      }
+
+      html.touch-optimized #bg-grid,
+      html.touch-optimized #bg-lava {
+        display: none !important;
+      }
+
+      html.touch-optimized .card,
+      html.touch-optimized .thumb,
+      html.touch-optimized .tag,
+      html.touch-optimized .btn,
+      html.touch-optimized .badge,
+      html.touch-optimized .chip {
+        transition-duration: 120ms !important;
+      }
+
+      html.touch-optimized .card:hover,
+      html.touch-optimized .thumb:hover,
+      html.touch-optimized .tag:hover,
+      html.touch-optimized .btn:hover {
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      html.touch-optimized .loading-spinner,
+      html.touch-optimized .loading-spinner::after {
+        animation-duration: 2.25s !important;
+      }
+
+      html.touch-optimized .typer-text {
+        animation: none !important;
+        filter: none !important;
+        text-shadow: none !important;
       }
       
       /* Button particles */

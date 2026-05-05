@@ -169,6 +169,11 @@
         return __pointerQuery ? __pointerQuery.matches : false;
       }
 
+      const touchOptimized = userPrefersReducedMotion() || userHasCoarsePointer() || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '') || (navigator.hardwareConcurrency || 4) <= 4;
+      if (touchOptimized) {
+        document.documentElement.classList.add('touch-optimized');
+      }
+
       // device detection so we can scale effects accordingly
       const DeviceCapabilities = (function() {
         const ua = navigator.userAgent || '';
@@ -485,6 +490,10 @@
       (function(){
         const input = document.getElementById('faqSearch');
         const counter = document.getElementById('faqSearchCount');
+        if (touchOptimized) {
+          lavaCanvas.hidden = true;
+          return;
+        }
         const container = document.querySelector('#faq .faq-list');
         if (!input || !container) return;
         const items = Array.from(container.querySelectorAll('.faq-item'));
@@ -940,6 +949,10 @@
       (function() {
         const canvas = document.getElementById('bg-grid');
         const ctx = canvas.getContext('2d');
+        if (touchOptimized) {
+          canvas.hidden = true;
+          return;
+        }
         // Adaptive canvas resolution based on device capabilities
         const canvasScale = DeviceCapabilities.getCanvasScale();
         let dpr = Math.max(1, Math.min(1.5, window.devicePixelRatio || 1)) * canvasScale;
