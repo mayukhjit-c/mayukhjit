@@ -2063,10 +2063,11 @@
       .certifications-layout {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 18px;
+        gap: 22px;
       }
       .cert-group {
-        padding: 24px;
+        padding: 28px;
+        scroll-margin-top: 112px;
       }
       .cert-group h3 {
         margin: 0 0 18px;
@@ -2074,22 +2075,23 @@
       }
       .cert-list {
         display: grid;
-        gap: 12px;
+        gap: 14px;
       }
       .cert-item {
         display: flex;
         align-items: flex-start;
         gap: 12px;
-        padding: 12px;
-        border-radius: 16px;
+        padding: 14px;
+        border-radius: 18px;
         border: 1px solid color-mix(in oklab, var(--fg) 9%, var(--line));
         background: rgba(255,255,255,0.02);
-        transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms var(--ease), background-color 180ms var(--ease);
+        transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1), border-color 180ms var(--ease), background-color 180ms var(--ease), box-shadow 180ms var(--ease);
       }
       .cert-item:hover {
         transform: translateY(-2px);
         border-color: color-mix(in oklab, var(--accent) 28%, var(--line));
         background: color-mix(in oklab, var(--accent) 6%, rgba(255,255,255,0.02));
+        box-shadow: 0 10px 22px rgba(0,0,0,0.12);
       }
       .cert-logo-shell {
         width: 48px;
@@ -2102,21 +2104,38 @@
         display: grid;
         place-items: center;
         overflow: hidden;
+        color: #f7f7f7;
+        font-weight: 800;
+        letter-spacing: 0.04em;
       }
-      .cert-logo {
-        width: 28px;
-        height: 28px;
-        object-fit: contain;
-        filter: grayscale(1) brightness(2.2) contrast(0.95);
-        opacity: 0.88;
-        transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), filter 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
+      .cert-logo-shell span {
+        display: block;
+        font-size: 12px;
+        line-height: 1;
+        transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), opacity 220ms cubic-bezier(0.16, 1, 0.3, 1);
       }
-      .cert-item:hover .cert-logo,
-      .cert-group:focus-within .cert-logo {
+      .cert-item:hover .cert-logo-shell span,
+      .cert-group:focus-within .cert-logo-shell span {
         transform: scale(1.08);
-        filter: none;
-        opacity: 1;
       }
+      .cert-logo-imperial { background: linear-gradient(135deg, #5b6ce6, #2d3fa3); }
+      .cert-logo-maryland { background: linear-gradient(135deg, #d01c1f, #ff8a00); }
+      .cert-logo-google { background: linear-gradient(135deg, #4285f4, #ea4335, #fbbc05, #34a853); }
+      .cert-logo-oxford { background: linear-gradient(135deg, #002147, #1f3f79); }
+      .cert-logo-stanford { background: linear-gradient(135deg, #8c1515, #b83b3b); }
+      .cert-logo-cambridge { background: linear-gradient(135deg, #124191, #6b7bd1); }
+      .cert-logo-bcg { background: linear-gradient(135deg, #2b2d6e, #5c2d91); }
+      .cert-logo-aws { background: linear-gradient(135deg, #232f3e, #ff9900); }
+      .cert-logo-iit { background: linear-gradient(135deg, #0f4c81, #2d87c8); }
+      .cert-logo-ibm { background: linear-gradient(135deg, #0f62fe, #1d72f3); }
+      .cert-logo-deloitte { background: linear-gradient(135deg, #86bc25, #1f7a1f); }
+      .cert-logo-microsoft { background: linear-gradient(135deg, #f25022, #7fba00, #00a4ef, #ffb900); }
+      .cert-logo-dla { background: linear-gradient(135deg, #111827, #374151); }
+      .cert-logo-cisco { background: linear-gradient(135deg, #1ba0d7, #00558b); }
+      .cert-logo-meta { background: linear-gradient(135deg, #0a66ff, #1861a9); }
+      .cert-logo-datacamp { background: linear-gradient(135deg, #03ef62, #008e5f); }
+      .cert-logo-hackerrank { background: linear-gradient(135deg, #00ea64, #0b3d2e); }
+      .cert-logo-yale { background: linear-gradient(135deg, #0f2e6b, #2b4a8f); }
       .cert-copy {
         display: grid;
         gap: 3px;
@@ -2144,29 +2163,25 @@
       @media (max-width: 640px) {
         .certifications-layout {
           grid-template-columns: 1fr;
+          gap: 16px;
         }
         .cert-group {
           padding: 20px;
         }
         .cert-nav {
           gap: 8px;
+          margin: 16px 0 18px;
         }
         .cert-nav a {
           font-size: 12px;
           padding: 8px 12px;
-        }
-        .cert-issuer {
-          align-items: flex-start;
         }
         .cert-logo-shell {
           width: 44px;
           height: 44px;
           border-radius: 13px;
         }
-        .cert-logo {
-          width: 26px;
-          height: 26px;
-        }
+        .cert-logo-shell span { font-size: 11px; }
       }
       .testimonial-header { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
       .testimonial-avatar { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 20px; color: #fff; }
