@@ -1822,8 +1822,16 @@
         };
         const b1 = document.getElementById('copyEmail');
         const b2 = document.getElementById('copyEmailFooter');
+        const bubbleGameToggle = document.getElementById('bubbleGameToggle');
         b1 && b1.addEventListener('click', () => copy(b1));
         b2 && b2.addEventListener('click', () => copy(b2));
+        if (bubbleGameToggle) {
+          bubbleGameToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleBubbleGame();
+          });
+        }
       })();
 
       // button fire highlights with immediate response
@@ -2101,8 +2109,12 @@
             category: 'Fun',
             keywords: ['easter', 'egg', 'secret', 'konami'],
             action: () => {
-              window.showToast && window.showToast('You found an easter egg! Keep exploring...');
-              // Add a subtle celebration effect
+              const toggle = document.getElementById('bubbleGameToggle');
+              if (toggle) {
+                toggle.hidden = false;
+                toggle.focus();
+              }
+              window.showToast && window.showToast('A hidden control has been revealed.', 3000);
               document.body.style.animation = 'none';
               setTimeout(() => {
                 document.body.style.animation = 'rainbowPulse 0.6s ease';
@@ -2131,17 +2143,7 @@
           { id: 'theme-fire', title: 'Switch to Fire theme', category: 'Themes', keywords: ['fire','red','orange','hot','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fire'); window.showToast && window.showToast('Fire theme activated (or press T for visual picker)'); } },
           { id: 'theme-ice', title: 'Switch to Ice theme', category: 'Themes', keywords: ['ice','blue','cold','frozen','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('ice'); window.showToast && window.showToast('Ice theme activated'); } },
           { id: 'theme-forest', title: 'Switch to Forest theme', category: 'Themes', keywords: ['forest','green','tree','nature','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('forest'); window.showToast && window.showToast('Forest theme activated'); } },
-          { id: 'theme-lilac', title: 'Switch to Lilac theme', category: 'Themes', keywords: ['lilac','purple','bubble','theme'], action: () => { 
-            if (!bubblePopState.canManuallyActivate) {
-              window.showToast && window.showToast('⏳ Wait for auto-rotation cycle to complete first!', 3000);
-              return;
-            }
-            if (window.__forceTheme) {
-              bubblePopState.manualLilacActivation = true;
-              window.__forceTheme('lilac');
-              window.showToast && window.showToast('🎮 I see you\'ve chosen to resume the game!', 3000);
-            }
-          } },
+          { id: 'theme-lilac', title: 'Switch to Lilac theme', category: 'Themes', keywords: ['lilac','purple','bubble','theme'], action: () => { if (window.__forceTheme) window.__forceTheme('lilac'); window.showToast && window.showToast('Lilac theme activated'); } },
           { id: 'theme-fog', title: 'Switch to Fog theme', category: 'Themes', keywords: ['fog','gray','grey','mist','theme'], action: () => { if(window.__forceTheme) window.__forceTheme('fog'); window.showToast && window.showToast('Fog theme activated'); } },
           { id: 'theme-auto', title: 'Resume automatic theme rotation', category: 'Themes', keywords: ['auto','automatic','rotate','theme'], action: () => { if(window.__forceTheme) window.__forceTheme(null); window.showToast && window.showToast('Automatic theme rotation resumed'); } },
           { id: 'party-mode', title: 'Party Mode (rapid theme changes)', category: 'Fun', keywords: ['party','fun','fast','rapid'], action: () => { if(window.__partyMode) window.__partyMode(); window.showToast && window.showToast('Party mode activated'); } },
@@ -3501,10 +3503,37 @@
           manualLilacActivation: false,
           canManuallyActivate: true,
           cyclesSinceManual: 0,
+          gameUnlocked: false,
           totalBubblesInSession: 0,
           bubblesPopped: 0,
           gameCompleted: false
         };
+
+        function setBubbleGameToggleState(enabled) {
+          bubblePopState.gameUnlocked = enabled;
+          const toggle = document.getElementById('bubbleGameToggle');
+          if (toggle) {
+            toggle.setAttribute('aria-pressed', String(enabled));
+          }
+        }
+
+        function toggleBubbleGame() {
+          const enabled = !bubblePopState.gameUnlocked;
+          setBubbleGameToggleState(enabled);
+
+          if (enabled) {
+            if (window.__forceTheme) {
+              window.__forceTheme('lilac');
+            }
+            window.showToast && window.showToast('Bubble game enabled.', 2500);
+          } else {
+            if (bubblePopState.gameActive) {
+              endBubbleGame('quit');
+            }
+            removeBubbleScoreUI();
+            window.showToast && window.showToast('Bubble game disabled.', 2000);
+          }
+        }
         
         function checkBubbleClick(x, y) {
           const themeId = themes[themeIndex].id;
@@ -4188,30 +4217,25 @@
         function resetFor(themeId, prevThemeId) {
           // game management for lilac theme
           if (themeId === 'lilac') {
-            // ensure UI exists first
-            if (!scoreUIElement) {
-              createBubbleScoreUI();
-            }
-            
-            // check if this is auto or manual activation
-            const isManual = bubblePopState.manualLilacActivation;
-            
-            // only start game if not already active or if manual
-            if (!bubblePopState.gameActive || isManual) {
-              // small delay to ensure particles are initialized
-              setTimeout(() => {
-                if (themes[themeIndex].id === 'lilac') {
-                  startBubbleGame(isManual);
-                }
-              }, 100);
-            }
-            
-            // track cycles for manual activation cooldown
-            if (!isManual && !bubblePopState.canManuallyActivate) {
-              bubblePopState.cyclesSinceManual++;
-              if (bubblePopState.cyclesSinceManual >= themes.length) {
-                bubblePopState.canManuallyActivate = true;
+            if (bubblePopState.gameUnlocked) {
+              if (!scoreUIElement) {
+                createBubbleScoreUI();
               }
+
+              const isManual = bubblePopState.manualLilacActivation;
+
+              if (!bubblePopState.gameActive || isManual) {
+                setTimeout(() => {
+                  if (themes[themeIndex].id === 'lilac' && bubblePopState.gameUnlocked) {
+                    startBubbleGame(isManual);
+                  }
+                }, 100);
+              }
+            } else {
+              if (bubblePopState.gameActive) {
+                endBubbleGame('theme_change');
+              }
+              removeBubbleScoreUI();
             }
           } else {
             // leaving lilac theme - clean up game state
