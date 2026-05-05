@@ -800,6 +800,13 @@
         opacity: 0.15;
         pointer-events: none;
         z-index: -1;
+        animation: sectionGlow 16s ease-in-out infinite alternate;
+      }
+
+      @keyframes sectionGlow {
+        0% { opacity: 0.12; transform: translateX(-50%) translateY(0) scale(1); }
+        50% { opacity: 0.18; transform: translateX(-50%) translateY(-6px) scale(1.04); }
+        100% { opacity: 0.12; transform: translateX(-50%) translateY(0) scale(1); }
       }
       
       .section-head { 
@@ -848,11 +855,11 @@
         border-radius: var(--radius);
         padding: 32px;
         overflow: visible;
-        transition: background-color 200ms var(--ease-smooth), 
-                    box-shadow 320ms cubic-bezier(0.16, 1, 0.3, 1),
-                    transform 200ms var(--ease-out),
-                    opacity 200ms cubic-bezier(0.16, 1, 0.3, 1),
-                    filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+        transition: background-color 220ms var(--ease-smooth), 
+              box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 260ms var(--ease-out),
+              opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
+              filter 220ms cubic-bezier(0.16, 1, 0.3, 1);
         /* Glassmorphism */
   -webkit-backdrop-filter: blur(10px) saturate(140%);
   backdrop-filter: blur(10px) saturate(140%);
@@ -892,7 +899,7 @@
         /* Theme-aware glow that matches current color palette - reduced intensity */
         box-shadow: 0 0 32px 10px var(--theme-glow-3),
                     0 8px 20px -4px var(--theme-glow-4);
-        transform: translateY(-4px) scale(1.015) translateZ(0);
+        transform: translateY(-6px) scale(1.02) translateZ(0);
       }
       /* Theme-aware reflective shine that follows cursor with smooth fade */
       .card::after {
@@ -914,10 +921,10 @@
         will-change: opacity;
       }
       .card:hover::after { 
-        opacity: 0.45; 
+        opacity: 0.5; 
       }
       .card:hover::before {
-        opacity: 1;
+        opacity: 0.9;
       }
       /* Remove the constant shimmer animation - it causes jitter */
       .thumb { position: relative; height: 180px; border: 1px solid var(--line); border-radius: var(--radius); display: grid; place-items: center; background: #0f0f0f; overflow: visible; }
@@ -1086,7 +1093,7 @@
       .skills-container { display: grid; gap: 40px; }
       .skill-category { opacity: 0; }
       .skill-category.slide-in-up {
-        animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: slideInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       }
       .chips { display: flex; flex-wrap: wrap; gap: 14px; }
   .chip { padding: 10px 12px; border: 1px solid var(--line); border: 1px solid color-mix(in oklab, var(--fg) 12%, var(--line)); border-radius: 999px; background: #0c0c0c; color: var(--fg); }
@@ -1742,9 +1749,9 @@
       /* Reveal animations — quicker fade for snappier feel */
       .reveal { 
         opacity: 0; 
-        transform: translateY(16px) scale(0.985); 
-        transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1), 
-                    transform 400ms cubic-bezier(0.16, 1, 0.3, 1); 
+        transform: translateY(22px) scale(0.98); 
+        transition: opacity 600ms cubic-bezier(0.16, 1, 0.3, 1), 
+                    transform 600ms cubic-bezier(0.16, 1, 0.3, 1); 
         will-change: auto;
       }
       .reveal.visible { 
@@ -2112,23 +2119,23 @@
 
       /* Entrance animations with staggered delays */
       .fade-in {
-        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation: fadeIn 0.75s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       }
       
       .slide-in-up {
-        animation: slideInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation: slideInUp 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       }
       
       .slide-in-left {
-        animation: slideInLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation: slideInLeft 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       }
       
       .slide-in-right {
-        animation: slideInRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation: slideInRight 0.85s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       }
       
       .scale-in {
-        animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        animation: scaleIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) backwards;
       }
 
       /* Stagger animation delays for sequential entrance */
